@@ -163,7 +163,7 @@
                   <text class="num font-color">{{ item.brokerageUserCount || 0 }} </text>人
                 </view>
                 <view>
-                  <text class="num">{{ item.orderCount || 0 }}</text
+                  <text class="num">{{ item.brokerageOrderCount || 0 }}</text
                   >单</view
                 >
                 <view>
@@ -320,6 +320,7 @@
 
   function setType(e) {
     state.pagination.list = [];
+    state.pagination.pageNo = 1;
     state.level = e + '';
     getTeamList();
   }
