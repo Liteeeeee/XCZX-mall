@@ -3,19 +3,23 @@
   <view class="ss-order-menu-wrap ss-flex ss-col-center" :style="[style, { marginLeft: `${data.space}px` }]">
     <view
       class="menu-item ss-flex-1 ss-flex-col ss-row-center ss-col-center"
-      v-for="item in orderMap"
+      v-for="item in displayedOrderMap"
       :key="item.title"
-      @tap="sheep.$router.go(item.path, { type: item.value })"
+      @tap="onItemClick(item)"
     >
       <uni-badge
         class="uni-badge-left-margin"
-        :text="numData.orderCount[item.count]"
+        :text="item.count ? numData.orderCount[item.count] : 0"
         absolute="rightTop"
         size="small"
+        :show-zero="false"
       >
-        <image class="item-icon" :src="sheep.$url.static(item.icon)" mode="aspectFit" />
+        <view class="item-icon-box">
+          <image v-if="!isEpIcon(item.icon)" class="item-icon" :src="sheep.$url.static(item.icon)" mode="aspectFit" />
+          <uni-icons v-else :type="mapEpIcon(item.icon)" size="26" color="#333"></uni-icons>
+        </view>
       </uni-badge>
-      <view class="menu-title ss-m-t-28">{{ item.title }}</view>
+      <view class="menu-title ss-m-t-28">{{ item.title || item.name }}</view>
     </view>
   </view>
 </template>
@@ -27,7 +31,40 @@
   import sheep from '@/sheep';
   import { computed } from 'vue';
 
-  const orderMap = [
+  const props = defineProps({
+    // 装修数据
+    data: {
+      type: Object,
+      default: () => ({}),
+    },
+    // 装修样式
+    styles: {
+      type: Object,
+      default: () => ({}),
+    },
+  });
+
+  const isEpIcon = (icon) => icon && icon.startsWith('ep:');
+  const mapEpIcon = (icon) => {
+    const name = icon.replace('ep:', '');
+    const dict = {
+      'wallet': 'wallet',
+      'box': 'box',
+      'van': 'car',
+      'circle-check': 'checkbox-filled',
+    };
+    return dict[name] || name;
+  };
+
+  const onItemClick = (item) => {
+    if (item.path) {
+      sheep.$router.go(item.path, { type: item.value });
+    } else {
+      console.log('点击了订单项：', item.name || item.title);
+    }
+  };
+
+  const defaultOrderMap = [
     {
       title: '待付款',
       value: '1',
@@ -67,65 +104,52 @@
       path: '/pages/order/list',
     },
   ];
-  // 接收参数
-  const props = defineProps({
-  	// 装修数据
-  	data: {
-  	  type: Object,
-  	  default: () => ({}),
-  	},
-  	// 装修样式
-  	styles: {
-  	  type: Object,
-  	  default: () => ({}),
-  	},
+
+  const displayedOrderMap = computed(() => {
+    if (props.data.items && props.data.items.length > 0) {
+      return props.data.items.map(item => ({
+        title: item.name,
+        icon: item.icon,
+        path: item.url,
+        // 这里尝试映射一些标准值
+        value: item.name === '待付款' ? '1' : item.name === '待收货' ? '3' : '0',
+        count: item.name === '待付款' ? 'unpaidCount' : item.name === '待收货' ? 'deliveredCount' : '',
+      }));
+    }
+    return defaultOrderMap;
   });
+
   // 设置角标
   const numData = computed(() => sheep.$store('user').numData);
   // 设置背景样式
   const style = computed(() => {
-    // 直接从 props.styles 解构
-    const { bgType, bgImg, bgColor } = props.styles; 
-    // 根据 bgType 返回相应的样式
+    const { bgType, bgImg, bgColor } = props.styles || {}; 
     return {
-  		background: bgType === 'img'
-  			? `url(${bgImg}) no-repeat top center / 100% 100%`
-  			: bgColor
-  	};
+      background: bgType === 'img'
+        ? `url(${bgImg}) no-repeat top center / 100% 100%`
+        : bgColor
+    };
   });
 </script>
 
 <style lang="scss" scoped>
   .ss-order-menu-wrap {
+    padding: 20rpx 0;
     .menu-item {
-      height: 160rpx;
-      position: relative;
-      z-index: 10;
-      .menu-title {
-        font-size: 24rpx;
-        line-height: 24rpx;
-        color: #333333;
+      .item-icon-box {
+        width: 44rpx;
+        height: 44rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
       .item-icon {
         width: 44rpx;
         height: 44rpx;
       }
-      .num-icon {
-        position: absolute;
-        right: 18rpx;
-        top: 18rpx;
-        // width: 40rpx;
-        padding: 0 8rpx;
-        height: 26rpx;
-        background: #ff4d4f;
-        border-radius: 13rpx;
-        color: #fefefe;
-        display: flex;
-        align-items: center;
-        .num {
-          font-size: 24rpx;
-          transform: scale(0.8);
-        }
+      .menu-title {
+        font-size: 24rpx;
+        color: #333;
       }
     }
   }

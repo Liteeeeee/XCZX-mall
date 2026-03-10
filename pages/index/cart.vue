@@ -1,5 +1,11 @@
 <template>
-  <s-layout :bgStyle="{ color: '#fff' }" tabbar="/pages/index/cart" title="购物车">
+  <s-layout
+    :bgStyle="{ color: '#fff' }"
+    tabbar="/pages/index/cart"
+    title="购物车"
+    navbar="custom"
+    :navbarStyle="navbarStyle"
+  >
     <s-empty
       v-if="state.list.length === 0"
       icon="/static/cart-empty.png"
@@ -7,7 +13,11 @@
     />
 
     <!-- 头部 -->
-    <view v-if="state.list.length" class="cart-box ss-flex ss-flex-col ss-row-between">
+    <view
+      v-if="state.list.length"
+      class="cart-box ss-flex ss-flex-col ss-row-between"
+      :style="[{ paddingTop: sys_navBar + 'px' }]"
+    >
       <view class="cart-header ss-flex ss-col-center ss-row-between ss-p-x-30">
         <view class="header-left ss-flex ss-col-center ss-font-26">
           共
@@ -124,6 +134,17 @@
 
   const sys_navBar = sheep.$platform.navbar;
   const cart = sheep.$store('cart');
+
+  const navbarStyle = computed(() => {
+    const homeTemplate = sheep.$store('app').template?.home;
+    return (
+      homeTemplate?.navigationBar || {
+        styleType: 'inner',
+        bgColor: 'transparent',
+        alwaysShow: true,
+      }
+    );
+  });
 
   const state = reactive({
     editMode: computed(() => cart.editMode),

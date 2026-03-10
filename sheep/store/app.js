@@ -169,12 +169,6 @@ const adaptTenant = async () => {
     }
     // #endif
 
-    // 如果没有获取到租户 ID，则默认使用 1
-    if (!newTenantId) {
-      newTenantId = 1;
-      console.log('未通过 appId 匹配到租户，默认使用租户 ID: 1');
-    }
-
     // 3. 如果是新租户（不相等），则进行切换
     // noinspection EqualityComparisonWithCoercionJS
     if (newTenantId && newTenantId != oldTenantId) {
@@ -202,90 +196,26 @@ const adaptTemplate = async (appTemplate, templateId) => {
   // 模板不存在
   if (!diyTemplate) {
     console.error('Template not found or error occurred. Using default empty template to prevent redirect.');
-    // 提供一套完整的默认装修数据，即使接口完全不通，也能让首页显示出内容
+    // 提供基础兜底数据，防止首页白屏
     appTemplate.home = {
-       style: { bgType: 'color', bgColor: '#f6f6f6' },
+       style: { bgType: 'color', bgColor: '#fff' },
        data: [],
        components: [
          {
-           id: 'Carousel', // 轮播图组件
-           property: {
-             type: 'default',
-             indicator: 'dot',
-             autoplay: true,
-             interval: 3,
-             height: 160,
-             items: [
-               {
-                 type: 'img',
-                 imgUrl: 'https://static.iocoder.cn/mall/banner-01.png',
-                 url: '',
-               },
-             ],
-           },
-         },
-         {
-           id: 'SearchBar', // 搜索栏
-           property: {
-             hotWords: ['芋道源码', '商城系统'],
-             style: {
-               background: '#ffffff',
-             },
-           },
-         },
-         {
-           id: 'MenuGrid', // 金刚区菜单
-           property: {
-             list: [
-               { title: '全部分类', iconUrl: 'https://static.iocoder.cn/mall/category.png', url: '/pages/category/index', badge: { show: false } },
-               { title: '我的订单', iconUrl: 'https://static.iocoder.cn/mall/order.png', url: '/pages/order/list', badge: { show: false } },
-               { title: '优惠券', iconUrl: 'https://static.iocoder.cn/mall/coupon.png', url: '/pages/coupon/list', badge: { show: false } },
-               { title: '积分商城', iconUrl: 'https://static.iocoder.cn/mall/point.png', url: '/pages/point/list', badge: { show: false } },
-             ],
-             column: 4,
-             space: 0,
-             border: false,
-           },
-           property_style: {
-             bgType: 'color',
-             bgColor: '#fff',
-           },
-         },
-         {
            id: 'TitleBar',
            property: {
-             title: '装修数据获取失败，正在显示兜底静态页面',
-             description: '请检查后端程序或 API 地址是否正确',
+             title: '装修加载失败',
+             description: '未获取到装修模板，请检查后端配置或网络',
              style: {
-               textAlign: 'left',
-               color: '#333',
-               fontSize: 16,
+               textAlign: 'center',
+               color: '#ff4d4f',
+               fontSize: 20,
              },
-           },
-         },
-         {
-           id: 'ProductCard', // 商品卡片兜底
-           property: {
-             layoutType: 'twoCol',
-             spuIds: [], // 确保有 spuIds 且不为 null
-             fields: {
-               name: { show: true, color: '#333' },
-               introduction: { show: true, color: '#999' },
-               price: { show: true, color: '#ff4d4f' },
-               marketPrice: { show: true, color: '#999' },
-               salesCount: { show: true, color: '#999' },
-               stock: { show: false },
-             },
-             badge: { show: false },
-             btnBuy: { type: 'text', text: '立即购买', bgBeginColor: '#ff4d4f', bgEndColor: '#ff4d4f' },
-             space: 10,
-             borderRadiusTop: 10,
-             borderRadiusBottom: 10,
            },
          },
        ],
      };
-    // $router.error('TemplateError');
+    // $router.error('TemplateError'); // 暂时屏蔽重定向，让应用能进入首页
     return;
   }
 
@@ -306,6 +236,68 @@ const adaptTemplate = async (appTemplate, templateId) => {
   }
   appTemplate.home = diyTemplate?.home;
   appTemplate.user = diyTemplate?.user;
+
+  // 强制开启沉浸式导航
+  if (appTemplate.home?.navigationBar) {
+    appTemplate.home.navigationBar.styleType = 'inner';
+    appTemplate.home.navigationBar.bgColor = 'transparent';
+  }
+  if (appTemplate.user?.navigationBar) {
+    appTemplate.user.navigationBar.styleType = 'inner';
+    appTemplate.user.navigationBar.bgColor = 'transparent';
+  }
+
+  // 临时：注入用户提供的“我的”页面装修数据
+  // TODO: 后续应直接使用接口返回的 diyTemplate?.user
+  const userDecoration = {
+    "page": { "description": "", "backgroundColor": "#f5f5f5", "backgroundImage": "" },
+    "navigationBar": { "bgType": "color", "bgColor": "transparent", "bgImg": "", "styleType": "inner", "alwaysShow": true, "mpCells": [{ "type": "text", "textColor": "#111111" }], "otherCells": [{ "type": "text", "textColor": "#111111" }], "_local": { "previewMp": true, "previewOther": false } },
+    "components": [
+      { 
+        "id": "UserCardPro", 
+        "property": { 
+          "nickname": "请先登录", 
+          "mobile": "", 
+          "levelName": "", 
+          "stats": [{ "label": "余额", "value": "0.00" }, { "label": "积分", "value": "0" }, { "label": "优惠券", "value": "0" }], 
+          "style": { "bgType": "color", "bgColor": "#e0fde0", "marginBottom": 8, "paddingTop": 20, "paddingRight": 20, "paddingBottom": 20, "paddingLeft": 20, "borderRadius": 12 } 
+        } 
+      },
+      { 
+        "id": "UserOrder", 
+        "property": { 
+          "title": "我的订单", 
+          "items": [{ "icon": "ep:wallet", "name": "待付款", "url": "" }, { "icon": "ep:box", "name": "待发货", "url": "" }, { "icon": "ep:van", "name": "待收货", "url": "" }, { "icon": "ep:circle-check", "name": "已完成", "url": "" }], 
+          "style": { "bgType": "color", "bgColor": "#fff", "marginLeft": 8, "marginRight": 8, "marginBottom": 8, "paddingTop": 0, "paddingRight": 0, "paddingBottom": 0, "paddingLeft": 0, "borderRadius": 8 } 
+        } 
+      },
+      { 
+        "id": "UserInfo", 
+        "property": { 
+          "title": "我的信息", 
+          "items": [{ "icon": "ep:setting", "name": "我的设置", "url": "" }, { "icon": "ep:location", "name": "地址管理", "url": "" }, { "icon": "ep:user-filled", "name": "平台合伙人", "url": "" }], 
+          "style": { "bgType": "color", "bgColor": "#fff", "marginLeft": 8, "marginRight": 8, "marginBottom": 8, "paddingTop": 0, "paddingRight": 0, "paddingBottom": 0, "paddingLeft": 0, "borderRadius": 8 } 
+        } 
+      }
+    ]
+  };
+  
+  // 强制注入，避免被空接口结果覆盖
+  const hasComponents = (template) => {
+    if (!template) return false;
+    const hasC = (template.components && Array.isArray(template.components) && template.components.length > 0);
+    const hasD = (template.data && Array.isArray(template.data) && template.data.length > 0);
+    return hasC || hasD;
+  };
+
+  if (!hasComponents(appTemplate.user)) {
+    console.log('User template is empty, forcing injection of userDecoration');
+    appTemplate.user = JSON.parse(JSON.stringify(userDecoration));
+  } else {
+    console.log('User template has components, merging navigationBar');
+    // 即使有接口数据，也确保 navigationBar 是沉浸式的
+    appTemplate.user.navigationBar = userDecoration.navigationBar;
+  }
 };
 
 export default app;

@@ -1,8 +1,8 @@
 <!-- 装修用户组件：用户卡片 -->
 <template>
-  <view class="ss-user-info-wrap ss-p-t-50" :style="[bgStyle, { marginLeft: `${data.space}px` }]">
-    <view class="ss-flex ss-col-center ss-row-between ss-m-b-20">
-      <view class="left-box ss-flex ss-col-center ss-m-l-36">
+  <view class="ss-user-info-wrap" :style="[bgStyle, { marginLeft: `${data.space}px` }]">
+    <view class="ss-flex ss-col-center ss-row-between ss-m-b-20 ss-p-t-30">
+      <view class="left-box ss-flex ss-col-center ss-m-l-30">
         <view class="avatar-box ss-m-r-24">
           <image class="avatar-img" :src="
               isLogin && userInfo.avatar

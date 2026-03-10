@@ -1,7 +1,13 @@
 <!-- 商品分类列表 -->
 <template>
-  <s-layout :bgStyle="{ color: '#fff' }" tabbar="/pages/index/category" title="分类">
-    <view class="s-category">
+  <s-layout
+    :bgStyle="{ color: '#fff' }"
+    tabbar="/pages/index/category"
+    title="分类"
+    navbar="custom"
+    :navbarStyle="navbarStyle"
+  >
+    <view class="s-category" :style="[{ paddingTop: sheep.$platform.navbar + 'px' }]">
       <view class="three-level-wrap ss-flex ss-col-top">
         <!-- 商品分类（左） -->
         <view class="side-menu-wrap" :style="[{ top: Number(statusBarHeight + 88) + 'rpx' }]">
@@ -83,6 +89,17 @@
   const { safeArea } = sheep.$platform.device;
   const pageHeight = computed(() => safeArea.height - 44 - 50);
   const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
+
+  const navbarStyle = computed(() => {
+    const homeTemplate = sheep.$store('app').template?.home;
+    return (
+      homeTemplate?.navigationBar || {
+        styleType: 'inner',
+        bgColor: 'transparent',
+        alwaysShow: true,
+      }
+    );
+  });
 
   // 加载商品分类
   async function getList() {

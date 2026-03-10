@@ -14,6 +14,7 @@
         :opacityBgUi="opacityBgUi"
         @search="(e) => emits('search', e)"
         :defaultSearch="defaultSearch"
+        :placeholder="false"
       />
 
       <!-- 顶部导航栏-情况2：装修组件导航栏-标准 -->
@@ -25,10 +26,11 @@
       <view class="page-body" :style="[bgBody]">
         <!-- 顶部导航栏-情况3：沉浸式头部 -->
         <su-inner-navbar v-if="navbar === 'inner'" :title="title" />
-        <view
+        <!-- 移除强制占位，实现沉浸式效果 -->
+        <!-- <view
           v-if="navbar === 'inner'"
           :style="[{ paddingTop: sheep?.$platform?.navbar + 'px' }]"
-        ></view>
+        ></view> -->
 
         <!-- 顶部导航栏-情况4：装修组件导航栏-沉浸式 -->
         <s-custom-navbar

@@ -49,13 +49,19 @@
     <s-richtext-block v-if="type === 'PromotionArticle'" :data="data" :styles="styles" />
 
     <!-- 用户组件：用户卡片 -->
-    <s-user-card v-if="type === 'UserCard'" :data="data" :styles="styles" />
-    <!-- 用户组件：用户订单 -->
+      <s-user-card v-if="type === 'UserCard'" :data="data" :styles="styles" />
+
+      <!-- 用户组件：用户卡片 Pro -->
+      <s-user-card-pro v-if="type === 'UserCardPro'" :data="data" :styles="styles" />
+
+      <!-- 用户组件：用户订单 -->
     <s-order-card v-if="type === 'UserOrder'" :data="data" :styles="styles" />
     <!-- 用户组件：用户资产 -->
     <s-wallet-card v-if="type === 'UserWallet'" :data="data" :styles="styles" />
     <!-- 用户组件：用户卡券 -->
     <s-coupon-card v-if="type === 'UserCoupon'" :data="data" :styles="styles" />
+    <!-- 用户组件：用户信息（列表式菜单） -->
+    <s-user-info v-if="type === 'UserInfo'" :data="data" :styles="styles" />
   </view>
 </template>
 
