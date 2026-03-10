@@ -6,7 +6,7 @@ const DiyApi = {
       url: '/promotion/diy-template/used',
       method: 'GET',
       custom: {
-        showError: false,
+        showError: true,
         showLoading: false,
       },
     });
@@ -19,7 +19,7 @@ const DiyApi = {
         id
       },
       custom: {
-        showError: false,
+        showError: true,
         showLoading: false,
       },
     });

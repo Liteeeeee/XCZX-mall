@@ -52,21 +52,26 @@ const app = defineStore({
   actions: {
     // 获取Shopro应用配置和模板
     async init(templateId = null) {
+      console.log('ShoproInit started...');
       // 检查网络
       const networkStatus = await $platform.checkNetwork();
+      console.log('Network status:', networkStatus);
       if (!networkStatus) {
         $router.error('NetworkError');
       }
 
       // 检查配置
+      console.log('BaseUrl:', baseUrl);
       if (typeof baseUrl === 'undefined') {
         $router.error('EnvError');
       }
 
       // 加载租户
+      console.log('Adapting tenant...');
       await adaptTenant();
 
       // 加载装修配置
+      console.log('Adapting template...');
       await adaptTemplate(this.template, templateId);
 
       // TODO 芋艿：【初始化优化】未来支持管理后台可配；对应 https://api.shopro.sheepjs.com/shop/api/init
@@ -164,6 +169,12 @@ const adaptTenant = async () => {
     }
     // #endif
 
+    // 如果没有获取到租户 ID，则默认使用 1
+    if (!newTenantId) {
+      newTenantId = 1;
+      console.log('未通过 appId 匹配到租户，默认使用租户 ID: 1');
+    }
+
     // 3. 如果是新租户（不相等），则进行切换
     // noinspection EqualityComparisonWithCoercionJS
     if (newTenantId && newTenantId != oldTenantId) {
@@ -182,13 +193,99 @@ const adaptTenant = async () => {
 
 /** 初始化装修模版 */
 const adaptTemplate = async (appTemplate, templateId) => {
+  console.log('Fetching DIY template...', templateId);
   const { data: diyTemplate } = templateId
     ? // 查询指定模板，一般是预览时使用
       await DiyApi.getDiyTemplate(templateId)
     : await DiyApi.getUsedDiyTemplate();
+  console.log('DIY template data:', diyTemplate);
   // 模板不存在
   if (!diyTemplate) {
-    $router.error('TemplateError');
+    console.error('Template not found or error occurred. Using default empty template to prevent redirect.');
+    // 提供一套完整的默认装修数据，即使接口完全不通，也能让首页显示出内容
+    appTemplate.home = {
+       style: { bgType: 'color', bgColor: '#f6f6f6' },
+       data: [],
+       components: [
+         {
+           id: 'Carousel', // 轮播图组件
+           property: {
+             type: 'default',
+             indicator: 'dot',
+             autoplay: true,
+             interval: 3,
+             height: 160,
+             items: [
+               {
+                 type: 'img',
+                 imgUrl: 'https://static.iocoder.cn/mall/banner-01.png',
+                 url: '',
+               },
+             ],
+           },
+         },
+         {
+           id: 'SearchBar', // 搜索栏
+           property: {
+             hotWords: ['芋道源码', '商城系统'],
+             style: {
+               background: '#ffffff',
+             },
+           },
+         },
+         {
+           id: 'MenuGrid', // 金刚区菜单
+           property: {
+             list: [
+               { title: '全部分类', iconUrl: 'https://static.iocoder.cn/mall/category.png', url: '/pages/category/index', badge: { show: false } },
+               { title: '我的订单', iconUrl: 'https://static.iocoder.cn/mall/order.png', url: '/pages/order/list', badge: { show: false } },
+               { title: '优惠券', iconUrl: 'https://static.iocoder.cn/mall/coupon.png', url: '/pages/coupon/list', badge: { show: false } },
+               { title: '积分商城', iconUrl: 'https://static.iocoder.cn/mall/point.png', url: '/pages/point/list', badge: { show: false } },
+             ],
+             column: 4,
+             space: 0,
+             border: false,
+           },
+           property_style: {
+             bgType: 'color',
+             bgColor: '#fff',
+           },
+         },
+         {
+           id: 'TitleBar',
+           property: {
+             title: '装修数据获取失败，正在显示兜底静态页面',
+             description: '请检查后端程序或 API 地址是否正确',
+             style: {
+               textAlign: 'left',
+               color: '#333',
+               fontSize: 16,
+             },
+           },
+         },
+         {
+           id: 'ProductCard', // 商品卡片兜底
+           property: {
+             layoutType: 'twoCol',
+             spuIds: [], // 确保有 spuIds 且不为 null
+             fields: {
+               name: { show: true, color: '#333' },
+               introduction: { show: true, color: '#999' },
+               price: { show: true, color: '#ff4d4f' },
+               marketPrice: { show: true, color: '#999' },
+               salesCount: { show: true, color: '#999' },
+               stock: { show: false },
+             },
+             badge: { show: false },
+             btnBuy: { type: 'text', text: '立即购买', bgBeginColor: '#ff4d4f', bgEndColor: '#ff4d4f' },
+             space: 10,
+             borderRadiusTop: 10,
+             borderRadiusBottom: 10,
+           },
+         },
+       ],
+     };
+    // $router.error('TemplateError');
     return;
   }
 

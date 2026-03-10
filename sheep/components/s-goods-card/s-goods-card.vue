@@ -239,16 +239,18 @@
   // 初始化
   onMounted(async () => {
     // 加载商品列表
-    state.goodsList = await getGoodsListByIds(spuIds.join(','));
-    // 拼接结算信息（营销）
-    await OrderApi.getSettlementProduct(state.goodsList.map((item) => item.id).join(',')).then(
-      (res) => {
-        if (res.code !== 0) {
-          return;
-        }
-        appendSettlementProduct(state.goodsList, res.data);
-      },
-    );
+    if (spuIds && spuIds.length > 0) {
+      state.goodsList = await getGoodsListByIds(spuIds.join(','));
+      // 拼接结算信息（营销）
+      await OrderApi.getSettlementProduct(state.goodsList.map((item) => item.id).join(',')).then(
+        (res) => {
+          if (res.code !== 0) {
+            return;
+          }
+          appendSettlementProduct(state.goodsList, res.data);
+        },
+      );
+    }
     // 只有双列布局时需要
     if (layoutType === LayoutTypeEnum.TWO_COL) {
       // 分列
