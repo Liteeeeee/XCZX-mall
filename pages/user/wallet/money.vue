@@ -1,8 +1,13 @@
 <!-- 我的钱包 -->
 <template>
-  <s-layout class="wallet-wrap" title="钱包">
+  <s-layout class="wallet-wrap" title="钱包" navbar="normal">
     <!-- 钱包卡片 -->
-    <view class="header-box ss-flex ss-row-center ss-col-center">
+    <view
+      class="header-box ss-flex ss-row-center ss-col-center"
+      :style="{
+        paddingTop: '30rpx',
+      }"
+    >
       <view class="card-box ui-BG-Main ui-Shadow-Main">
         <view class="card-head ss-flex ss-col-center">
           <view class="card-title ss-m-r-10">钱包余额（元）</view>
@@ -95,6 +100,8 @@
   import { resetPagination } from '@/sheep/helper/utils';
 
   const headerBg = sheep.$url.css('/static/img/shop/user/wallet_card_bg.png');
+  const statusBarHeight = sheep.$platform.device.statusBarHeight;
+  const navbarHeight = sheep.$platform.navbar;
 
   // 数据
   const state = reactive({

@@ -1,14 +1,9 @@
 <!-- 充值界面 -->
 <template>
-  <s-layout title="充值" class="withdraw-wrap" navbar="inner">
+  <s-layout title="充值" class="withdraw-wrap" navbar="normal">
     <view
       class="wallet-num-box ss-flex ss-col-center ss-row-between"
-      :style="[
-        {
-          marginTop: '-' + Number(statusBarHeight + 88) + 'rpx',
-          paddingTop: Number(statusBarHeight + 108) + 'rpx',
-        },
-      ]"
+      
     >
       <view class="">
         <view class="num-title">当前余额（元）</view>
@@ -64,7 +59,7 @@
   import { WxaSubscribeTemplate } from '@/sheep/helper/const';
 
   const userWallet = computed(() => sheep.$store('user').userWallet);
-  const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
+  const sys_navBar = sheep.$platform.navbar;
   const headerBg = sheep.$url.css('/static/img/shop/user/withdraw_bg.png');
 
   const state = reactive({

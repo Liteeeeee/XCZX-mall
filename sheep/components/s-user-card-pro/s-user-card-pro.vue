@@ -1,19 +1,11 @@
 <!-- 装修用户组件：用户卡片 Pro -->
 <template>
-  <view class="ss-user-card-pro" :style="[cardStyle, { minHeight: '500rpx', background: !isLogin ? '#e0fde0' : (cardStyle.background || '#fff'), border: '10px solid blue', display: 'block' }]" :class="{ 'unlogin-card': !isLogin }">
-    <!-- 调试信息：无论登录与否都显示 -->
-    <view style="position: absolute; top: 120px; left: 0; width: 100%; text-align: center; color: red; font-size: 50rpx; z-index: 9999; font-weight: bold; background: rgba(255,255,0,0.9); border: 2px solid red;">
-      DEBUG: UserCardPro is ALIVE (Login: {{ isLogin }})
-    </view>
+  <view class="ss-user-card-pro" :style="[cardStyle, { minHeight: '500rpx', background: !isLogin ? '#e0fde0' : (cardStyle.background || '#fff'), display: 'block' }]" :class="{ 'unlogin-card': !isLogin }">
     <!-- 沉浸式占位 -->
     <view :style="{ height: statusBarHeight + 'px' }"></view>
     <view :style="{ height: navBarHeight + 'px' }"></view>
 
     <!-- 未登录时的背景装饰 -->
-    <view v-if="!isLogin" class="unlogin-bg-decoration ss-absolute" style="top: 0; left: 0; width: 100%; height: 100%;">
-      <view class="circle-1"></view>
-      <view class="circle-2"></view>
-    </view>
 
     <!-- 顶部用户信息区域 -->
     <view class="user-info-section ss-flex ss-col-center ss-row-between" :class="{ 'unlogin-section': !isLogin }" style="position: relative; z-index: 2;">
@@ -80,6 +72,7 @@
    */
   import { computed } from 'vue';
   import sheep from '@/sheep';
+  import { fen2yuan } from '@/sheep/hooks/useGoods';
 
   const statusBarHeight = sheep.$platform.device.statusBarHeight;
   const navBarHeight = sheep.$platform.navbar - statusBarHeight;
@@ -103,10 +96,10 @@
     nickname: '',
     mobile: '',
     point: 0,
-    balance: '0.00',
+    balance: 0,
     coupon: 0
   });
-  const userWallet = computed(() => sheep.$store('user').userWallet || { balance: '0.00' });
+  const userWallet = computed(() => sheep.$store('user').userWallet || { balance: 0 });
   const numData = computed(() => sheep.$store('user').numData || { coupon: 0, point: 0 });
   const isLogin = computed(() => sheep.$store('user').isLogin);
 
@@ -118,7 +111,7 @@
     const list = [
       {
         label: '余额',
-        value: isLogin.value ? userWallet.value.balance : (findStatValue(statsFromData, '余额') || '0.00'),
+        value: isLogin.value ? fen2yuan(userWallet.value.balance) : (findStatValue(statsFromData, '余额') || '0.00'),
         type: 'balance',
       },
       {
@@ -163,13 +156,12 @@
       return;
     }
     const routes = {
-      balance: '/pages/pay/recharge',
-      point: '/pages/user/point',
+      balance: '/pages/user/wallet/money',
+      point: '/pages/user/wallet/score',
       coupon: '/pages/coupon/list',
     };
     if (routes[type]) {
-      // sheep.$router.go(routes[type]);
-      console.log('点击了统计项：', type);
+      sheep.$router.go(routes[type]);
     }
   };
 

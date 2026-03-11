@@ -1,20 +1,19 @@
 <!-- 我的积分 -->
 <template>
-  <s-layout class="wallet-wrap" title="我的积分" navbar="inner">
+  <s-layout class="wallet-wrap" title="我的积分" navbar="normal">
     <view
       class="header-box ss-flex ss-flex-col ss-row-center ss-col-center"
-      :style="[
-        {
-          marginTop: '-' + Number(statusBarHeight + 88) + 'rpx',
-          paddingTop: Number(statusBarHeight + 88) + 'rpx',
-        },
-      ]"
+
     >
       <view class="header-bg">
         <view class="bg" />
       </view>
       <view class="score-box ss-flex-col ss-row-center ss-col-center">
-        <view class="ss-m-b-30">
+        <view class="ss-m-b-30"
+              :style="{
+        paddingTop: '30rpx',
+      }"
+        >
           <text class="all-title ss-m-r-8">当前积分</text>
         </view>
         <text class="all-num">{{ userInfo.point || 0 }}</text>
@@ -93,7 +92,6 @@
   import PointApi from '@/sheep/api/member/point';
   import { resetPagination } from '@/sheep/helper/utils';
 
-  const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
   const userInfo = computed(() => sheep.$store('user').userInfo);
   const sys_navBar = sheep.$platform.navbar;
 
