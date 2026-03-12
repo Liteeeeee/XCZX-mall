@@ -6,46 +6,19 @@
     tabbar="/pages/index/member" >
     <view class="page flex-col">
       <view class="block_1 flex-col">
-        <view class="block_2 flex-col">
+        <view class="block_2 flex-col" :style="{ backgroundImage: currentLevel.bgGradient }">
           <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
-          <!-- 等级卡片区域 -->
-          <view class="box_5 flex-col" style="background: none !important;">
-            <image
-              :src="sheep.$url.static(memberData.card_bg, 'local')"
-              mode="scaleToFill"
-              style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 0"
-            ></image>
-            <view style="position: relative; z-index: 1">
-              <view class="text-wrapper_1 flex-col">
-                <text class="text_3">当前等级</text>
-              </view>
-              <view class="text-group_1 flex-col">
-                <view style="width: 20rpx;"></view>
-                <text class="text_4">{{ userInfo.levelName || '普通会员' }}</text>
-                <view style="height: 14rpx;"></view>
-                <text class="text_5">健康省钱·专属服务一站式享</text>
-              </view>
-              <view style="margin-top: 40rpx !important;" class="group_5 flex-col"></view>
-              <view class="group_6 flex-row">
-                <text style="margin-left: 20rpx;" class="text_6">已有{{ userInfo.experience || 0 }}成长值</text>
-                <text class="text_7" @tap="sheep.$router.go('/pages/index/index')">升级会员 </text>
-              </view>
-              <view class="group_8 flex-col"></view>
-            </view>
-          </view>
+          
+          <!-- 会员卡片轮播区域 -->
+          <swiper class="member-swiper" @change="onSwiperChange" :current="state.currentLevelIndex">
+            <swiper-item v-for="(level, index) in memberLevels" :key="index">
+              <s-member-level-card :level="level" :userInfo="userInfo" />
+            </swiper-item>
+          </swiper>
+
           <view class="box_6 flex-col"></view>
         </view>
-        <!-- 权益区域 -->
-        <view class="block_14 flex-col">
-          <text class="text_8">已解锁3项权益</text>
-          <view class="section_5 flex-row justify-between">
-            <view class="rights-item flex-col align-center" v-for="(item, index) in rightsList" :key="index">
-              <image class="rights-icon" :src="sheep.$url.static(item.icon, 'local')" mode="aspectFit"></image>
-              <text class="rights-title">{{ item.title }}</text>
-              <text class="rights-desc">{{ item.desc }}</text>
-            </view>
-          </view>
-        </view>
+
         <!-- 优势对比区域 -->
         <view class="block_18 flex-col">
           <text class="text_11">会员优势</text>
@@ -70,18 +43,18 @@
           </view>
         </view>
         <!-- 升级操作区域 -->
-        <view class="block_27 flex-col">
+        <view class="block_27 flex-col" v-if="currentLevel.id !== 'normal'">
           <view class="box_19 flex-col">
-            <view class="box_20 flex-row justify-end">
+            <view class="box_20 ">
              <view> <text class="text_20">¥</text>
-              <text class="text_21">999</text></view>
+              <text class="text_21">{{ currentLevel.price }}</text></view>
               <view class="group_45">
                 <view class="box_21 flex-col">
                   <view class="block_28 flex-col">
                     <text class="text_22">会员费将全额存入余额哦～</text>
                   </view>
                 </view>
-                <text class="text_23">/永久黄金会员</text>
+                <text class="text_23">/{{ currentLevel.upgradeName }}</text>
               </view>
               <view class="text-wrapper_4 flex-col" @tap="sheep.$router.go('/pages/pay/recharge')">
                 <text class="text_24">升级会员</text>
@@ -114,6 +87,7 @@
   import { computed, reactive, onBeforeMount } from 'vue';
   import { onShow } from '@dcloudio/uni-app';
   import memberData from '@/sheep/data/member';
+  import sMemberLevelCard from '@/sheep/components/s-member-level-card/s-member-level-card.vue';
 
   onShow(() => {
     // 页面显示时再次强制隐藏原生 tabBar，确保自定义 tabbar 渲染
@@ -127,82 +101,125 @@
     uni.hideTabBar({
       fail: () => {},
     });
-    // 动态加载字体，确保在不同端生效
-    // 注意：微信小程序中加载本地字体文件有严格限制，推荐使用网络地址
-    // 加载金山云技术体
-  uni.loadFontFace({
-    family: 'Kingsoft_Cloud_Font',
-    // 尝试使用相对路径，uni-app 在编译时会自动处理
-    source: 'url("/static/font/Kingsoft_Cloud_Font.TTF")',
-    scopes: ['native', 'webview'],
-    success: () => {
-      console.log('Kingsoft_Cloud_Font loaded successfully');
-    },
-    fail: (err) => {
-      console.warn('First attempt failed, trying absolute path...', err);
-      // 如果相对路径失败，尝试使用带协议的路径（仅限开发环境且开启不校验域名）
-      uni.loadFontFace({
-        family: 'Kingsoft_Cloud_Font',
-        source: `url("https://file.sheepjs.com/static/font/Kingsoft_Cloud_Font.TTF")`,
-        success: () => console.log('Kingsoft_Cloud_Font loaded via CDN fallback'),
-        fail: (err2) => console.error('All font loading attempts failed:', err2)
-      });
-    }
-  });
+    // 动态加载字体
+    uni.loadFontFace({
+      family: 'Kingsoft_Cloud_Font',
+      source: 'url("/static/font/Kingsoft_Cloud_Font.TTF")',
+      scopes: ['native', 'webview'],
+      success: () => console.log('Kingsoft_Cloud_Font loaded'),
+      fail: (err) => {
+        uni.loadFontFace({
+          family: 'Kingsoft_Cloud_Font',
+          source: `url("https://file.sheepjs.com/static/font/Kingsoft_Cloud_Font.TTF")`,
+          success: () => console.log('Kingsoft_Cloud_Font loaded via CDN'),
+        });
+      }
+    });
   });
 
   const userInfo = computed(() => sheep.$store('user').userInfo);
   const isLogin = computed(() => sheep.$store('user').isLogin);
+  
   const state = reactive({
-    isAgreement: true
+    isAgreement: true,
+    currentLevelIndex: 0
   });
+
   // 获取装修模板，用于导航栏样式
   const template = computed(() => sheep.$store('app').template?.user || {});
 
+  // 会员等级配置数据
+  const memberLevels = [
+    {
+      id: 'normal',
+      name: '普通会员',
+      cardBg: memberData.card_bg,
+      price: 0,
+      upgradeName: '普通会员',
+      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(199, 218, 195, 0.8) 52.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
+      decoGradient: 'linear-gradient(90deg, #1E3F1C 0%, rgba(30, 63, 28, 0.45) 17.81%, rgba(30, 63, 28, 0.1) 50.53%, rgba(163, 160, 191, 0) 100%)',
+      badgeBg: 'rgba(30, 63, 28, 0.1)',
+      badgeColor: 'rgba(30, 63, 28, 1)',
+      mainColor: 'rgba(30, 63, 28, 1)',
+      rights: [
+        { icon: memberData.rights_2, title: '消费积分', desc: '购物返积分' },
+        { icon: memberData.rights_1, title: '99元包邮', desc: '免费送到家' },
+        { icon: memberData.rights_3, title: '会员关怀', desc: '专属铭牌' },
+      ]
+    },
+    {
+      id: 'golden',
+      name: '黄金会员',
+      cardBg: '/static/member/goldenCard.png',
+      price: 999,
+      upgradeName: '永久黄金会员',
+      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(255, 204, 162, 0.8) 52.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
+      decoGradient: 'linear-gradient( 90deg, #E6A058 0%, rgba(214,154,93,0.45) 17.81%, rgba(215,156,94,0.1) 50.53%, rgba(215,156,94,0) 100%)',
+      badgeBg: 'rgba(212,152,91,0.2)',
+      badgeColor: 'rgba(230, 160, 88, 1)',
+      mainColor: 'rgba(81, 59, 37, 1)',
+      rights: [
+        { icon: memberData.rights_2, title: '专属折扣', desc: '最高9.5折' },
+        { icon: memberData.rights_1, title: '包邮', desc: '免费送到家' },
+        { icon: memberData.rights_2, title: '消费积分', desc: '1.2倍返还' },
+        { icon: memberData.rights_3, title: '免费退换', desc: '免费退换货' },
+      ]
+    },
+    {
+      id: 'platinum',
+      name: '铂金会员',
+      cardBg: '/static/member/platinum.png',
+      price: 999,
+      upgradeName: '永久黄金会员',
+      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(170, 188, 226, 0.8) 52.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
+      decoGradient: 'linear-gradient( 90deg, #7799D1 0%, rgba(119,153,209,0.45) 17.81%, rgba(119,153,209,0.1) 50.53%, rgba(119,153,209,0) 100%)',
+      badgeBg: 'rgba(119, 153, 209, 0.24)',
+      badgeColor: 'rgba(33, 75, 98, 1)',
+      mainColor: 'rgba(33, 75, 98, 1)',
+      rights: [
+        { icon: memberData.rights_2, title: '专属折扣', desc: '最高9.0折' },
+        { icon: memberData.rights_1, title: '顺丰包邮', desc: '免费送到家' },
+        { icon: memberData.rights_2, title: '消费积分', desc: '1.5倍返还' },
+        { icon: memberData.rights_3, title: '免费退换', desc: '免费退换货' },
+        { icon: memberData.rights_3, title: '专属客服', desc: '一对一服务' },
+      ]
+    },
+    {
+      id: 'diamond',
+      name: '钻石会员',
+      cardBg: '/static/member/Dimond.png',
+      price: 999,
+      upgradeName: '永久黄金会员',
+      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(238, 187, 255, 0.8) 52.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
+      decoGradient: 'linear-gradient( 90deg, #7E63E9 0%, rgba(127,99,233,0.45) 17.81%, rgba(127,99,233,0.1) 50.53%, rgba(127,99,233,0) 100%)',
+      badgeBg: 'rgba(126, 97, 235, 0.24)',
+      badgeColor: 'rgba(112, 90, 198, 1)',
+      mainColor: 'rgba(42, 26, 100, 1)',
+      rights: [
+        { icon: memberData.rights_2, title: '专属折扣', desc: '最高8.5折' },
+        { icon: memberData.rights_1, title: '急速顺丰', desc: '全国包邮' },
+        { icon: memberData.rights_2, title: '消费积分', desc: '2.0倍返还' },
+        { icon: memberData.rights_3, title: '免费退换', desc: '闪电退款' },
+        { icon: memberData.rights_3, title: '专属客服', desc: '24小时在线' },
+        { icon: memberData.rights_1, title: '优先体验', desc: '新品试用' },
+      ]
+    }
+  ];
+
+  const currentLevel = computed(() => memberLevels[state.currentLevelIndex]);
+
+  const onSwiperChange = (e) => {
+    state.currentLevelIndex = e.detail.current;
+  };
+
   const advantageRows = [
-      { name: '最低8折专属折扣', normal: '-', upgrade: 'check' },
-      { name: '最高2倍积分返现', normal: '-', upgrade: 'check' },
-      { name: '健康咨询', normal: '-', upgrade: 'check' },
-      { name: '优先发货', normal: '-', upgrade: 'check' },
-      { name: '会员关怀', normal: '-', upgrade: 'check' },
-      { name: '节气祝福', normal: '-', upgrade: 'check' },
-    ];
-
-    const rightsList = [
-      {
-        icon: memberData.rights_2,
-        title: '消费积分',
-        desc: '购物返积分',
-      },
-      {
-        icon: memberData.rights_1,
-        title: '99元包邮',
-        desc: '免费送到家',
-      },
-      {
-        icon: memberData.rights_3,
-        title: '会员关怀',
-        desc: '专属铭牌',
-      },
-    ];
-
-  const loopData0 = reactive([
-    {
-      lanhutext0: '消费积分',
-      lanhufontColor0: 'rgba(61,61,60,1.000000)',
-      lanhutext1: '购物返积分',
-    },
-    {
-      lanhutext0: '99元包邮',
-      lanhufontColor0: 'rgba(29,33,41,1.000000)',
-      lanhutext1: '免费送到家',
-    },
-    {
-      lanhutext0: '会员关怀',
-      lanhufontColor0: 'rgba(29,33,41,1.000000)',
-      lanhutext1: '专属铭牌',
-    },
-  ]);
+    { name: '最低8折专属折扣', normal: '-', upgrade: 'check' },
+    { name: '最高2倍积分返现', normal: '-', upgrade: 'check' },
+    { name: '健康咨询', normal: '-', upgrade: 'check' },
+    { name: '优先发货', normal: '-', upgrade: 'check' },
+    { name: '会员关怀', normal: '-', upgrade: 'check' },
+    { name: '节气祝福', normal: '-', upgrade: 'check' },
+  ];
 </script>
 
 <style lang="scss">
@@ -210,410 +227,288 @@
 
   /* 适配 s-layout 和响应式优化 */
   .page {
-    width: 100% !important;
-    height: auto !important;
-    overflow: visible !important;
+    width: 100%  ;
+    height: auto  ;
+    overflow: visible  ;
   }
 
   .block_1 {
-    width: 100% !important;
-    height: auto !important;
+    width: 100%  ;
+    height: auto  ;
     min-height: 100vh;
-    background-color: #F8F9F3 !important;
+    background-color: #F8F9F3  ;
   }
 
   .block_2 {
-    width: 100% !important;
-    padding: 30rpx 30rpx 40rpx !important;
-    box-sizing: border-box !important;
-    position: relative !important;
+    width: 100%  ;
+    padding: 30rpx 30rpx 0  ;
+    box-sizing: border-box  ;
+    position: relative  ;
   }
 
-  /* 等级卡片 */
-  .box_5 {
-    position: relative !important;
-    left: auto !important;
-    top: auto !important;
-    width: 100% !important;
-    height: 396rpx !important;
-    margin: 0 auto !important;
-    padding-top: 55rpx  !important;
-    box-sizing: border-box !important;
-    background: none !important;
-    border-radius: 20rpx !important;
-    overflow: hidden !important;
-  }
-
-  .text-wrapper_1 {
-    width: 98rpx !important;
-    height: 30rpx !important;
-    background: rgba(30, 63, 28, 0.2) !important;
-    border-radius: 15rpx 0 15rpx 0 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin-right: 0 !important;
-    padding: 0 !important;
-  }
-
-  .text_3 {
-    font-size: 20rpx !important;
-    color: #1E3F1C !important;
-    line-height: 26rpx !important;
-  }
-
-  .text-group_1 {
-    margin: 20rpx 20rpx 0 !important;
-  }
-
-  .text_4 {
-    width: 216rpx !important;
-    height: 85rpx !important;
-    font-family: Kingsoft_Cloud_Font !important;
-    font-size: 60rpx !important;
-    color: #1E3F1C !important;
-    line-height: 84rpx !important;
-    text-align: left !important;
-    font-style: normal !important;
-    text-transform: none !important;
-  }
-
-  .group_5 {
-    width: 590rpx !important;
-    height: 8rpx !important;
-    border-radius: 4rpx !important;
-    background: linear-gradient(90deg, #1E3F1C 0%, rgba(30, 63, 28, 0.45) 17.81%, rgba(30, 63, 28, 0.1) 50.53%, rgba(163, 160, 191, 0) 100%) !important;
-    margin: 20rpx 0 0 20rpx !important;
-  }
-
-  .group_6 {
-    margin: 20rpx 20rpx 0 0 !important;
-    width: 100% !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-  }
-
-  .text_7 {
-    margin-left: 0 !important;
+  .member-swiper {
+    width: 100%  ;
+    height: 720rpx  ; // 396 (card) + (approx 324 for rights area content)
+    margin-top: 20rpx  ;
   }
 
   /* 装饰背景图 - 隐藏或调整 */
   .group_8 {
-    display: none !important;
+    display: none  ;
   }
 
   .box_6 {
-    display: none !important;
-  }
-
-  /* 权益区域 */
-  .block_14 {
-    width: 100% !important;
-    padding: 80rpx 30rpx 40rpx !important; /* 增加顶部 padding 以避开弧度区域 */
-    box-sizing: border-box !important;
-    border: none !important;
-    margin-top: -90rpx !important; /* 向上移动覆盖等级卡片底部 */
-    background: radial-gradient(circle at 50% -4450rpx, transparent 4485rpx, rgba(248, 249, 243, 1) 400.5rpx) !important;
-    position: relative !important;
-    z-index: 1 !important;
-  }
-
-  .text_8 {
-    margin: 0 0 30rpx !important;
-  }
-
-  .section_5 {
-    width: 100% !important;
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: flex-start !important; /* 改为左对齐 */
-    margin-top: 20rpx !important;
-    overflow-x: auto !important; /* 允许横向滚动 */
-    overflow-y: hidden !important; /* 强制禁止垂直滚动 */
-    -webkit-overflow-scrolling: touch !important; /* 平滑滚动 */
-  }
-
-  .rights-item {
-    flex: none !important; /* 移除 flex: 1 */
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    margin-right: 60rpx !important; /* 固定右间距 60rpx */
-
-    &:last-child {
-      margin-right: 0 !important;
-    }
-  }
-
-  .rights-icon {
-    width: 80rpx !important;
-    height: 80rpx !important;
-    margin-bottom: 16rpx !important;
-  }
-
-  .rights-title {
-    font-size: 26rpx !important;
-    color: rgba(29, 33, 41, 1) !important;
-    font-weight: 600 !important;
-    line-height: 24rpx !important;
-    margin-bottom: 8rpx !important;
-  }
-
-  .rights-desc {
-    font-size: 24rpx !important;
-    color: rgba(134, 144, 156, 1) !important;
-    line-height: 24rpx !important;
-    text-align: center !important;
+    display: none  ;
   }
 
   .list_1 {
-    display: none !important;
+    display: none  ;
   }
 
   .text-wrapper_2 {
-    flex: 1 !important;
-    align-items: center !important;
+    flex: 1  ;
+    align-items: center  ;
   }
 
   /* 优势对比区域 */
   .block_18 {
-    width: calc(100% - 40rpx) !important;
-    margin: 20rpx !important;
-    padding: 40rpx 30rpx !important;
-    box-sizing: border-box !important;
-    align-self: auto !important;
+    width: calc(100% - 40rpx)  ;
+    margin: 20rpx  ;
+    padding: 40rpx 30rpx  ;
+    box-sizing: border-box  ;
+    align-self: auto  ;
     background-color: rgba(255, 254, 250, 1);
-    border-radius: 20rpx !important;
+    border-radius: 20rpx  ;
   }
 
   .text_11 {
-    margin: 0 0 30rpx !important;
+    margin: 0 0 30rpx  ;
   }
 
   .group_14 {
-    width: 100% !important;
-    padding-left: 0 !important;
-    background-color: transparent !important;
-    margin-top: 20rpx !important;
+    width: 100%  ;
+    padding-left: 0  ;
+    background-color: transparent  ;
+    margin-top: 20rpx  ;
   }
 
   /* 优势对比区域重构 */
   .text_4 {
-    width: 216rpx !important;
-    height: 85rpx !important;
-    font-family: Kingsoft_Cloud_Font !important;
-    font-size: 60rpx !important;
-    color: #1E3F1C !important;
-    line-height: 84rpx !important;
-    text-align: left !important;
-    font-style: normal !important;
-    text-transform: none !important;
+    width: 216rpx  ;
+    height: 85rpx  ;
+    font-family: Kingsoft_Cloud_Font ;
+    font-size: 60rpx  ;
+    color: #1E3F1C ;
+    line-height: 84rpx  ;
+    text-align: left  ;
+    font-style: normal  ;
+    text-transform: none  ;
   }
 
   .advantage-container {
-    width: 643rpx !important;
-    height: 536rpx !important;
-    background: #F8F9F3 !important;
-    border-radius: 22rpx !important;
-    margin: 30rpx auto !important;
-    display: flex !important;
-    flex-direction: column !important;
-    overflow: hidden !important;
+    width: 643rpx  ;
+    height: 536rpx  ;
+    background: #F8F9F3  ;
+    border-radius: 22rpx  ;
+    margin: 30rpx auto  ;
+    display: flex  ;
+    flex-direction: column  ;
+    overflow: hidden  ;
   }
 
   .advantage-row {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: stretch !important;
+    flex: 1  ;
+    display: flex  ;
+    flex-direction: row  ;
+    align-items: stretch  ;
     /* 加深边框颜色，确保在高亮背景下也清晰可见 */
-    border-bottom: 1rpx solid rgba(30, 63, 28, 0.1) !important;
-    padding: 0 !important;
+    border-bottom: 1rpx solid rgba(30, 63, 28, 0.1)  ;
+    padding: 0  ;
 
     &:last-child {
-      border-bottom: none !important;
+      border-bottom: none  ;
     }
 
     .col-name {
-      flex: 1.5 !important;
-      font-size: 26rpx !important;
-      color: #3D3D3C !important;
-      text-align: left !important;
-      padding-left: 30rpx !important;
-      display: flex !important;
-      align-items: center !important;
+      flex: 1.5  ;
+      font-size: 26rpx  ;
+      color: #3D3D3C  ;
+      text-align: left  ;
+      padding-left: 30rpx  ;
+      display: flex  ;
+      align-items: center  ;
     }
 
     .col-value {
-      flex: 1 !important;
-      font-size: 26rpx !important;
+      flex: 1  ;
+      font-size: 26rpx  ;
       color: rgba(213, 213, 213, 1);
-      text-align: center !important;
-      display: flex !important;
-      justify-content: center !important;
-      align-items: center !important;
+      text-align: center  ;
+      display: flex  ;
+      justify-content: center  ;
+      align-items: center  ;
 
       &.highlight {
-        color: #1E3F1C !important;
-        font-weight: bold !important;
-        background-color: rgba(255, 255, 250, 0.5) !important;
-        padding-right: 30rpx !important;
+        color: #1E3F1C  ;
+        font-weight: bold  ;
+        background-color: rgba(255, 255, 250, 0.5)  ;
+        padding-right: 30rpx  ;
       }
     }
 
     .advantage-icon {
-      width: 35rpx !important;
-      height: 35rpx !important;
+      width: 35rpx  ;
+      height: 35rpx  ;
     }
 
     &.header {
-      border-bottom: none !important;
+      border-bottom: none  ;
       .col-value {
         color: rgba(213, 213, 213, 1);
-        font-weight: bold !important;
+        font-weight: bold  ;
       }
     }
   }
 
   .icon-check {
-    color: #1E3F1C !important;
-    font-weight: bold !important;
+    color: #1E3F1C  ;
+    font-weight: bold  ;
   }
 
   .text-wrapper_3 {
-    display: none !important;
+    display: none  ;
   }
 
   /* 升级操作区域 */
   .block_27 {
-    width: 100% !important;
-    padding: 20rpx 0 0 !important;
+    width: 100%  ;
+    padding: 20rpx 0 0  ;
   }
 
   /* 升级会员操作栏相关样式 */
   .box_19 {
-    width: 100% !important;
-    height: auto !important;
-    padding: 30rpx !important;
-    box-sizing: border-box !important;
-    position: fixed !important;
-    bottom: calc(94rpx + env(safe-area-inset-bottom)) !important;
-    left: 0 !important;
-    background: #fff !important;
-    border-radius: 20rpx 20rpx 0 0 !important;
-    z-index: 99 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
+    width: 100%  ;
+    height: auto  ;
+    padding: 30rpx  ;
+    box-sizing: border-box  ;
+    position: fixed  ;
+    bottom: calc(94rpx + env(safe-area-inset-bottom))  ;
+    left: 0  ;
+    background: #fff  ;
+    border-radius: 20rpx 20rpx 0 0  ;
+    z-index: 99  ;
+    display: flex  ;
+    flex-direction: column  ;
+    align-items: center  ;
   }
 
   .box_20 {
-    width: 100% !important;
-    padding-left: 20rpx !important;
-    box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: center !important;
+    width: 100%  ;
+    padding-left: 20rpx  ;
+    box-sizing: border-box  ;
+    display: flex  ;
+    flex-direction: row  ;
+    justify-content: space-between  ;
+    align-items: center  ;
   }
 
   .agreement-checkbox-wrapper {
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    margin-right: 12rpx !important;
+    display: flex  ;
+    align-items: center  ;
+    justify-content: center  ;
+    margin-right: 12rpx  ;
   }
 
   .agreement-checkbox {
-    width: 28rpx !important;
-    height: 28rpx !important;
-    border: 2rpx solid #333 !important;
-    border-radius: 50% !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-sizing: border-box !important;
-    transition: all 0.2s !important;
+    width: 28rpx  ;
+    height: 28rpx  ;
+    border: 2rpx solid #333  ;
+    border-radius: 50%  ;
+    display: flex  ;
+    align-items: center  ;
+    justify-content: center  ;
+    box-sizing: border-box  ;
+    transition: all 0.2s  ;
 
     &.is-checked {
-      background-color: #000 !important;
-      border-color: #000 !important;
+      background-color: #000  ;
+      border-color: #000  ;
     }
   }
 
   .icon-checkmark {
-    color: #fff !important;
-    font-size: 18rpx !important;
-    font-weight: bold !important;
-    line-height: 1 !important;
+    color: #fff  ;
+    font-size: 18rpx  ;
+    font-weight: bold  ;
+    line-height: 1  ;
   }
 
   .box_23 {
-    width: 100% !important;
-    position: relative !important;
-    margin-top: 20rpx !important;
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: center !important;
-    align-items: center !important;
+    width: 100%  ;
+    position: relative  ;
+    margin-top: 20rpx  ;
+    display: flex  ;
+    flex-direction: row  ;
+    justify-content: center  ;
+    align-items: center  ;
   }
 
   .text-wrapper_5 {
-    width: auto !important;
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
+    width: auto  ;
+    display: flex  ;
+    flex-direction: row  ;
+    align-items: center  ;
   }
 
   .block_28 {
-    background: rgba(240, 92, 54, 1) !important;
-    border-radius: 12rpx !important;
-    padding: 10rpx 20rpx !important;
-    position: relative !important;
-    margin-bottom: 20rpx !important;
-    width: fit-content !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
+    background: rgba(240, 92, 54, 1)  ;
+    border-radius: 12rpx  ;
+    padding: 10rpx 20rpx  ;
+    position: relative  ;
+    margin-bottom: 20rpx  ;
+    width: fit-content  ;
+    display: flex  ;
+    align-items: center  ;
+    justify-content: center  ;
 
     /* 会话气泡的小尖尖 (左下方) */
     &::after {
-      content: '' !important;
-      position: absolute !important;
-      bottom: -12rpx !important;
-      left: 30rpx !important;
-      width: 0 !important;
-      height: 0 !important;
-      border-left: 12rpx solid transparent !important;
-      border-right: 12rpx solid transparent !important;
-      border-top: 14rpx solid rgba(240, 92, 54, 1) !important;
+      content: ''  ;
+      position: absolute  ;
+      bottom: -12rpx  ;
+      left: 30rpx  ;
+      width: 0  ;
+      height: 0  ;
+      border-left: 12rpx solid transparent  ;
+      border-right: 12rpx solid transparent  ;
+      border-top: 14rpx solid rgba(240, 92, 54, 1)  ;
       /* 稍微倾斜一点让它更像气泡 */
-      transform: skewX(-20deg) !important;
+      transform: skewX(-20deg)  ;
     }
   }
 
   .text_21 {
-    font-family: "PingFang SC" !important;
-    font-weight: 600 !important;
-    font-size: 62rpx !important;
-    line-height: 87rpx !important;
+    font-family: "PingFang SC"  ;
+    font-weight: 600  ;
+    font-size: 62rpx  ;
+    line-height: 87rpx  ;
   }
 
   .text_22 {
-    color: #FFFFFF !important;
-    font-size: 20rpx !important;
-    line-height: 28rpx !important;
-    white-space: nowrap !important;
+    color: #FFFFFF  ;
+    font-size: 20rpx  ;
+    line-height: 28rpx  ;
+    white-space: nowrap  ;
   }
 
   /* 隐藏原有的装饰盒子 */
   .box_22 {
-    display: none !important;
+    display: none  ;
   }
 
   /* 隐藏对比图中的绝对定位线条 */
   .group_40, .group_41, .group_42, .group_43, .group_44 {
-    display: none !important;
+    display: none  ;
   }
 
   /* 基础布局辅助 */
