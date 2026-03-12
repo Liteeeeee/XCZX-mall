@@ -225,6 +225,7 @@
       sheep.$platform.share.updateShareInfo(shareInfo.value);
     }
   })
+  onMounted(() => {});
 </script>
 
 <style lang="scss" scoped>

@@ -3,7 +3,7 @@
   <s-layout title="充值" class="withdraw-wrap" navbar="normal">
     <view
       class="wallet-num-box ss-flex ss-col-center ss-row-between"
-      
+      :style="{ paddingTop: '30rpx' }"
     >
       <view class="">
         <view class="num-title">当前余额（元）</view>

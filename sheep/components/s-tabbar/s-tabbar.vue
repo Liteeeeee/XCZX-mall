@@ -1,5 +1,5 @@
 <template>
-  <view class="u-page__item" v-if="tabbar?.items?.length > 0">
+  <view class="u-page__item" v-if="tabbar?.items?.length > 0" style="position: relative; z-index: 9999;">
     <su-tabbar
       :value="path"
       :fixed="true"
@@ -39,11 +39,30 @@
   import SuTabbar from '@/sheep/ui/su-tabbar/su-tabbar.vue';
 
   const tabbar = computed(() => {
-    return sheep.$store('app').template.basic?.tabbar;
+    const appStore = sheep.$store('app');
+    const tabbarData = appStore.template.basic?.tabbar;
+    console.log('[s-tabbar] raw data from store:', tabbarData);
+    
+    if (tabbarData && tabbarData.items && tabbarData.items.length > 0) {
+      return tabbarData;
+    }
+    
+    console.log('[s-tabbar] items is empty, using hardcoded fallback');
+    // 返回一个默认值作为最后一道防线
+    return {
+      items: [
+        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.png', activeIconUrl: '/static/tabbar/home_active.png' },
+        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.png', activeIconUrl: '/static/tabbar/member_active.png' },
+        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.png', activeIconUrl: '/static/tabbar/cart_active.png' },
+        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.png', activeIconUrl: '/static/tabbar/user_active.png' }
+      ],
+      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#fff' }
+    };
   });
 
   const tabbarStyle = computed(() => {
-    const backgroundStyle = tabbar.value.style;
+    const backgroundStyle = tabbar.value?.style;
+    if (!backgroundStyle) return {};
     if (backgroundStyle.bgType === 'color') {
       return { background: backgroundStyle.bgColor };
     }
@@ -53,18 +72,21 @@
           backgroundStyle.bgImg,
         )}) no-repeat top center / 100% auto`,
       };
+    return {};
   });
 
   const getTabbarCenter = (index) => {
-    if (unref(tabbar).mode !== 2) return false;
-    return unref(tabbar).items % 2 > 0
+    if (!unref(tabbar) || !unref(tabbar).items) return false;
+    return unref(tabbar).items.length % 2 > 0
       ? Math.ceil(unref(tabbar).items.length / 2) === index + 1
       : false;
   };
 
   const props = defineProps({
-    path: String,
-    default: '',
+    path: {
+      type: String,
+      default: '',
+    },
   });
 </script>
 

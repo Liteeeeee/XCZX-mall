@@ -35,46 +35,61 @@
       </view>
       <!-- 内容 -->
       <view class="cart-content ss-flex-1 ss-p-x-30 ss-m-b-40">
-        <view v-for="item in state.list" :key="item.id" class="goods-box ss-r-10 ss-m-b-14">
-          <view class="ss-flex ss-col-center">
-            <label class="check-box ss-flex ss-col-center ss-p-l-10" @tap="onSelectSingle(item.id)">
-              <radio
-                :checked="state.selectedIds.includes(item.id)"
-                color="var(--ui-BG-Main)"
-                style="transform: scale(0.8)"
-                @tap.stop="onSelectSingle(item.id)"
-              />
-            </label>
-            <view v-if="item.spu?.status !== 1 && !state.editMode" class="down-box">
-              该商品已下架
-            </view>
-            <view v-else-if="item.spu?.stock <= 0 && !state.editMode" class="down-box">
-              该商品无库存
-            </view>
-            <s-goods-item
-              :img="item.spu.picUrl || item.goods.image"
-              :price="item.sku.price"
-              :skuText="
-                item.sku.properties.length > 1
-                  ? item.sku.properties.reduce(
-                      (items2, items) => items2.valueName + ' ' + items.valueName,
-                    )
-                  : item.sku.properties[0].valueName
-              "
-              :title="item.spu.name"
-              :titleWidth="400"
-              priceColor="#FF3000"
+        <view v-for="item in state.list" :key="item.id" class="swipe-item-container ss-m-b-14">
+          <view class="swipe-action">
+            <view
+              class="delete-btn ss-flex ss-row-center ss-col-center"
+              @tap="onDeleteSingle(item.id)"
             >
-              <template v-if="!state.editMode" v-slot:tool>
-                <su-number-box
-                  v-model="item.count"
-                  :max="item.sku.stock"
-                  :min="0"
-                  :step="1"
-                  @change="onNumberChange($event, item)"
+              删除
+            </view>
+          </view>
+          <view
+            class="goods-box ss-r-10"
+            :class="{ 'swipe-active': !state.editMode && state.activeId === item.id }"
+            @touchstart="!state.editMode && onTouchStart($event, item.id)"
+            @touchend="!state.editMode && onTouchEnd($event, item.id)"
+          >
+            <view class="ss-flex ss-col-center">
+              <label class="check-box ss-flex ss-col-center ss-p-l-10" @tap="onSelectSingle(item.id)">
+                <radio
+                  :checked="state.selectedIds.includes(item.id)"
+                  color="var(--ui-BG-Main)"
+                  style="transform: scale(0.8)"
+                  @tap.stop="onSelectSingle(item.id)"
                 />
-              </template>
-            </s-goods-item>
+              </label>
+              <view v-if="item.spu?.status !== 1 && !state.editMode" class="down-box">
+                该商品已下架
+              </view>
+              <view v-else-if="item.spu?.stock <= 0 && !state.editMode" class="down-box">
+                该商品无库存
+              </view>
+              <s-goods-item
+                :img="item.spu.picUrl || item.goods.image"
+                :price="item.sku.price"
+                :skuText="
+                  item.sku.properties.length > 1
+                    ? item.sku.properties.reduce(
+                        (items2, items) => items2.valueName + ' ' + items.valueName,
+                      )
+                    : item.sku.properties[0].valueName
+                "
+                :title="item.spu.name"
+                :titleWidth="400"
+                priceColor="#FF3000"
+              >
+                <template v-if="!state.editMode" v-slot:tool>
+                  <su-number-box
+                    v-model="item.count"
+                    :max="item.sku.stock"
+                    :min="0"
+                    :step="1"
+                    @change="onNumberChange($event, item)"
+                  />
+                </template>
+              </s-goods-item>
+            </view>
           </view>
         </view>
       </view>
@@ -153,7 +168,40 @@
     selectedIds: computed(() => cart.selectedIds),
     isAllSelected: computed(() => cart.isAllSelected),
     totalPriceSelected: computed(() => cart.totalPriceSelected),
+    activeId: 0,
+    startX: 0,
   });
+
+  // 滑动开始
+  function onTouchStart(e, id) {
+    state.startX = e.touches[0].pageX;
+  }
+
+  // 滑动结束
+  function onTouchEnd(e, id) {
+    const endX = e.changedTouches[0].pageX;
+    const deltaX = endX - state.startX;
+    if (deltaX < -50) {
+      state.activeId = id;
+    }
+    if (deltaX > 50) {
+      state.activeId = 0;
+    }
+  }
+
+  // 单个删除
+  function onDeleteSingle(id) {
+    uni.showModal({
+      title: '提示',
+      content: '确定要从购物车删除该商品吗？',
+      success: async function (res) {
+        if (res.confirm) {
+          await cart.delete(id);
+          state.activeId = 0;
+        }
+      },
+    });
+  }
 
   // 单选选中
   function onSelectSingle(id) {
@@ -162,6 +210,7 @@
 
   // 编辑、取消
   function onChangeEditMode(flag) {
+    state.activeId = 0;
     cart.onChangeEditMode(flag);
   }
 
@@ -312,9 +361,37 @@
     .cart-content {
       margin-top: 70rpx;
 
+      .swipe-item-container {
+        position: relative;
+        overflow: hidden;
+      }
+
+      .swipe-action {
+        position: absolute;
+        right: 0;
+        top: 0;
+        width: 120rpx;
+        height: 100%;
+        z-index: 1;
+
+        .delete-btn {
+          width: 120rpx;
+          height: 100%;
+          background-color: #ff4d4f;
+          color: #fff;
+          font-size: 24rpx;
+        }
+      }
+
       .goods-box {
         background-color: #fff;
         position: relative;
+        z-index: 2;
+        transition: transform 0.3s ease;
+
+        &.swipe-active {
+          transform: translateX(-120rpx);
+        }
       }
       // 下架商品
       .down-box {

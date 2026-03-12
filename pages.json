@@ -82,6 +82,18 @@
 				"title": "自定义页面",
 				"group": "商城"
 			}
+		},
+		{
+			"path": "pages/index/member",
+			"style": {
+				"navigationBarTitleText": "会员中心"
+			},
+			"meta": {
+				"auth": true,
+				"sync": true,
+				"title": "会员中心",
+				"group": "用户中心"
+			}
 		}
 	],
 	"subPackages": [{
@@ -689,8 +701,8 @@
 		"list": [{
 				"pagePath": "pages/index/index"
 			},
-            {
-				"pagePath": "pages/index/category"
+			{
+				"pagePath": "pages/index/member"
             },
 			{
 				"pagePath": "pages/index/cart"

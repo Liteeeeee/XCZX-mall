@@ -34,7 +34,17 @@ const app = defineStore({
     },
     template: {
       // 店铺装修模板
-      basic: {}, // 基本信息
+      basic: {
+        tabbar: {
+          items: [
+            { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.png', activeIconUrl: '/static/tabbar/home_active.png' },
+            { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.png', activeIconUrl: '/static/tabbar/member_active.png' },
+            { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.png', activeIconUrl: '/static/tabbar/cart_active.png' },
+            { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.png', activeIconUrl: '/static/tabbar/user_active.png' }
+          ],
+          style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#fff' }
+        },
+      }, // 基本信息
       home: {
         // 首页模板
         style: {},
@@ -197,6 +207,15 @@ const adaptTemplate = async (appTemplate, templateId) => {
   if (!diyTemplate) {
     console.error('Template not found or error occurred. Using default empty template to prevent redirect.');
     // 提供基础兜底数据，防止首页白屏
+    appTemplate.basic.tabbar = {
+      items: [
+        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.png', activeIconUrl: '/static/tabbar/home_active.png' },
+        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.png', activeIconUrl: '/static/tabbar/member_active.png' },
+        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.png', activeIconUrl: '/static/tabbar/cart_active.png' },
+        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.png', activeIconUrl: '/static/tabbar/user_active.png' }
+      ],
+      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#fff' }
+    };
     appTemplate.home = {
        style: { bgType: 'color', bgColor: '#fff' },
        data: [],
@@ -220,19 +239,24 @@ const adaptTemplate = async (appTemplate, templateId) => {
   }
 
   const tabBar = diyTemplate?.property?.tabBar;
-  if (tabBar) {
+  if (tabBar && tabBar.items && tabBar.items.length > 0) {
     appTemplate.basic.tabbar = tabBar;
-    // TODO 商城装修没有对 tabBar 进行角标配置，测试角标需打开以下注释
-    // appTemplate.basic.tabbar.items.forEach((tabBar) => {
-    //   tabBar.dot = false
-    //   tabBar.badge = 100
-    // })
-    // appTemplate.basic.tabbar.badgeStyle = {
-    //   backgroundColor: '#882222',
-    // }
-    if (tabBar?.theme) {
-      appTemplate.basic.theme = tabBar?.theme;
+    // 强制修改第二个 tabbar 项为会员中心
+    if (appTemplate.basic.tabbar.items && appTemplate.basic.tabbar.items.length >= 2) {
+      appTemplate.basic.tabbar.items[1].text = '会员';
+      appTemplate.basic.tabbar.items[1].url = '/pages/index/member';
     }
+  } else {
+    // 如果装修模板中没有配置 Tabbar，使用默认数据
+    appTemplate.basic.tabbar = {
+      items: [
+        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.png', activeIconUrl: '/static/tabbar/home_active.png' },
+        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.png', activeIconUrl: '/static/tabbar/member_active.png' },
+        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.png', activeIconUrl: '/static/tabbar/cart_active.png' },
+        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.png', activeIconUrl: '/static/tabbar/user_active.png' }
+      ],
+      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#fff' }
+    };
   }
   appTemplate.home = diyTemplate?.home;
   appTemplate.user = diyTemplate?.user;
