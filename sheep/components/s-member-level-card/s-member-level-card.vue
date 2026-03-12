@@ -33,16 +33,7 @@
     </view>
 
     <!-- 权益区域 -->
-    <view class="block_14 flex-col">
-      <text class="text_8">{{ isCurrent ? '已解锁' : '待解锁' }}{{ level.rights.length }}项权益</text>
-      <view class="section_5 flex-row">
-        <view class="rights-item flex-col align-center" v-for="(item, index) in level.rights" :key="index">
-          <image class="rights-icon" :src="sheep.$url.static(item.icon, 'local')" mode="aspectFit"></image>
-          <text class="rights-title">{{ item.title }}</text>
-          <text class="rights-desc">{{ item.desc }}</text>
-        </view>
-      </view>
-    </view>
+  
   </view>
 </template>
 

@@ -10,13 +10,23 @@
           <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
           
           <!-- 会员卡片轮播区域 -->
-          <swiper class="member-swiper" @change="onSwiperChange" :current="state.currentLevelIndex">
+          <swiper class="member-swiper" 
+            @change="onSwiperChange" 
+            :current="state.currentLevelIndex"
+            circular
+            previous-margin="40rpx"
+            next-margin="40rpx"
+          >
             <swiper-item v-for="(level, index) in memberLevels" :key="index">
-              <s-member-level-card :level="level" :userInfo="userInfo" />
+              <view class="swiper-item-inner" :class="{ 'active': state.currentLevelIndex === index }">
+                <s-member-level-card :level="level" :userInfo="userInfo" />
+              </view>
             </swiper-item>
           </swiper>
 
-          <view class="box_6 flex-col"></view>
+          <!-- 静态权益展示区域 -->
+          <s-member-level-rights :level="currentLevel" :userInfo="userInfo" />
+
         </view>
 
         <!-- 优势对比区域 -->
@@ -60,7 +70,7 @@
                 <text class="text_24">升级会员</text>
               </view>
             </view>
-            <view class="box_23 flex-row justify-between">
+            <view class="box_23 flex-row">
               <view class="agreement-checkbox-wrapper" @tap="state.isAgreement = !state.isAgreement">
                 <view class="agreement-checkbox" :class="{ 'is-checked': state.isAgreement }">
                   <text class="icon-checkmark" v-if="state.isAgreement">✓</text>
@@ -88,6 +98,7 @@
   import { onShow } from '@dcloudio/uni-app';
   import memberData from '@/sheep/data/member';
   import sMemberLevelCard from '@/sheep/components/s-member-level-card/s-member-level-card.vue';
+  import sMemberLevelRights from '@/sheep/components/s-member-level-card/s-member-level-rights.vue';
 
   onShow(() => {
     // 页面显示时再次强制隐藏原生 tabBar，确保自定义 tabbar 渲染
@@ -241,15 +252,33 @@
 
   .block_2 {
     width: 100%  ;
-    padding: 30rpx 30rpx 0  ;
+    padding: 30rpx 0 0  ; // 强制清除左右内边距，确保 swiper 贴边
     box-sizing: border-box  ;
     position: relative  ;
   }
 
   .member-swiper {
-    width: 100%  ;
-    height: 720rpx  ; // 396 (card) + (approx 324 for rights area content)
-    margin-top: 20rpx  ;
+    width: 100% !important;
+    height: 480rpx !important;
+    margin:  0 0 !important; // 确保没有水平外边距
+  }
+
+  .swiper-item-inner {
+    width: 100%;
+    height: 100%;
+    transform: scale(0.9);
+    transition: all 0.4s ease;
+    opacity: 0.5;
+    display: flex;
+    justify-content: center;
+    box-sizing: border-box;
+    padding: 0 10rpx; // 减小非活动项的间距，让侧边预览更靠近主卡片
+  }
+
+  .swiper-item-inner.active {
+    transform: scale(1.0);
+    opacity: 1;
+    padding: 0; 
   }
 
   /* 装饰背景图 - 隐藏或调整 */
@@ -257,9 +286,6 @@
     display: none  ;
   }
 
-  .box_6 {
-    display: none  ;
-  }
 
   .list_1 {
     display: none  ;
@@ -392,7 +418,7 @@
     padding: 30rpx  ;
     box-sizing: border-box  ;
     position: fixed  ;
-    bottom: calc(94rpx + env(safe-area-inset-bottom))  ;
+    bottom: calc(69rpx + env(safe-area-inset-bottom))  ;
     left: 0  ;
     background: #fff  ;
     border-radius: 20rpx 20rpx 0 0  ;

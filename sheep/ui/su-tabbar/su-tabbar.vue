@@ -203,7 +203,6 @@
       display: flex;
       flex-direction: column;
       background-color: #fff;
-      box-shadow: 0px -2px 4px 0px rgba(51, 51, 51, 0.06);
 
       &__item-wrapper {
         height: 50px;
