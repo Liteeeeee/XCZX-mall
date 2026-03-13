@@ -203,6 +203,7 @@
       display: flex;
       flex-direction: column;
       background-color: #fff;
+      padding-top: 10rpx;
 
       &__item-wrapper {
         height: 50px;

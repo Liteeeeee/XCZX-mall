@@ -151,7 +151,7 @@
               </view>
             </view>
             <view class="promo-pill ss-flex ss-col-center" v-if="state.totalPriceSelected > 0">
-              <text class="promo-text">优惠明细¥36.2</text>
+              <text class="promo-text">共减¥36.2</text>
               <text class="cicon-forward ss-m-l-4"></text>
             </view>
           </view>
