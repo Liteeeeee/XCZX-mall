@@ -21,7 +21,14 @@
     </view>
 
     <!-- 上半部分：用户卡片 (UserCardPro) -->
-    <view class="user-top-bg">
+    <view
+      class="user-top-bg"
+      :style="[
+        {
+          background: `url(${sheep.$url.static('/static/user/userBg.png')}) no-repeat top center / 100% auto`,
+        },
+      ]"
+    >
       <view v-for="(item, index) in userCardList" :key="'top-' + index">
         <s-block :styles="item.property.style || {}">
           <s-block-item :type="item.id" :data="item.property" :styles="item.property.style || {}" />
@@ -100,7 +107,6 @@
 <style lang="scss" scoped>
   .user-top-bg {
     width: 100%;
-    background: url('/static/user/userBg.png') no-repeat top center / 100% auto;
   }
 
   .user-bottom-content {

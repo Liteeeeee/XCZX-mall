@@ -222,7 +222,7 @@
       mainColor: 'rgba(33, 75, 98, 1)',
       rights: [
         { icon: memberData.rights_4, title: '专属折扣', desc: '最高9折' },
-        { icon: memberData.rights_1, title: '顺丰包邮', desc: '免费送到家' },
+        { icon: memberData.rights_1, title: '包邮', desc: '免费送到家' },
         { icon: memberData.rights_2, title: '消费积分', desc: '1.5倍返还' },
         { icon: memberData.rights_3, title: '免费退换', desc: '免费退换货' },
       ],

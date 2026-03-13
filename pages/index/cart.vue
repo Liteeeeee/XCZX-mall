@@ -83,39 +83,28 @@
               <view v-if="item.spu?.status !== 1 && !state.editMode" class="down-box">
                 该商品已下架
               </view>
-              <view v-else-if="item.spu?.stock <= 0 && !state.editMode" class="down-box">
+              <view v-else-if="(item.sku?.stock <= 0 || item.spu?.stock <= 0) && !state.editMode" class="down-box">
                 该商品无库存
               </view>
               <s-goods-item
-                :img="item.spu.picUrl || item.goods.image"
-                :price="item.sku.price"
-                :title="item.spu.name"
+                :img="item.spu?.picUrl || item.goods?.image"
+                :price="item.sku?.price || 0"
+                :title="item.spu?.name"
+                :skuText="
+                  item.sku?.properties?.map((p) => p.valueName).join(' ') ||
+                  item.properties?.map((p) => p.valueName).join(' ') ||
+                  ''
+                "
                 :titleWidth="400"
                 priceColor="#FF3000"
               >
-                <template v-slot:groupon>
-                  <view class="ss-flex ss-col-center ss-m-t-8 ss-m-b-12">
-                    <view class="spec-btn ss-flex ss-col-center">
-                      <text class="spec-text">
-                        已选：{{
-                          item.sku.properties.length > 1
-                            ? item.sku.properties.reduce(
-                                (items2, items) => items2.valueName + ' ' + items.valueName,
-                              )
-                            : item.sku.properties[0].valueName
-                        }}
-                      </text>
-                      <text class="cicon-unfold ss-m-l-10"></text>
-                    </view>
-                  </view>
-                </template>
                 <template v-slot:priceSuffix>
                   <text class="price-unit">/盒</text>
                 </template>
                 <template v-if="!state.editMode" v-slot:tool>
                   <su-number-box
                     v-model="item.count"
-                    :max="item.sku.stock"
+                    :max="item.sku?.stock || 0"
                     :min="0"
                     :step="1"
                     @change="onNumberChange($event, item)"
@@ -266,17 +255,17 @@
     state.selectedList.map((item) => {
       // 此处前端做出修改
       items.push({
-        skuId: item.sku.id,
+        skuId: item.sku?.id,
         count: item.count,
         cartId: item.id,
-        categoryId: item.spu.categoryId,
+        categoryId: item.spu?.categoryId,
       });
     });
     if (isEmpty(items)) {
       sheep.$helper.toast('请先选择商品');
       return;
     }
-    await validateDeliveryType(state.selectedList.map((item) => item.spu).map((spu) => spu.id));
+    await validateDeliveryType(state.selectedList.map((item) => item.spu?.id).filter((id) => !!id));
     sheep.$router.go('/pages/order/confirm', {
       data: JSON.stringify({
         items,
@@ -343,12 +332,11 @@
       cart.delete(cartItem.id);
       return;
     }
-    if (cartItem.goods_num === e) return;
-    cartItem.goods_num = e;
+    if (cartItem.count === e) return;
+    cartItem.count = e;
     cart.update({
       goods_id: cartItem.id,
       goods_num: e,
-      goods_sku_price_id: cartItem.goods_sku_price_id,
     });
   }
 

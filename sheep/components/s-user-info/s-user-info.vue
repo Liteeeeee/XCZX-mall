@@ -85,7 +85,7 @@
     margin-top: 40rpx !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
-    border-radius: 12rpx !important;
+    border-radius: 22rpx !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
     padding-bottom: 40rpx !important;

@@ -26,7 +26,7 @@ const cart = defineStore({
         (this.editMode ? this.list : this.newList).forEach((item) => {
           if (item.selected) {
             this.selectedIds.push(item.id);
-            this.totalPriceSelected += item.count * item.sku?.price;
+            this.totalPriceSelected += item.count * (item.sku?.price || 0);
           } else {
             this.isAllSelected = false;
           }

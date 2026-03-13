@@ -4,7 +4,7 @@ import { staticUrl } from '@/sheep/config';
 const cdn = (url = '', cdnurl = '') => {
   if (!url) return '';
   if (url.indexOf('http') === 0) {
-    return url;
+    return url.replace('http://', 'https://');
   }
   if (cdnurl === '') {
     cdnurl = $store('app').info.cdnurl;
