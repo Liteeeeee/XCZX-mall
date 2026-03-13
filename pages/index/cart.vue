@@ -2,8 +2,8 @@
   <s-layout
     :bgStyle="{ color: '#f8f9f3' }"
     tabbar="/pages/index/cart"
+    navbar="none"
     title="购物车"
-    navbar="custom"
     :navbarStyle="navbarStyle"
   >
     <s-empty
@@ -12,22 +12,32 @@
       text="购物车空空如也,快去逛逛吧~"
     />
 
-    <!-- 头部 -->
+    <!-- 头部占位 -->
     <view
       v-if="state.list.length"
       class="cart-box ss-flex ss-flex-col"
-      :style="[{ paddingTop: '40rpx' }]"
+      :style="[{ paddingTop: (sys_capsule.bottom || 80) + 20 + 'px' }]"
     >
       <view class="cart-header ss-flex ss-col-center ss-row-between ss-p-x-30">
         <view class="header-left ss-flex ss-col-center ss-font-32">
           购物车
           <text class="goods-number ss-flex ss-m-l-10">({{ state.list.length }})</text>
         </view>
-        <view class="header-right">
-          <button v-if="state.editMode" class="ss-reset-button" @tap="onChangeEditMode(false)">
+        <view class="header-right ss-flex ss-col-center">
+          <button
+            class="ss-reset-button"
+            v-show="cart.editMode"
+            @tap.stop="onChangeEditMode(false)"
+          >
             完成
           </button>
-          <button v-else class="ss-reset-button" @tap="onChangeEditMode(true)"> 管理 </button>
+          <button
+            class="ss-reset-button"
+            v-show="!cart.editMode"
+            @tap.stop="onChangeEditMode(true)"
+          >
+            管理
+          </button>
         </view>
       </view>
 
@@ -144,7 +154,7 @@
               <view class="ss-m-l-8 ss-font-26"> 全选</view>
             </view>
           </view>
-          <view class="footer-center ss-flex-col ss-col-bottom ss-m-r-20">
+          <view class="footer-center ss-flex-col ss-col-bottom ss-m-r-20" v-if="!state.editMode">
             <view class="ss-flex ss-col-bottom">
               <text class="total-label ss-m-r-10">合计:</text>
               <view class="text-price price-text">
@@ -250,6 +260,9 @@
   function onChangeEditMode(flag) {
     state.activeId = 0;
     cart.onChangeEditMode(flag);
+    // #ifdef MP-WEIXIN
+    uni.vibrateShort();
+    // #endif
   }
 
   // 全选
@@ -377,8 +390,9 @@
       position: fixed;
       left: 0;
       top: v-bind('sys_capsule.top + "px"');
-      z-index: 1000;
+      z-index: 10000;
       box-sizing: border-box;
+      pointer-events: auto;
       padding-right: v-bind(
         'sys_capsule.width + (sheep.$platform.device.windowWidth - sys_capsule.right) + "px"'
       );
@@ -387,16 +401,26 @@
         font-weight: bold;
         color: rgba(30, 63, 28, 1);
         font-size: 36rpx;
+        pointer-events: none;
       }
       .goods-number {
         color: rgba(30, 63, 28, 1);
         font-size: 28rpx;
       }
       .header-right {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        pointer-events: auto;
+
         .ss-reset-button {
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           font-size: 28rpx;
           color: rgba(30, 63, 28, 1);
-          margin-right: 40rpx;
+          padding: 0 40rpx;
         }
       }
     }
