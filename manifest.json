@@ -227,7 +227,7 @@
     "async": {
       "timeout": 20000
     },
-    "title": "芋道商城",
+    "title": "仙草甄选商城",
     "optimization": {
       "treeShaking": {
         "enable": true
