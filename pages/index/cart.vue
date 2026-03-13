@@ -1,6 +1,6 @@
 <template>
   <s-layout
-    :bgStyle="{ color: '#fff' }"
+    :bgStyle="{ color: '#f8f9f3' }"
     tabbar="/pages/index/cart"
     title="购物车"
     navbar="custom"
@@ -15,24 +15,38 @@
     <!-- 头部 -->
     <view
       v-if="state.list.length"
-      class="cart-box ss-flex ss-flex-col ss-row-between"
-      :style="[{ paddingTop: sys_navBar + 'px' }]"
+      class="cart-box ss-flex ss-flex-col"
+      :style="[{ paddingTop: '40rpx' }]"
     >
       <view class="cart-header ss-flex ss-col-center ss-row-between ss-p-x-30">
-        <view class="header-left ss-flex ss-col-center ss-font-26">
-          共
-          <text class="goods-number ui-TC-Main ss-flex">{{ state.list.length }}</text>
-          件商品
+        <view class="header-left ss-flex ss-col-center ss-font-32">
+          购物车
+          <text class="goods-number ss-flex ss-m-l-10">({{ state.list.length }})</text>
         </view>
         <view class="header-right">
           <button v-if="state.editMode" class="ss-reset-button" @tap="onChangeEditMode(false)">
-            取消
+            完成
           </button>
-          <button v-else class="ss-reset-button ui-TC-Main" @tap="onChangeEditMode(true)">
-            编辑
-          </button>
+          <button v-else class="ss-reset-button" @tap="onChangeEditMode(true)"> 管理 </button>
         </view>
       </view>
+
+      <!-- 会员卡片 -->
+      <view
+        class="vip-card ss-flex ss-row-between ss-col-center ss-m-x-30 ss-m-t-20"
+        @tap="sheep.$router.go('/pages/index/member')"
+      >
+        <image class="vip-card-bg" :src="sheep.$url.static('/static/cart/header.png')" />
+        <view class="ss-flex ss-col-center vip-card-content">
+          <image class="vip-icon ss-m-r-18" :src="sheep.$url.static('/static/cart/vipIcon.png')" />
+          <view class="ss-flex-col">
+            <view class="vip-title">开通黄金会员</view>
+            <view class="vip-subtitle">购物可享受9折优惠哦～</view>
+          </view>
+        </view>
+        <button class="ss-reset-button open-vip-btn">立即开通</button>
+      </view>
+
       <!-- 内容 -->
       <view class="cart-content ss-flex-1 ss-p-x-30 ss-m-b-40">
         <view v-for="item in state.list" :key="item.id" class="swipe-item-container ss-m-b-14">
@@ -51,14 +65,22 @@
             @touchend="!state.editMode && onTouchEnd($event, item.id)"
           >
             <view class="ss-flex ss-col-center">
-              <label class="check-box ss-flex ss-col-center ss-p-l-10" @tap="onSelectSingle(item.id)">
-                <radio
-                  :checked="state.selectedIds.includes(item.id)"
-                  color="var(--ui-BG-Main)"
-                  style="transform: scale(0.8)"
-                  @tap.stop="onSelectSingle(item.id)"
+              <view
+                class="check-box ss-flex ss-col-center ss-p-l-10"
+                @tap="onSelectSingle(item.id)"
+              >
+                <image
+                  class="check-icon"
+                  :src="
+                    sheep.$url.static(
+                      state.selectedIds.includes(item.id)
+                        ? '/static/cart/checked.png'
+                        : '/static/cart/unCheck.png',
+                    )
+                  "
+                  mode="aspectFit"
                 />
-              </label>
+              </view>
               <view v-if="item.spu?.status !== 1 && !state.editMode" class="down-box">
                 该商品已下架
               </view>
@@ -68,17 +90,29 @@
               <s-goods-item
                 :img="item.spu.picUrl || item.goods.image"
                 :price="item.sku.price"
-                :skuText="
-                  item.sku.properties.length > 1
-                    ? item.sku.properties.reduce(
-                        (items2, items) => items2.valueName + ' ' + items.valueName,
-                      )
-                    : item.sku.properties[0].valueName
-                "
                 :title="item.spu.name"
                 :titleWidth="400"
                 priceColor="#FF3000"
               >
+                <template v-slot:groupon>
+                  <view class="ss-flex ss-col-center ss-m-t-8 ss-m-b-12">
+                    <view class="spec-btn ss-flex ss-col-center">
+                      <text class="spec-text">
+                        已选：{{
+                          item.sku.properties.length > 1
+                            ? item.sku.properties.reduce(
+                                (items2, items) => items2.valueName + ' ' + items.valueName,
+                              )
+                            : item.sku.properties[0].valueName
+                        }}
+                      </text>
+                      <text class="cicon-unfold ss-m-l-10"></text>
+                    </view>
+                  </view>
+                </template>
+                <template v-slot:priceSuffix>
+                  <text class="price-unit">/盒</text>
+                </template>
                 <template v-if="!state.editMode" v-slot:tool>
                   <su-number-box
                     v-model="item.count"
@@ -94,36 +128,39 @@
         </view>
       </view>
       <!-- 底部 -->
-      <su-fixed v-if="state.list.length > 0" :isInset="false" :val="48" bottom placeholder>
+      <su-fixed v-if="state.list.length > 0" :isInset="false" :val="50" bottom placeholder>
         <view class="cart-footer ss-flex ss-col-center ss-row-between ss-p-x-30 border-bottom">
           <view class="footer-left ss-flex ss-col-center">
-            <label class="check-box ss-flex ss-col-center ss-p-r-30" @tap="onSelectAll">
-              <radio
-                :checked="state.isAllSelected"
-                color="var(--ui-BG-Main)"
-                style="transform: scale(0.8)"
-                @tap.stop="onSelectAll"
+            <view class="check-box ss-flex ss-col-center" @tap="onSelectAll">
+              <image
+                class="check-icon"
+                :src="
+                  sheep.$url.static(
+                    state.isAllSelected ? '/static/cart/checked.png' : '/static/cart/unCheck.png',
+                  )
+                "
+                mode="aspectFit"
               />
-              <view class="ss-m-l-8"> 全选</view>
-            </label>
-            <text>合计：</text>
-            <view class="text-price price-text">
-              {{ fen2yuan(state.totalPriceSelected) }}
+              <view class="ss-m-l-8 ss-font-26"> 全选</view>
             </view>
           </view>
-          <view class="footer-right">
-            <button
-              v-if="state.editMode"
-              class="ss-reset-button ui-BG-Main-Gradient pay-btn ui-Shadow-Main"
-              @tap="onDelete"
-            >
+          <view class="footer-center ss-flex-col ss-col-bottom ss-m-r-20">
+            <view class="ss-flex ss-col-bottom">
+              <text class="total-label ss-m-r-10">合计:</text>
+              <view class="text-price price-text">
+                {{ fen2yuan(state.totalPriceSelected) }}
+              </view>
+            </view>
+            <view class="promo-pill ss-flex ss-col-center" v-if="state.totalPriceSelected > 0">
+              <text class="promo-text">优惠明细¥36.2</text>
+              <text class="cicon-forward ss-m-l-4"></text>
+            </view>
+          </view>
+          <view class="footer-right ss-flex ss-col-center">
+            <button v-if="state.editMode" class="ss-reset-button pay-btn" @tap="onDelete">
               删除
             </button>
-            <button
-              v-else
-              class="ss-reset-button ui-BG-Main-Gradient pay-btn ui-Shadow-Main"
-              @tap="onConfirm"
-            >
+            <button v-else class="ss-reset-button pay-btn" @tap="onConfirm">
               去结算
               {{ state.selectedIds?.length ? `(${state.selectedIds.length})` : '' }}
             </button>
@@ -148,6 +185,7 @@
   });
 
   const sys_navBar = sheep.$platform.navbar;
+  const sys_capsule = sheep.$platform.capsule;
   const cart = sheep.$store('cart');
 
   const navbarStyle = computed(() => {
@@ -327,39 +365,176 @@
 
 <style lang="scss" scoped>
   :deep(.ui-fixed) {
-    height: 72rpx;
+    height: 120rpx;
   }
 
   .cart-box {
     width: 100%;
 
     .cart-header {
-      height: 70rpx;
-      background-color: #f6f6f6;
+      height: v-bind('sys_capsule.height + "px"');
       width: 100%;
       position: fixed;
       left: 0;
-      top: v-bind('sys_navBar') rpx;
+      top: v-bind('sys_capsule.top + "px"');
       z-index: 1000;
       box-sizing: border-box;
+      padding-right: v-bind(
+        'sys_capsule.width + (sheep.$platform.device.windowWidth - sys_capsule.right) + "px"'
+      );
+
+      .header-left {
+        font-weight: bold;
+        color: rgba(30, 63, 28, 1);
+        font-size: 36rpx;
+      }
+      .goods-number {
+        color: rgba(30, 63, 28, 1);
+        font-size: 28rpx;
+      }
+      .header-right {
+        .ss-reset-button {
+          font-size: 28rpx;
+          color: rgba(30, 63, 28, 1);
+          margin-right: 40rpx;
+        }
+      }
+    }
+
+    .vip-card {
+      position: relative;
+      width: 690rpx;
+      height: 120rpx;
+      margin-top: 10rpx;
+      border-radius: 10rpx;
+      overflow: hidden;
+
+      .vip-card-bg {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+      }
+
+      .vip-card-content {
+        position: relative;
+        z-index: 2;
+        padding-left: 26rpx;
+
+        .vip-icon {
+          width: 60rpx;
+          height: 52rpx;
+        }
+
+        .vip-title {
+          font-size: 30rpx;
+          font-weight: bold;
+          color: #fff;
+          line-height: 42rpx;
+        }
+
+        .vip-subtitle {
+          font-size: 22rpx;
+          color: rgba(255, 255, 255, 0.8);
+          line-height: 32rpx;
+        }
+      }
+
+      .open-vip-btn {
+        position: relative;
+        z-index: 2;
+        width: 152rpx;
+        height: 52rpx;
+        background: #fdf2bb;
+        border-radius: 26rpx;
+        font-size: 24rpx;
+        font-weight: 500;
+        color: #1e3f1c;
+        margin-right: 26rpx;
+      }
     }
 
     .cart-footer {
-      height: 100rpx;
+      height: 120rpx;
       background-color: #fff;
+      border-top: 1rpx solid #eee;
+
+      .footer-left {
+        flex-shrink: 0;
+      }
+
+      .footer-center {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        justify-content: center;
+
+        .total-label {
+          font-size: 26rpx;
+          color: #333;
+          font-weight: 500;
+        }
+
+        .price-text {
+          font-size: 36rpx;
+          color: #ff3000;
+          font-weight: bold;
+          font-family: OPPOSANS;
+          line-height: 1;
+        }
+
+        .promo-pill {
+          margin-top: 8rpx;
+          height: 36rpx;
+          padding: 0 12rpx;
+          background: #fff0f0;
+          border-radius: 18rpx;
+
+          .promo-text {
+            font-size: 20rpx;
+            color: #ff3000;
+          }
+
+          .cicon-forward {
+            font-size: 16rpx;
+            color: #ff3000;
+          }
+        }
+      }
+
+      .footer-right {
+        flex-shrink: 0;
+        margin-left: 20rpx;
+      }
+
+      .check-icon {
+        width: 40rpx;
+        height: 40rpx;
+      }
 
       .pay-btn {
-        width: 180rpx;
-        height: 70rpx;
+        width: 196rpx;
+        height: 80rpx;
         font-size: 28rpx;
-        line-height: 28rpx;
         font-weight: 500;
         border-radius: 40rpx;
+        background: rgba(30, 63, 28, 1);
+        color: #fff;
       }
     }
 
     .cart-content {
-      margin-top: 70rpx;
+      margin-top: 20rpx;
+      position: relative;
+      z-index: 10;
+
+      .check-icon {
+        width: 40rpx;
+        height: 40rpx;
+      }
 
       .swipe-item-container {
         position: relative;
@@ -370,16 +545,17 @@
         position: absolute;
         right: 0;
         top: 0;
-        width: 120rpx;
+        width: 174rpx;
         height: 100%;
         z-index: 1;
 
         .delete-btn {
-          width: 120rpx;
+          width: 174rpx;
           height: 100%;
-          background-color: #ff4d4f;
+          background: rgba(30, 63, 28, 1);
           color: #fff;
-          font-size: 24rpx;
+          font-size: 28rpx;
+          border-radius: 0 14rpx 14rpx 0;
         }
       }
 
@@ -388,9 +564,82 @@
         position: relative;
         z-index: 2;
         transition: transform 0.3s ease;
+        padding: 30rpx 20rpx;
+        border-radius: 13rpx;
 
         &.swipe-active {
-          transform: translateX(-120rpx);
+          transform: translateX(-174rpx);
+        }
+
+        :deep(.ss-order-card-warp) {
+          background-color: transparent !important;
+          padding: 0 !important;
+          margin-bottom: 0 !important;
+          flex: 1;
+        }
+
+        .check-box {
+          padding-right: 20rpx;
+        }
+
+        .check-icon {
+          width: 40rpx;
+          height: 40rpx;
+        }
+
+        .order-img {
+          width: 180rpx;
+          height: 180rpx;
+          border-radius: 10rpx;
+        }
+
+        .title-text {
+          font-size: 28rpx;
+          color: #333;
+          font-weight: 500;
+        }
+
+        .spec-btn {
+          background: #f8f8f8;
+          border-radius: 4rpx;
+          padding: 0 12rpx;
+          height: 40rpx;
+
+          .spec-text {
+            font-size: 22rpx;
+            color: #999;
+          }
+
+          .cicon-unfold {
+            font-size: 18rpx;
+            color: #999;
+          }
+        }
+
+        .price-text {
+          font-size: 32rpx;
+          font-weight: bold;
+          font-family: OPPOSANS;
+        }
+
+        .price-unit {
+          font-size: 22rpx;
+          color: #999;
+          margin-left: 6rpx;
+        }
+
+        :deep(.uni-numbox) {
+          .cicon-move-round,
+          .cicon-add-round {
+            font-size: 40rpx;
+            color: #e0e0e0;
+          }
+
+          .uni-numbox__value {
+            width: 70rpx;
+            font-size: 26rpx;
+            background-color: transparent !important;
+          }
         }
       }
       // 下架商品

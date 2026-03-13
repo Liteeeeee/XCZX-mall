@@ -14,8 +14,8 @@
             @change="onSwiperChange" 
             :current="state.currentLevelIndex"
             circular
-            previous-margin="40rpx"
-            next-margin="40rpx"
+            previous-margin="48rpx"
+            next-margin="48rpx"
           >
             <swiper-item v-for="(level, index) in memberLevels" :key="index">
               <view class="swiper-item-inner" :class="{ 'active': state.currentLevelIndex === index }">
@@ -147,7 +147,7 @@
       cardBg: memberData.card_bg,
       price: 0,
       upgradeName: '普通会员',
-      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(199, 218, 195, 0.8) 52.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
+      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(199, 218, 195, 0.8) 12.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
       decoGradient: 'linear-gradient(90deg, #1E3F1C 0%, rgba(30, 63, 28, 0.45) 17.81%, rgba(30, 63, 28, 0.1) 50.53%, rgba(163, 160, 191, 0) 100%)',
       badgeBg: 'rgba(30, 63, 28, 0.1)',
       badgeColor: 'rgba(30, 63, 28, 1)',
@@ -164,13 +164,13 @@
       cardBg: '/static/member/goldenCard.png',
       price: 999,
       upgradeName: '永久黄金会员',
-      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(255, 204, 162, 0.8) 52.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
+      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(255, 204, 162, 0.8) 12.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
       decoGradient: 'linear-gradient( 90deg, #E6A058 0%, rgba(214,154,93,0.45) 17.81%, rgba(215,156,94,0.1) 50.53%, rgba(215,156,94,0) 100%)',
       badgeBg: 'rgba(212,152,91,0.2)',
       badgeColor: 'rgba(230, 160, 88, 1)',
       mainColor: 'rgba(81, 59, 37, 1)',
       rights: [
-        { icon: memberData.rights_2, title: '专属折扣', desc: '最高9.5折' },
+        { icon: memberData.rights_4, title: '专属折扣', desc: '最高9.5折' },
         { icon: memberData.rights_1, title: '包邮', desc: '免费送到家' },
         { icon: memberData.rights_2, title: '消费积分', desc: '1.2倍返还' },
         { icon: memberData.rights_3, title: '免费退换', desc: '免费退换货' },
@@ -182,13 +182,13 @@
       cardBg: '/static/member/platinum.png',
       price: 999,
       upgradeName: '永久黄金会员',
-      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(170, 188, 226, 0.8) 52.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
+      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(170, 188, 226, 0.8) 12.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
       decoGradient: 'linear-gradient( 90deg, #7799D1 0%, rgba(119,153,209,0.45) 17.81%, rgba(119,153,209,0.1) 50.53%, rgba(119,153,209,0) 100%)',
       badgeBg: 'rgba(119, 153, 209, 0.24)',
       badgeColor: 'rgba(33, 75, 98, 1)',
       mainColor: 'rgba(33, 75, 98, 1)',
       rights: [
-        { icon: memberData.rights_2, title: '专属折扣', desc: '最高9.0折' },
+         { icon: memberData.rights_4, title: '专属折扣', desc: '最高9折' },
         { icon: memberData.rights_1, title: '顺丰包邮', desc: '免费送到家' },
         { icon: memberData.rights_2, title: '消费积分', desc: '1.5倍返还' },
         { icon: memberData.rights_3, title: '免费退换', desc: '免费退换货' },
@@ -201,18 +201,19 @@
       cardBg: '/static/member/Dimond.png',
       price: 999,
       upgradeName: '永久黄金会员',
-      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(238, 187, 255, 0.8) 52.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
+      bgGradient: 'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(238, 187, 255, 0.8)  18.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
       decoGradient: 'linear-gradient( 90deg, #7E63E9 0%, rgba(127,99,233,0.45) 17.81%, rgba(127,99,233,0.1) 50.53%, rgba(127,99,233,0) 100%)',
       badgeBg: 'rgba(126, 97, 235, 0.24)',
       badgeColor: 'rgba(112, 90, 198, 1)',
       mainColor: 'rgba(42, 26, 100, 1)',
       rights: [
-        { icon: memberData.rights_2, title: '专属折扣', desc: '最高8.5折' },
-        { icon: memberData.rights_1, title: '急速顺丰', desc: '全国包邮' },
-        { icon: memberData.rights_2, title: '消费积分', desc: '2.0倍返还' },
-        { icon: memberData.rights_3, title: '免费退换', desc: '闪电退款' },
-        { icon: memberData.rights_3, title: '专属客服', desc: '24小时在线' },
-        { icon: memberData.rights_1, title: '优先体验', desc: '新品试用' },
+        { icon: memberData.rights_4, title: '专属折扣', desc: '最高9折' },
+        { icon: memberData.rights_1, title: '包邮', desc: '免费送到家' },
+        { icon: memberData.rights_2, title: '消费积分', desc: '1.5倍返还' },
+        { icon: memberData.rights_5, title: '免费退换', desc: '免费退换货' },
+        { icon: memberData.rights_6, title: '专属客服', desc: '1对1' },
+        { icon: memberData.rights_7, title: '优先购物', desc: '新品优先选' },
+        { icon: memberData.rights_8, title: '周边礼品', desc: '领周边好礼' },
       ]
     }
   ];

@@ -2,8 +2,21 @@
   <view class="s-member-level-rights-wrapper">
     <!-- 权益区域 -->
     <view class="block_14 flex-col">
+      <!-- 会员统计数据 -->
+      <view class="member-stats-card flex-row align-center" v-if="isCurrent">
+        <view class="stats-item flex-col align-center">
+          <text class="stats-title">累计已省金额</text>
+          <text class="stats-value">{{ userInfo.totalSavings || '1000.00' }}</text>
+        </view>
+        <view class="stats-line"></view>
+        <view class="stats-item flex-col align-center">
+          <text class="stats-title">累计获得积分</text>
+          <text class="stats-value">{{ userInfo.totalPoints || '1000' }}</text>
+        </view>
+      </view>
+
       <text class="text_8">{{ isCurrent ? '已解锁' : '待解锁' }}{{ level.rights.length }}项权益</text>
-      <view class="section_5 flex-row">
+      <view class="section_5 flex-row" v-if="level.rights && level.rights.length > 0">
         <view class="rights-item flex-col align-center" v-for="(item, index) in level.rights" :key="index">
           <image class="rights-icon" :src="sheep.$url.static(item.icon, 'local')" mode="aspectFit"></image>
           <text class="rights-title">{{ item.title }}</text>
@@ -46,16 +59,57 @@
   /* 权益区域样式 */
   .block_14 {
     width: 100%;
-    padding: 80rpx 30rpx 40rpx;
+    padding: 80rpx 30rpx 20rpx; // 调整顶部内边距，并将下边距设为 20rpx
     box-sizing: border-box;
     background: radial-gradient(circle at 50% -4450rpx, transparent 4485rpx, rgba(248, 249, 243, 1) 400.5rpx);
   }
 
+  /* 会员统计卡片 */
+  .member-stats-card {
+    width: 100%;
+    height: 160rpx;
+    background: #FFFFFF;
+    border: 1rpx solid #F0F0F0;
+    border-radius: 16rpx;
+    margin-bottom: 40rpx;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.02);
+  }
+
+  .stats-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stats-title {
+    font-size: 24rpx;
+    color: #999999;
+    margin-bottom: 12rpx;
+  }
+
+  .stats-value {
+    font-size: 36rpx;
+    color: #333333;
+    font-weight: bold;
+    font-family: DIN; // 这种数字通常使用 DIN 字体
+  }
+
+  .stats-line {
+    width: 1rpx;
+    height: 60rpx;
+    background: #EEEEEE;
+  }
+
   .text_8 {
     font-size: 28rpx;
-    color: #333;
+    color: rgba(29, 33, 41, 1);
     font-weight: bold;
-    margin-bottom: 30rpx;
+    margin-bottom: 10rpx;
     padding-left: 10rpx;
   }
 
@@ -63,26 +117,18 @@
     width: 100%;
     display: flex;
     flex-direction: row;
-    overflow-x: auto;
+    flex-wrap: wrap; // 允许换行
     padding: 10rpx 0;
-    
-    /* 隐藏滚动条 */
-    &::-webkit-scrollbar {
-      display: none;
-    }
   }
 
   .rights-item {
     flex: none;
-    width: 140rpx;
-    margin-right: 40rpx;
+    width: 25%; // 一行四项
+    margin-bottom: 30rpx; // 换行后的行间距
     display: flex;
     flex-direction: column;
     align-items: center;
-
-    &:last-child {
-      margin-right: 0;
-    }
+    box-sizing: border-box;
   }
 
   .rights-icon {

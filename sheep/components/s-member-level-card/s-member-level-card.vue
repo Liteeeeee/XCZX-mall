@@ -23,10 +23,10 @@
         </view>
         <view style="margin-top: 40rpx !important;" class="group_5 flex-col" :style="{ background: level.decoGradient }"></view>
         <view class="group_6 flex-row">
-          <text style="margin-left: 20rpx;" class="text_6" :style="{ color: level.mainColor }" v-if="isCurrent">已有{{ userInfo.experience || 0 }}成长值</text>
-          <text style="margin-left: 20rpx;" class="text_6" :style="{ color: level.mainColor }" v-else>升级解锁更多权益</text>
-          <text class="text_7" :style="{ color: level.mainColor }" @tap="sheep.$router.go('/pages/index/index')">
-            {{ isCurrent ? '升级会员' : '立即开通' }}
+          <text  class="text_6" :style="{ color: level.mainColor }" v-if="isCurrent">已有{{ userInfo.experience || 0 }}成长值</text>
+          <text  class="text_6" :style="{ color: level.mainColor }" v-else>升级解锁更多权益</text>
+            <text class="text_7" @tap="sheep.$router.go('/pages/index/index')">
+            {{ isCurrent ? '升级会员>' : '立即开通>' }}
           </text>
         </view>
       </view>
@@ -66,7 +66,7 @@
   /* 复用 member.vue 中的样式 */
   .box_5 {
     position: relative;
-    width: 690rpx;
+    width: 656rpx;
     height: 396rpx;
     margin: 0 auto;
     padding-top: 55rpx;
@@ -131,7 +131,7 @@
 
   .text_7 {
     font-size: 24rpx;
-    color: #1E3F1C;
+    color: #fff;
     display: flex;
     align-items: center;
   }

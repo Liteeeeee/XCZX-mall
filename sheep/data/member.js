@@ -9,6 +9,12 @@ export default {
   rights_1: '/static/member/icon@2x.png',
   rights_2: '/static/member/icon@2x(1).png',
   rights_3: '/static/member/icon@2x(2).png',
+  rights_4: '/static/member/qyGolden.png',
+  rights_5: '/static/member/qyMFTH.png',
+  rights_6: '/static/member/qyZSKF.png',
+  rights_7: '/static/member/qyYXGW.png',
+  rights_8: '/static/member/qyZBLP.png',
+
   shape_1: '/static/member/形状@2x(1).png',
   shape_2: '/static/member/形状@2x(2).png',
   
