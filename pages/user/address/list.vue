@@ -1,6 +1,7 @@
 <!-- 收件地址列表 -->
 <template>
-  <s-layout :bgStyle="{ color: '#FFF' }" title="收货地址">
+  <s-layout :bgStyle="{ color: '#FFF' }" title="收货地址" navbar="normal">
+    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
     <view v-if="state.list.length">
       <s-address-item
         hasBorderBottom

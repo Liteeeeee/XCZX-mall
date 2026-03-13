@@ -70,6 +70,10 @@
   };
 
   const onItemClick = (item) => {
+    if (item.name === '地址管理') {
+      sheep.$router.go('/pages/user/address/list');
+      return;
+    }
     if (item.url) {
       sheep.$router.go(item.url);
     }

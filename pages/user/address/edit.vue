@@ -1,6 +1,7 @@
 <!-- 收货地址的新增/编辑 -->
 <template>
-  <s-layout :title="state.model.id ? '编辑地址' : '新增地址'">
+  <s-layout :title="state.model.id ? '编辑地址' : '新增地址'" navbar="normal">
+    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
     <uni-forms
       ref="addressFormRef"
       v-model="state.model"
