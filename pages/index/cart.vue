@@ -16,7 +16,7 @@
     <view
       v-if="state.list.length"
       class="cart-box ss-flex ss-flex-col"
-      :style="[{ paddingTop: (sys_capsule.bottom || 80) + 20 + 'px' }]"
+      :style="[{ paddingTop: (sys_capsule.bottom || 80) + 20 + 'px',paddingLeft: '30rpx' ,paddingRight: '30rpx' }]"
     >
       <view class="cart-header ss-flex ss-col-center ss-row-between ss-p-x-30">
         <view class="header-left ss-flex ss-col-center ss-font-32">
@@ -42,19 +42,8 @@
       </view>
 
       <!-- 会员卡片 -->
-      <view
-        class="vip-card ss-flex ss-row-between ss-col-center ss-m-x-30 ss-m-t-20"
-        @tap="sheep.$router.go('/pages/index/member')"
-      >
-        <image class="vip-card-bg" :src="sheep.$url.static('/static/cart/header.png')" />
-        <view class="ss-flex ss-col-center vip-card-content">
-          <image class="vip-icon ss-m-r-18" :src="sheep.$url.static('/static/cart/vipIcon.png')" />
-          <view class="ss-flex-col">
-            <view class="vip-title">开通黄金会员</view>
-            <view class="vip-subtitle">购物可享受9折优惠哦～</view>
-          </view>
-        </view>
-        <button class="ss-reset-button open-vip-btn">立即开通</button>
+      <view class="ss-m-20 ss-w-100">
+        <s-vip-card />
       </view>
 
       <!-- 内容 -->
@@ -382,7 +371,7 @@
   }
 
   .cart-box {
-    width: 100%;
+    width: calc(100% - 60rpx);
 
     .cart-header {
       height: v-bind('sys_capsule.height + "px"');
@@ -422,61 +411,6 @@
           color: rgba(30, 63, 28, 1);
           padding: 0 40rpx;
         }
-      }
-    }
-
-    .vip-card {
-      position: relative;
-      width: 690rpx;
-      height: 120rpx;
-      margin-top: 10rpx;
-      border-radius: 10rpx;
-      overflow: hidden;
-
-      .vip-card-bg {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 1;
-      }
-
-      .vip-card-content {
-        position: relative;
-        z-index: 2;
-        padding-left: 26rpx;
-
-        .vip-icon {
-          width: 60rpx;
-          height: 52rpx;
-        }
-
-        .vip-title {
-          font-size: 30rpx;
-          font-weight: bold;
-          color: #fff;
-          line-height: 42rpx;
-        }
-
-        .vip-subtitle {
-          font-size: 22rpx;
-          color: rgba(255, 255, 255, 0.8);
-          line-height: 32rpx;
-        }
-      }
-
-      .open-vip-btn {
-        position: relative;
-        z-index: 2;
-        width: 152rpx;
-        height: 52rpx;
-        background: #fdf2bb;
-        border-radius: 26rpx;
-        font-size: 24rpx;
-        font-weight: 500;
-        color: #1e3f1c;
-        margin-right: 26rpx;
       }
     }
 

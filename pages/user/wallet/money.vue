@@ -1,6 +1,7 @@
 <!-- 我的钱包 -->
 <template>
   <s-layout class="wallet-wrap" title="钱包" navbar="normal">
+    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
     <!-- 钱包卡片 -->
     <view
       class="header-box ss-flex ss-row-center ss-col-center"

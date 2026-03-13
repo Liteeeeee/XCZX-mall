@@ -1,5 +1,6 @@
 <template>
-  <s-layout title="确认订单">
+  <s-layout title="确认订单" navbar="normal">
+    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
     <!-- 头部地址选择【配送地址】【自提地址】 -->
     <AddressSelection v-model="addressState" />
 

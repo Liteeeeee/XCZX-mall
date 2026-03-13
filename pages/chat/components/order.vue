@@ -7,7 +7,7 @@
         {{ formatOrderStatus(orderData) }}
       </view>
     </view>
-    <view class="border-bottom" v-for="item in orderData.items" :key="item.id">
+    <view  v-for="item in orderData.items" :key="item.id">
       <s-goods-item
         :img="item.picUrl"
         :title="item.spuName"

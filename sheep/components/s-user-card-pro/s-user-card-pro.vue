@@ -1,6 +1,6 @@
 <!-- 装修用户组件：用户卡片 Pro -->
 <template>
-  <view class="ss-user-card-pro" :style="[cardStyle, { minHeight: '500rpx', background: !isLogin ? '#e0fde0' : (cardStyle.background || '#fff'), display: 'block' }]" :class="{ 'unlogin-card': !isLogin }">
+  <view class="ss-user-card-pro" :style="[cardStyle, { minHeight: '500rpx', background:'none !important', display: 'block' }]" :class="{ 'unlogin-card': !isLogin }">
     <!-- 沉浸式占位 -->
     <view :style="{ height: statusBarHeight + 'px' }"></view>
     <view :style="{ height: navBarHeight + 'px' }"></view>
@@ -29,7 +29,7 @@
           </view>
           <view v-else-if="userInfo.mobile" class="mobile-text ss-flex ss-col-center">
             <text class="cicon-mobile-o ss-m-r-8"></text>
-            {{ userInfo.mobile }}
+            {{ formatMobile(userInfo.mobile) }}
           </view>
           <view v-else class="mobile-text" @tap.stop="onBindMobile">
             点击绑定手机号
@@ -37,12 +37,25 @@
         </view>
       </view>
 
-      <!-- 登录按钮/分享二维码 -->
+      <!-- 登录按钮/会员等级图标 -->
       <view class="right-action">
-        <button v-if="!isLogin" class="ss-reset-button login-btn" style="background: #ff4d4f; color: #fff; padding: 10rpx 30rpx; border-radius: 30rpx; font-size: 24rpx;" @tap="onUserClick">去登录</button>
-        <button v-else class="ss-reset-button qr-btn" @tap="showShareModal">
-          <text class="sicon-qrcode"></text>
+        <button
+          v-if="!isLogin"
+          class="ss-reset-button login-btn"
+          style="
+            background: #ff4d4f;
+            color: #fff;
+            padding: 10rpx 30rpx;
+            border-radius: 30rpx;
+            font-size: 24rpx;
+          "
+          @tap="onUserClick"
+        >
+          去登录
         </button>
+        <view v-else class="member-icon-box" @tap="sheep.$router.go('/pages/index/member')">
+          <image class="member-icon" :src="sheep.$url.static(memberIcon)" mode="aspectFit" />
+        </view>
       </view>
     </view>
 
@@ -54,14 +67,19 @@
         class="stats-item ss-flex-col ss-col-center"
         @tap="onStatsClick(item.type)"
       >
-        <view class="stats-value" style="font-size: 32rpx; font-weight: bold; color: #333;">{{ item.value }}</view>
-        <view class="stats-label" style="font-size: 24rpx; color: #999;">{{ item.label }}</view>
+        <view class="stats-value" style="font-family: MicrosoftYaHei, MicrosoftYaHei;font-size:35rpx; font-weight: bold; color: rgba(30, 63, 28, 1);">{{ item.value }}</view>
+        <view class="stats-label" style="font-size: 26rpx; color: rgba(51, 51, 51, 1);">{{ item.label }}</view>
       </view>
     </view>
 
     <!-- 未登录时的占位插画 -->
     <view v-if="!isLogin" class="unlogin-illustration ss-flex ss-row-center ss-m-t-30" style="position: relative; z-index: 2;">
       <image class="illustration-img" src="/static/data-empty.png" mode="aspectFit" style="width: 200rpx; height: 200rpx;" />
+    </view>
+
+    <!-- VIP 会员卡片 -->
+    <view class="ss-p-b-30 ">
+      <s-vip-card />
     </view>
   </view>
 </template>
@@ -97,11 +115,24 @@
     mobile: '',
     point: 0,
     balance: 0,
-    coupon: 0
+    coupon: 0,
+    levelName: '普通会员'
   });
   const userWallet = computed(() => sheep.$store('user').userWallet || { balance: 0 });
   const numData = computed(() => sheep.$store('user').numData || { coupon: 0, point: 0 });
   const isLogin = computed(() => sheep.$store('user').isLogin);
+
+  // 会员等级图标
+  const memberIcon = computed(() => {
+    const levelName = userInfo.value.levelName || '普通会员';
+    const icons = {
+      '普通会员': '/static/user/normal.png',
+      '黄金会员': '/static/user/vipGolden.png',
+      '铂金会员': '/static/user/vipBojin.png',
+      '钻石会员': '/static/user/vipDimond.png',
+    };
+    return icons[levelName] || '/static/user/normal.png';
+  });
 
   // 统计数据列表
   const statsList = computed(() => {
@@ -196,7 +227,8 @@
     flex-direction: column;
     position: relative;
     overflow: hidden;
-
+    padding: 0 !important;
+    margin-top: 30rpx;
     .unlogin-bg-decoration {
       position: absolute;
       top: 0;
@@ -302,6 +334,17 @@
         .sicon-qrcode {
           font-size: 40rpx;
           color: #333;
+        }
+      }
+      .member-icon-box {
+        width: 160rpx;
+        height: 60rpx;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        .member-icon {
+          width: 100%;
+          height: 100%;
         }
       }
     }

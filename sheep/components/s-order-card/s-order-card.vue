@@ -1,25 +1,33 @@
 <!-- 装修用户组件：用户订单 -->
 <template>
-  <view class="ss-order-menu-wrap ss-flex ss-col-center" :style="[style, { marginLeft: `${data.space}px` }]">
-    <view
-      class="menu-item ss-flex-1 ss-flex-col ss-row-center ss-col-center"
-      v-for="item in displayedOrderMap"
-      :key="item.title"
-      @tap="onItemClick(item)"
-    >
-      <uni-badge
-        class="uni-badge-left-margin"
-        :text="item.count ? numData.orderCount[item.count] : 0"
-        absolute="rightTop"
-        size="small"
-        :show-zero="false"
+  <view class="ss-order-card ss-r-20 bg-white">
+    <view class="order-header ss-flex ss-col-center ss-row-between">
+      <view class="header-left">我的订单</view>
+      <view class="header-right ss-flex ss-col-center" @tap="sheep.$router.go('/pages/order/list')">
+        <text class="ss-m-r-8">查看全部</text>
+        <text class="_icon-forward"></text>
+      </view>
+    </view>
+    <view class="order-content ss-flex ss-col-center ss-row-around">
+      <view
+        v-for="item in orderList"
+        :key="item.title"
+        class="order-item ss-flex-col ss-col-center"
+        @tap="onItemClick(item)"
       >
-        <view class="item-icon-box">
-          <image v-if="!isEpIcon(item.icon)" class="item-icon" :src="sheep.$url.static(item.icon)" mode="aspectFit" />
-          <uni-icons v-else :type="mapEpIcon(item.icon)" size="26" color="#333"></uni-icons>
-        </view>
-      </uni-badge>
-      <view class="menu-title ss-m-t-28">{{ item.title || item.name }}</view>
+        <uni-badge
+          class="uni-badge-left-margin"
+          :text="item.count ? numData.orderCount[item.count] : 0"
+          absolute="rightTop"
+          size="small"
+          :show-zero="false"
+        >
+          <view class="item-icon-box ss-flex ss-row-center ss-col-center">
+            <image class="item-icon" :src="sheep.$url.static(item.icon)" mode="aspectFit" />
+          </view>
+        </uni-badge>
+        <view class="item-title ss-m-t-20">{{ item.title }}</view>
+      </view>
     </view>
   </view>
 </template>
@@ -44,112 +52,93 @@
     },
   });
 
-  const isEpIcon = (icon) => icon && icon.startsWith('ep:');
-  const mapEpIcon = (icon) => {
-    const name = icon.replace('ep:', '');
-    const dict = {
-      'wallet': 'wallet',
-      'box': 'box',
-      'van': 'car',
-      'circle-check': 'checkbox-filled',
-    };
-    return dict[name] || name;
-  };
-
-  const onItemClick = (item) => {
-    if (item.path) {
-      sheep.$router.go(item.path, { type: item.value });
-    } else {
-      console.log('点击了订单项：', item.name || item.title);
-    }
-  };
-
-  const defaultOrderMap = [
+  const orderList = [
     {
       title: '待付款',
-      value: '1',
-      icon: '/static/img/shop/order/no_pay.png',
+      icon: '/static/user/dfk.png',
       path: '/pages/order/list',
       type: 'unpaid',
+      value: '1',
       count: 'unpaidCount',
     },
     {
+      title: '待发货',
+      icon: '/static/user/dfh.png',
+      path: '/pages/order/list',
+      type: 'nosend',
+      value: '2',
+      count: 'undeliveredCount',
+    },
+    {
       title: '待收货',
-      value: '3',
-      icon: '/static/img/shop/order/no_take.png',
+      icon: '/static/user/dsh.png',
       path: '/pages/order/list',
       type: 'noget',
+      value: '3',
       count: 'deliveredCount',
     },
     {
-      title: '待评价',
+      title: '已完成',
+      icon: '/static/user/ywc.png',
+      path: '/pages/order/list',
+      type: 'completed',
       value: '4',
-      icon: '/static/img/shop/order/no_comment.png',
-      path: '/pages/order/list',
-      type: 'nocomment',
       count: 'uncommentedCount',
-    },
-    {
-      title: '售后单',
-      value: '0',
-      icon: '/static/img/shop/order/change_order.png',
-      path: '/pages/order/aftersale/list',
-      type: 'aftersale',
-      count: 'afterSaleCount',
-    },
-    {
-      title: '全部订单',
-      value: '0',
-      icon: '/static/img/shop/order/all_order.png',
-      path: '/pages/order/list',
     },
   ];
 
-  const displayedOrderMap = computed(() => {
-    if (props.data.items && props.data.items.length > 0) {
-      return props.data.items.map(item => ({
-        title: item.name,
-        icon: item.icon,
-        path: item.url,
-        // 这里尝试映射一些标准值
-        value: item.name === '待付款' ? '1' : item.name === '待收货' ? '3' : '0',
-        count: item.name === '待付款' ? 'unpaidCount' : item.name === '待收货' ? 'deliveredCount' : '',
-      }));
-    }
-    return defaultOrderMap;
-  });
+  const onItemClick = (item) => {
+    sheep.$router.go(item.path, { type: item.value });
+  };
 
   // 设置角标
   const numData = computed(() => sheep.$store('user').numData);
-  // 设置背景样式
-  const style = computed(() => {
-    const { bgType, bgImg, bgColor } = props.styles || {}; 
-    return {
-      background: bgType === 'img'
-        ? `url(${bgImg}) no-repeat top center / 100% 100%`
-        : bgColor
-    };
-  });
 </script>
 
 <style lang="scss" scoped>
-  .ss-order-menu-wrap {
-    padding: 20rpx 0;
-    .menu-item {
-      .item-icon-box {
-        width: 44rpx;
-        height: 44rpx;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+  .ss-order-card {
+    padding: 30rpx;
+    background: #fff;
+    border-radius: 20rpx;
+
+    .order-header {
+      margin-bottom: 40rpx;
+
+      .header-left {
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #1e3f1c;
       }
-      .item-icon {
-        width: 44rpx;
-        height: 44rpx;
-      }
-      .menu-title {
+
+      .header-right {
         font-size: 24rpx;
-        color: #333;
+        color: #999;
+
+        ._icon-forward {
+          font-size: 24rpx;
+          color: #999;
+        }
+      }
+    }
+
+    .order-content {
+      .order-item {
+        .item-icon-box {
+          width: 80rpx;
+          height: 80rpx;
+          // border: 1rpx dashed #ccc;
+          border-radius: 10rpx;
+        }
+
+        .item-icon {
+          width: 80rpx;
+          height: 80rpx;
+        }
+
+        .item-title {
+          font-size: 24rpx;
+          color: #333;
+        }
       }
     }
   }

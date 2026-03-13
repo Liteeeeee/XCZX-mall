@@ -1,6 +1,7 @@
 <!-- 我的积分 -->
 <template>
   <s-layout class="wallet-wrap" title="我的积分" navbar="normal">
+    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
     <view
       class="header-box ss-flex ss-flex-col ss-row-center ss-col-center"
 

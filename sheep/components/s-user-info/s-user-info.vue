@@ -6,12 +6,11 @@
       v-for="(item, index) in data.items"
       :key="index"
       class="list-item ss-flex ss-col-center ss-row-between ss-p-x-30 ss-p-y-30"
-      :class="{ 'border-bottom': index !== data.items.length - 1 }"
       @tap="onItemClick(item)"
     >
       <view class="ss-flex ss-col-center">
         <!-- 优先显示装修配置的图片图标 -->
-        <image v-if="item.icon" class="item-icon ss-m-r-20" :src="sheep.$url.cdn(item.icon)" mode="aspectFit" />
+        <image v-if="getIcon(item)" class="item-icon ss-m-r-20" :src="getIcon(item)" mode="aspectFit" />
         <!-- 兼容 element-plus 等图标名 (ep:setting) -->
         <text v-else-if="item.iconName" :class="[item.iconName, 'item-icon-name', 'ss-m-r-20']"></text>
         <text class="item-title">{{ item.name }}</text>
@@ -58,6 +57,18 @@
     };
   });
 
+  const getIcon = (item) => {
+    const iconMap = {
+      '我的设置': '/static/user/setting.png',
+      '地址管理': '/static/user/address.png',
+      '平台合伙人': '/static/user/friend.png',
+    };
+    if (iconMap[item.name]) {
+      return sheep.$url.static(iconMap[item.name]);
+    }
+    return item.icon ? sheep.$url.cdn(item.icon) : '';
+  };
+
   const onItemClick = (item) => {
     if (item.url) {
       sheep.$router.go(item.url);
@@ -67,10 +78,17 @@
 
 <style lang="scss" scoped>
   .ss-user-info-list {
+    margin-top: 40rpx !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    border-radius: 12rpx !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 40rpx !important;
     .list-title {
       font-size: 30rpx;
       font-weight: bold;
-      color: #333;
+      color: rgba(30, 63, 28, 1);
     }
 
     .list-item {
@@ -81,10 +99,7 @@
         background: #f9f9f9;
       }
 
-      &.border-bottom {
-        border-bottom: 1rpx solid #f5f5f5;
-      }
-
+  
       .item-icon {
         width: 44rpx;
         height: 44rpx;

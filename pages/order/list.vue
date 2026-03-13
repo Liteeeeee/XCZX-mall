@@ -1,7 +1,8 @@
 <!-- 订单列表 -->
 <template>
-  <s-layout title="我的订单">
-    <su-sticky bgColor="#fff">
+  <s-layout title="我的订单" navbar="normal">
+    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+    <su-sticky bgColor="#fff" :offset="sheep.$platform.navbar">
       <su-tabs
         :list="tabMaps"
         :scrollable="false"

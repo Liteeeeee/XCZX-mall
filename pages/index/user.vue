@@ -20,7 +20,27 @@
       <button style="width: 200rpx; height: 60rpx; line-height: 60rpx; font-size: 24rpx;" @tap="sheep.$router.go('/pages/index/index')">刷新首页</button>
     </view>
 
-    <view v-for="(item, index) in renderList" :key="index">
+    <!-- 上半部分：用户卡片 (UserCardPro) -->
+    <view class="user-top-bg">
+      <view v-for="(item, index) in userCardList" :key="'top-' + index">
+        <s-block :styles="item.property.style || {}">
+          <s-block-item :type="item.id" :data="item.property" :styles="item.property.style || {}" />
+        </s-block>
+      </view>
+    </view>
+
+    <!-- 下半部分：大盒子包裹订单和信息 (UserOrder & UserInfo) -->
+    <view class="user-bottom-content" v-if="orderCardList.length > 0 || userInfoList.length > 0">
+      <view v-for="(item, index) in orderCardList" :key="'order-' + index">
+        <s-block-item :type="item.id" :data="item.property" :styles="item.property.style || {}" />
+      </view>
+      <view v-for="(item, index) in userInfoList" :key="'info-' + index">
+        <s-block-item :type="item.id" :data="item.property" :styles="item.property.style || {}" />
+      </view>
+    </view>
+
+    <!-- 渲染其他未被包裹的组件 -->
+    <view v-for="(item, index) in otherList" :key="'other-' + index">
       <s-block :styles="item.property.style || {}">
         <s-block-item :type="item.id" :data="item.property" :styles="item.property.style || {}" />
       </s-block>
@@ -49,6 +69,20 @@
     return list;
   });
 
+  // 用户卡片组件 (上半部分)
+  const userCardList = computed(() => renderList.value.filter((item) => item.id === 'UserCardPro'));
+
+  // 订单和信息组件 (下半部分包裹内容)
+  const orderCardList = computed(() => renderList.value.filter((item) => item.id === 'UserOrder'));
+  const userInfoList = computed(() => renderList.value.filter((item) => item.id === 'UserInfo'));
+
+  // 其他组件
+  const otherList = computed(() =>
+    renderList.value.filter(
+      (item) => !['UserCardPro', 'UserOrder', 'UserInfo'].includes(item.id),
+    ),
+  );
+
   onShow(() => {
     sheep.$store('user').updateUserData();
   });
@@ -63,4 +97,24 @@
   onPageScroll(() => {});
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+  .user-top-bg {
+    width: 100%;
+    background: url('/static/user/userBg.png') no-repeat top center / 100% auto;
+  }
+
+  .user-bottom-content {
+    width: 100%;
+    min-height: calc(100vh - 480rpx);
+    padding: 80rpx 30rpx 20rpx;
+    margin-top: -127rpx; // 向上移动以覆盖在卡片下方
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    background: radial-gradient(
+      circle at 50% -4450rpx,
+      transparent 4485rpx,
+      rgba(248, 249, 243, 1) 400.5rpx
+    );
+  }
+</style>

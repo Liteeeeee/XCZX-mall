@@ -1,7 +1,8 @@
 <!-- 优惠券中心  -->
 <template>
-  <s-layout :bgStyle="{ color: '#f2f2f2' }" title="优惠券">
-    <su-sticky bgColor="#fff">
+  <s-layout :bgStyle="{ color: '#f2f2f2' }" title="优惠券" navbar="normal">
+    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+    <su-sticky bgColor="#fff" :offset="sheep.$platform.navbar">
       <su-tabs
         :list="tabMaps"
         :scrollable="false"
