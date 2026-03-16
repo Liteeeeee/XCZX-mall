@@ -778,10 +778,8 @@
       .spec-key {
         width: 160rpx;
         padding: 20rpx;
-        background: #fafafa;
         font-size: 24rpx;
-        color: #666;
-        border-right: 1rpx solid #eee;
+        color: #9D9C96;
       }
       .spec-val {
         flex: 1;
@@ -789,6 +787,7 @@
         font-size: 24rpx;
         color: #333;
         white-space: pre-line;
+        text-align: right;
       }
     }
   }
