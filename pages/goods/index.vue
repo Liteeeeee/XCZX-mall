@@ -240,13 +240,13 @@
         <detail-tabbar v-model="state.goodsInfo">
           <view class="buy-box ss-flex ss-col-center ss-p-r-20" v-if="state.goodsInfo.stock > 0">
             <button
-              class="ss-reset-button add-btn ui-Shadow-Main"
+              class="ss-reset-button add-btn "
               @tap="state.showSelectSku = true"
             >
               加入购物车
             </button>
             <button
-              class="ss-reset-button buy-btn ui-Shadow-Main"
+              class="ss-reset-button buy-btn "
               @tap="state.showSelectSku = true"
             >
               立即购买
@@ -807,25 +807,25 @@
   .buy-box {
     padding: 0 20rpx;
     flex: 1;
+    justify-content: flex-end;
     .add-btn {
-      flex: 1;
+      width: 220rpx;
       height: 80rpx;
       font-weight: bold;
       font-size: 28rpx;
-      border-radius: 12rpx;
-      background-color: #fff;
-      color: #1a9c75;
-      border: 2rpx solid #1a9c75;
-      margin-right: 20rpx;
+      border-radius: 10rpx 0 0 10rpx;
+      background-color: #F8F9F3;
+      color: #1E3F1C;
+      border: 1rpx solid #1E3F1C;
     }
 
     .buy-btn {
-      flex: 1;
+      width: 220rpx;
       height: 80rpx;
       font-weight: bold;
       font-size: 28rpx;
-      border-radius: 12rpx;
-      background: #1a3a32;
+      border-radius: 0rpx 10rpx 10rpx 0rpx;
+      background: #1E3F1C;
       color: #fff;
     }
 
