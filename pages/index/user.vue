@@ -113,7 +113,7 @@
     width: 100%;
     min-height: calc(100vh - 480rpx);
     padding: 80rpx 30rpx 20rpx;
-    margin-top: -127rpx; // 向上移动以覆盖在卡片下方
+    margin-top: -139rpx; // 向上移动以覆盖在卡片下方
     position: relative;
     z-index: 1;
     box-sizing: border-box;

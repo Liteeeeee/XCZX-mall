@@ -1,6 +1,7 @@
 <!-- 用户信息 -->
 <template>
-  <s-layout title="用户信息" class="set-userinfo-wrap">
+  <s-layout title="用户信息" class="set-userinfo-wrap" navbar="inner">
+    <su-status-bar />
     <uni-forms
       :model="state.model"
       :rules="state.rules"
@@ -8,14 +9,13 @@
       border
       class="form-box"
     >
-      <!-- 头像 -->
       <view class="ss-flex ss-row-center ss-col-center ss-p-t-60 ss-p-b-0 bg-white">
         <view class="header-box-content">
           <su-image
             class="content-img"
             isPreview
             :current="0"
-            :src="state.model?.avatar || sheep.$url.static('/static/img/shop/default_avatar.png')"
+            :src="sheep.$url.avatar(state.model?.avatar)"
             :height="160"
             :width="160"
             :radius="80"
@@ -155,7 +155,7 @@
         </view>
         <view class="ss-flex ss-col-center">
           <view class="info ss-flex ss-col-center" v-if="state.thirdInfo">
-            <image class="avatar ss-m-r-20" :src="sheep.$url.cdn(state.thirdInfo.avatar)" />
+            <image class="avatar ss-m-r-20" :src="sheep.$url.avatar(state.thirdInfo.avatar)" />
             <text class="name">{{ state.thirdInfo.nickname }}</text>
           </view>
           <view class="bind-box ss-m-l-20">
@@ -172,9 +172,13 @@
       </view>
     </view>
 
+    <view class="ss-p-x-30 ss-m-t-20">
+      <button class="ss-reset-button logout-btn" @tap="onLogout">退出登录</button>
+    </view>
+
     <su-fixed bottom placeholder bg="none">
       <view class="footer-box ss-p-20">
-        <button class="ss-rest-button logout-btn ui-Shadow-Main" @tap="onSubmit">保存</button>
+        <button class="ss-rest-button save-btn ui-Shadow-Main" @tap="onSubmit">保存</button>
       </view>
     </su-fixed>
   </s-layout>
@@ -285,6 +289,22 @@
     }
   }
 
+  // 登出系统
+  function onLogout() {
+    uni.showModal({
+      title: '提示',
+      content: '确认退出登录？',
+      success: async function (res) {
+        if (res.confirm) {
+          const result = await sheep.$store('user').logout();
+          if (result) {
+            sheep.$router.go('/pages/index/user');
+          }
+        }
+      },
+    });
+  }
+
   // 获得用户信息
   const getUserInfo = async () => {
     // 个人信息
@@ -350,7 +370,7 @@
     line-height: 100rpx;
   }
 
-  .logout-btn {
+  .save-btn {
     width: 710rpx;
     height: 80rpx;
     background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
@@ -360,10 +380,27 @@
     color: $white;
   }
 
+  .logout-btn {
+    width: 100%;
+    height: 80rpx;
+    border-radius: 40rpx;
+    background: #fff;
+    color: #333333;
+    font-size: 28rpx;
+    font-weight: 500;
+  }
+
   .radio-dark {
     filter: grayscale(100%);
     filter: gray;
     opacity: 0.4;
+  }
+
+  .footer-box {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
 
   .content-img {

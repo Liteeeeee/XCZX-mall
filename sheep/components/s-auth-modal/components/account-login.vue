@@ -90,11 +90,7 @@
     // 检查协议状态
     if (props.agreeStatus !== true) {
       emits('onConfirm', true);
-      if (props.agreeStatus === false) {
-        sheep.$helper.toast('您已拒绝协议，无法继续登录');
-      } else {
-        sheep.$helper.toast('请选择是否同意协议');
-      }
+      sheep.$helper.toast('请阅读并同意遵守协议');
       return;
     }
 

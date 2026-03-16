@@ -27,7 +27,7 @@
         >
           <image
             class="avatar-img"
-            :src="sheep.$url.cdn(state.model.avatar)"
+            :src="sheep.$url.avatar(state.model.avatar)"
             mode="aspectFill"
             @tap="sheep.$router.go('/pages/user/info')"
           />

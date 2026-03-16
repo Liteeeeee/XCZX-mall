@@ -34,7 +34,7 @@ const user = async (poster) => {
     },
     {
       type: 'image',
-      src: formatImageUrlProtocol(sheep.$url.cdn(userInfo.avatar)),
+      src: formatImageUrlProtocol(sheep.$url.avatar(userInfo.avatar)),
       css: {
         position: 'fixed',
         left: width * 0.4,

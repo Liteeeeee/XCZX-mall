@@ -140,7 +140,7 @@
                 style="display: flex; align-items: center"
               >
                 <view class="pictrue">
-                  <image :src="item.avatar" />
+                  <image :src="sheep.$url.avatar(item.avatar)" />
                 </view>
                 <view class="text">
                   <view class="name line1">{{ item.nickname }}</view>
@@ -189,7 +189,7 @@
       ]">
 			<view v-if="userInfo.parent_user" class="referrer-box ss-flex ss-col-center">
 				推荐人：
-				<image class="referrer-avatar ss-m-r-10" :src="sheep.$url.cdn(userInfo.parent_user.avatar)"
+				<image class="referrer-avatar ss-m-r-10" :src="sheep.$url.avatar(userInfo.parent_user.avatar)"
 					mode="aspectFill">
 				</image>
 				{{ userInfo.parent_user.nickname }}
@@ -234,11 +234,11 @@
 		<view class="list-box">
 			<uni-list :border="false">
 				<uni-list-chat v-for="item in state.pagination.data" :key="item.id" :avatar-circle="true"
-					:title="item.nickname" :avatar="sheep.$url.cdn(item.avatar)"
+					:title="item.nickname" :avatar="sheep.$url.avatar(item.avatar)"
 					:note="filterUserNum(item.agent?.child_user_count_1)">
 					<view class="chat-custom-right">
 						<view v-if="item.avatar" class="tag-box ss-flex ss-col-center">
-							<image class="tag-img" :src="sheep.$url.cdn(item.avatar)" mode="aspectFill">
+							<image class="tag-img" :src="sheep.$url.avatar(item.avatar)" mode="aspectFill">
 							</image>
 							<text class="tag-title">{{ item.nickname }}</text>
 						</view>

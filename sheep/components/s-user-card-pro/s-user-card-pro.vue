@@ -1,6 +1,11 @@
 <!-- 装修用户组件：用户卡片 Pro -->
 <template>
-  <view class="ss-user-card-pro" :style="[cardStyle, { minHeight: '500rpx', background:'none !important', display: 'block' }]" :class="{ 'unlogin-card': !isLogin }">
+  <view
+    class="ss-user-card-pro"
+    :style="[cardStyle, { minHeight: '500rpx', background: 'none !important', display: 'block' }]"
+    :class="{ 'unlogin-card': !isLogin }"
+    @tap="onCardClick"
+  >
     <!-- 沉浸式占位 -->
     <view :style="{ height: statusBarHeight + 'px' }"></view>
     <view :style="{ height: navBarHeight + 'px' }"></view>
@@ -14,7 +19,7 @@
         <view class="avatar-box ss-m-r-30" :class="{ 'unlogin-avatar': !isLogin }">
           <image
             class="avatar-img"
-            :src="isLogin && userInfo.avatar ? sheep.$url.cdn(userInfo.avatar) : '/static/data-empty.png'"
+            :src="sheep.$url.avatar(isLogin ? userInfo.avatar : '')"
             mode="aspectFill"
             @tap="onUserClick"
           />
@@ -22,10 +27,10 @@
         <!-- 昵称与登录引导 -->
         <view class="info-content" @tap="onUserClick">
           <view class="nickname ss-m-b-8" :class="{ 'unlogin-nickname': !isLogin }">
-            {{ isLogin ? (userInfo.nickname || '未设置昵称') : '点击登录' }}
+            {{ isLogin ? (userInfo.nickname || '未设置昵称') : '登录/注册' }}
           </view>
           <view v-if="!isLogin" class="unlogin-prompt" style="color: #666; font-size: 26rpx;">
-            登录账号 开启您的专属权益
+            登录体验更多功能哦~
           </view>
           <view v-else-if="userInfo.mobile" class="mobile-text ss-flex ss-col-center">
             <text class="cicon-mobile-o ss-m-r-8"></text>
@@ -39,21 +44,7 @@
 
       <!-- 登录按钮/会员等级图标 -->
       <view class="right-action">
-        <button
-          v-if="!isLogin"
-          class="ss-reset-button login-btn"
-          style="
-            background: #ff4d4f;
-            color: #fff;
-            padding: 10rpx 30rpx;
-            border-radius: 30rpx;
-            font-size: 24rpx;
-          "
-          @tap="onUserClick"
-        >
-          去登录
-        </button>
-        <view v-else class="member-icon-box" @tap="sheep.$router.go('/pages/index/member')">
+        <view v-if="isLogin" class="member-icon-box" @tap="sheep.$router.go('/pages/index/member')">
           <image class="member-icon" :src="sheep.$url.static(memberIcon)" mode="aspectFit" />
         </view>
       </view>
@@ -72,13 +63,8 @@
       </view>
     </view>
 
-    <!-- 未登录时的占位插画 -->
-    <view v-if="!isLogin" class="unlogin-illustration ss-flex ss-row-center ss-m-t-30" style="position: relative; z-index: 2;">
-      <image class="illustration-img" src="/static/data-empty.png" mode="aspectFit" style="width: 200rpx; height: 200rpx;" />
-    </view>
-
     <!-- VIP 会员卡片 -->
-    <view class="ss-p-b-30 ">
+    <view v-if="isLogin" class="ss-p-b-30 ">
       <s-vip-card />
     </view>
   </view>
@@ -91,6 +77,7 @@
   import { computed } from 'vue';
   import sheep from '@/sheep';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
+  import { showAuthModal } from '@/sheep/hooks/useModal';
 
   const statusBarHeight = sheep.$platform.device.statusBarHeight;
   const navBarHeight = sheep.$platform.navbar - statusBarHeight;
@@ -136,34 +123,25 @@
 
   // 统计数据列表
   const statsList = computed(() => {
-    // 优先从 props.data 中获取 stats
-    const statsFromData = props.data.stats || [];
-    // 如果 props.data.stats 为空，则根据 isLogin 提供默认值
     const list = [
       {
         label: '余额',
-        value: isLogin.value ? fen2yuan(userWallet.value.balance) : (findStatValue(statsFromData, '余额') || '0.00'),
+        value: isLogin.value ? fen2yuan(userWallet.value.balance) : '0.00',
         type: 'balance',
       },
       {
         label: '积分',
-        value: isLogin.value ? userInfo.value.point : (findStatValue(statsFromData, '积分') || '0'),
+        value: isLogin.value ? userInfo.value.point : '0',
         type: 'point',
       },
       {
         label: '优惠券',
-        value: isLogin.value ? numData.value.unusedCouponCount : (findStatValue(statsFromData, '优惠券') || '0'),
+        value: isLogin.value ? numData.value.unusedCouponCount : '0',
         type: 'coupon',
       },
     ];
     return list;
   });
-
-  const findStatValue = (stats, label) => {
-    if (!stats || !Array.isArray(stats)) return null;
-    const item = stats.find((s) => s.label === label);
-    return item ? item.value : null;
-  };
 
   // 手机号脱敏
   const formatMobile = (mobile) => {
@@ -171,21 +149,23 @@
     return mobile.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
   };
 
+  // 点击卡片
+  const onCardClick = () => {
+    if (!isLogin.value) {
+      showAuthModal();
+    }
+  };
+
   // 点击用户头像/昵称
   const onUserClick = () => {
     if (isLogin.value) {
       sheep.$router.go('/pages/user/info');
-    } else {
-      sheep.$store('user').showAuthModal();
     }
   };
 
   // 点击统计项
   const onStatsClick = (type) => {
-    if (!isLogin.value) {
-      sheep.$store('user').showAuthModal();
-      return;
-    }
+    if (!isLogin.value) return;
     const routes = {
       balance: '/pages/user/wallet/money',
       point: '/pages/user/wallet/score',
@@ -194,6 +174,11 @@
     if (routes[type]) {
       sheep.$router.go(routes[type]);
     }
+  };
+
+  // 绑定手机号
+  const onBindMobile = () => {
+    showAuthModal('changeMobile');
   };
 
   // 样式处理
@@ -391,7 +376,6 @@
       }
     }
     &.unlogin-card {
-      border: 4rpx dashed #52c41a;
       background: rgba(82, 196, 26, 0.05) !important;
     }
   }

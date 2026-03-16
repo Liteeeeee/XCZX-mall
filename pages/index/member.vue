@@ -453,7 +453,7 @@
     padding: 30rpx;
     box-sizing: border-box;
     position: fixed;
-    bottom: calc(69rpx + env(safe-area-inset-bottom));
+    bottom: calc(78rpx + env(safe-area-inset-bottom));
     left: 0;
     background: #fff;
     border-radius: 20rpx 20rpx 0 0;

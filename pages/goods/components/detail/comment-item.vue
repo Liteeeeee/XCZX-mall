@@ -4,7 +4,7 @@
     <!-- 用户评论 -->
     <view class="user ss-flex ss-m-b-14">
       <view class="ss-m-r-20 ss-flex">
-        <image class="avatar" :src="item.userAvatar"></image>
+        <image class="avatar" :src="sheep.$url.avatar(item.userAvatar)"></image>
       </view>
       <view class="nickname ss-m-r-20">{{ item.userNickname }}</view>
       <view class="">
@@ -39,6 +39,7 @@
 </template>
 
 <script setup>
+  import sheep from '@/sheep';
   const props = defineProps({
     item: {
       type: Object,

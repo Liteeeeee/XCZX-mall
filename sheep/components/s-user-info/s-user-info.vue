@@ -70,6 +70,10 @@
   };
 
   const onItemClick = (item) => {
+    if (item.name === '我的设置') {
+      sheep.$router.go('/pages/user/info');
+      return;
+    }
     if (item.name === '地址管理') {
       sheep.$router.go('/pages/user/address/list');
       return;

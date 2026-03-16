@@ -4,10 +4,7 @@
     <view class="ss-flex ss-col-center ss-row-between ss-m-b-20 ss-p-t-30">
       <view class="left-box ss-flex ss-col-center ss-m-l-30">
         <view class="avatar-box ss-m-r-24">
-          <image class="avatar-img" :src="
-              isLogin && userInfo.avatar
-                ? sheep.$url.cdn(userInfo.avatar)
-                : sheep.$url.static('/static/img/shop/default_avatar.png')"
+          <image class="avatar-img" :src="sheep.$url.avatar(isLogin ? userInfo.avatar : '')"
                  mode="aspectFill" @tap="sheep.$router.go('/pages/user/info')">
           </image>
         </view>

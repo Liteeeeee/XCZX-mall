@@ -92,11 +92,9 @@
         class="agreement-box ss-flex ss-flex-col ss-col-center"
         :class="{ shake: currentProtocol }"
       >
-        <view class="agreement-title ss-m-b-20">请选择是否同意以下协议(请联网查看)：</view>
-        
         <view class="agreement-options-container">
           <!-- 同意选项 -->
-          <view class="agreement-option ss-m-b-20">
+          <view class="agreement-option">
             <view class="radio ss-flex ss-col-center" @tap="onAgree">
               <radio
                 :checked="state.protocol === true"
@@ -106,24 +104,6 @@
               />
               <view class="agreement-text ss-flex ss-col-center ss-m-l-8">
                 我已阅读并同意遵守
-                <view class="tcp-text" @tap.stop="onProtocol('用户协议')"> 《用户协议》 </view>
-                <view class="agreement-text">与</view>
-                <view class="tcp-text" @tap.stop="onProtocol('隐私协议')"> 《隐私协议》 </view>
-              </view>
-            </view>
-          </view>
-          
-          <!-- 拒绝选项 -->
-          <view class="agreement-option">
-            <view class="radio ss-flex ss-col-center" @tap="onRefuse">
-              <radio
-                :checked="state.protocol === false"
-                color="#ff4d4f"
-                style="transform: scale(0.8)"
-                @tap.stop="onRefuse"
-              />
-              <view class="agreement-text ss-flex ss-col-center ss-m-l-8">
-                我拒绝遵守
                 <view class="tcp-text" @tap.stop="onProtocol('用户协议')"> 《用户协议》 </view>
                 <view class="agreement-text">与</view>
                 <view class="tcp-text" @tap.stop="onProtocol('隐私协议')"> 《隐私协议》 </view>
@@ -160,12 +140,7 @@
 
   // 同意协议
   function onAgree() {
-    state.protocol = true;
-  }
-  
-  // 拒绝协议
-  function onRefuse() {
-    state.protocol = false;
+    state.protocol = !state.protocol;
   }
 
   // 查看协议
@@ -191,12 +166,7 @@
       setTimeout(() => {
         currentProtocol.value = false;
       }, 1000);
-      
-      if (state.protocol === false) {
-        sheep.$helper.toast('您已拒绝协议，无法继续登录');
-      } else {
-        sheep.$helper.toast('请选择是否同意协议');
-      }
+      sheep.$helper.toast('请阅读并同意遵守协议');
       return;
     }
     const loginRes = await sheep.$platform.useProvider(provider).login();
@@ -302,7 +272,8 @@
   
   .agreement-options-container {
     width: 100%;
-    padding-left: 100rpx;
+    display: flex;
+    justify-content: center;
   }
   
   .agreement-option {

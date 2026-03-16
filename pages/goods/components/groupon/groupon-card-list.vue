@@ -12,7 +12,7 @@
       class="ss-m-t-40 ss-flex ss-row-between border-bottom ss-p-b-30"
     >
       <view class="ss-flex ss-col-center">
-        <image :src="sheep.$url.cdn(record.avatar)" class="user-avatar"></image>
+        <image :src="sheep.$url.avatar(record.avatar)" class="user-avatar"></image>
         <view class="user-nickname ss-m-l-20 ss-line-1">{{ record.nickname }}</view>
       </view>
       <view class="ss-flex ss-col-center">
