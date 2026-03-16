@@ -9,45 +9,31 @@
           @tap="onFavorite"
         >
           <block v-if="modelValue.favorite">
-            <image
-              class="item-icon"
-              :src="sheep.$url.static('/static/img/shop/goods/collect_1.gif')"
-              mode="aspectFit"
-            />
+            <uni-icons type="star-filled" size="22" color="#ff4d4f"></uni-icons>
             <view class="item-title">已收藏</view>
           </block>
           <block v-else>
-            <image
-              class="item-icon"
-              :src="sheep.$url.static('/static/img/shop/goods/collect_0.png')"
-              mode="aspectFit"
-            />
+            <uni-icons type="star" size="22" color="#666"></uni-icons>
             <view class="item-title">收藏</view>
           </block>
+        </view>
+        <view
+          class="detail-tabbar-item ss-flex ss-flex-col ss-row-center ss-col-center"
+          @tap="onCart"
+        >
+          <view class="icon-box">
+             <uni-icons type="cart" size="22" color="#666"></uni-icons>
+             <view class="badge" v-if="cartCount > 0">{{ cartCount }}</view>
+          </view>
+          <view class="item-title">购物车</view>
         </view>
         <view
           v-if="serviceIcon"
           class="detail-tabbar-item ss-flex ss-flex-col ss-row-center ss-col-center"
           @tap="onChat"
         >
-          <image
-            class="item-icon"
-            :src="sheep.$url.static('/static/img/shop/goods/message.png')"
-            mode="aspectFit"
-          />
+          <uni-icons type="headphones" size="22" color="#666"></uni-icons>
           <view class="item-title">客服</view>
-        </view>
-        <view
-          v-if="shareIcon"
-          class="detail-tabbar-item ss-flex ss-flex-col ss-row-center ss-col-center"
-          @tap="showShareModal"
-        >
-          <image
-            class="item-icon"
-            :src="sheep.$url.static('/static/img/shop/goods/share.png')"
-            mode="aspectFit"
-          />
-          <view class="item-title">分享</view>
         </view>
         <slot></slot>
       </view>
@@ -65,7 +51,7 @@
    * @property {Boolean} noFixed 		 			- 是否定位
    * @property {Boolean} topRadius 		 		- 上圆角
    */
-  import { reactive } from 'vue';
+  import { reactive, computed } from 'vue';
   import sheep from '@/sheep';
   import { showShareModal } from '@/sheep/hooks/useModal';
   import FavoriteApi from '@/sheep/api/product/favorite';
@@ -102,7 +88,7 @@
     },
     collectIcon: {
       type: Boolean,
-      default: true,
+      default: false,
     },
     serviceIcon: {
       type: Boolean,
@@ -110,9 +96,11 @@
     },
     shareIcon: {
       type: Boolean,
-      default: true,
+      default: false,
     },
   });
+
+  const cartCount = computed(() => sheep.$store('cart').list.length);
 
   async function onFavorite() {
     // 情况一：取消收藏
@@ -139,6 +127,10 @@
       id: props.modelValue.id,
     });
   };
+
+  const onCart = () => {
+    sheep.$router.go('/pages/index/cart');
+  };
 </script>
 
 <style lang="scss" scoped>
@@ -147,22 +139,45 @@
   }
   .ui-tabbar {
     display: flex;
-    height: 50px;
+    height: 100rpx;
     background: #fff;
 
     .detail-tabbar-item {
-      width: 100rpx;
+      width: 120rpx;
+      height: 100%;
+      position: relative;
 
-      .item-icon {
-        width: 40rpx;
-        height: 40rpx;
+      .icon-box {
+        position: relative;
+        width: 44rpx;
+        height: 44rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        .badge {
+          position: absolute;
+          top: -6rpx;
+          right: -10rpx;
+          min-width: 30rpx;
+          height: 30rpx;
+          line-height: 30rpx;
+          text-align: center;
+          background: #ff4d4f;
+          color: #fff;
+          font-size: 20rpx;
+          border-radius: 15rpx;
+          padding: 0 6rpx;
+          border: 2rpx solid #fff;
+        }
       }
 
       .item-title {
         font-size: 20rpx;
         font-weight: 500;
-        line-height: 20rpx;
-        margin-top: 12rpx;
+        line-height: 1;
+        margin-top: 6rpx;
+        color: #666;
       }
     }
   }

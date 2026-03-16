@@ -97,6 +97,7 @@
                 "
                 :titleWidth="400"
                 priceColor="#FF3000"
+                @tapImg="onGoodsDetail(item)"
               >
                 <template v-slot:priceSuffix>
                   <text class="price-unit">/盒</text>
@@ -246,6 +247,16 @@
   // 全选
   function onSelectAll() {
     cart.selectAll(!state.isAllSelected);
+  }
+
+  // 跳转商品详情
+  function onGoodsDetail(item) {
+    const goodsId = item.spu?.id || item.goods_id;
+    if (goodsId) {
+      sheep.$router.go('/pages/goods/index', {
+        id: goodsId,
+      });
+    }
   }
 
   // 结算

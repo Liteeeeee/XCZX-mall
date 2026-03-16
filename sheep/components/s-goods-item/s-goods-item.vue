@@ -7,7 +7,7 @@
       class="ss-order-card-warp ss-flex ss-col-stretch ss-row-between bg-white"
       :style="[{ borderRadius: radius + 'rpx', marginBottom: marginBottom + 'rpx' }]"
     >
-      <view class="img-box ss-m-r-24">
+      <view class="img-box ss-m-r-24" @tap="onImgTap">
         <image class="order-img" :src="sheep.$url.cdn(img)" mode="aspectFill"></image>
       </view>
       <view
@@ -55,6 +55,12 @@
   import sheep from '@/sheep';
   import { computed } from 'vue';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
+
+  const emits = defineEmits(['tapImg']);
+  const onImgTap = () => {
+    emits('tapImg');
+  };
+
   /**
    * 订单卡片
    *

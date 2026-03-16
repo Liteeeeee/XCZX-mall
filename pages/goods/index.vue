@@ -19,59 +19,45 @@
         <view class="detail-swiper-selector">
           <!-- 商品轮播图  -->
           <su-swiper
-            class="ss-m-b-14"
+            class="ss-m-b-0"
             isPreview
             :list="formatGoodsSwiper(state.goodsInfo.sliderPicUrls)"
-            otStyle="tag"
-            imageMode="widthFix"
+            dotStyle="tag"
+            imageMode="aspectFill"
             dotCur="bg-mask-40"
             :seizeHeight="750"
           />
           <!-- 限时折扣/会员价的优惠信息 -->
           <view
-            class="discount"
+            class="discount-banner"
             v-if="
               state.settlementSku && state.settlementSku.id && state.settlementSku.promotionPrice
             "
+            :style="{
+              backgroundImage: 'url(' + sheep.$url.static('/static/goods/moneyBg.png') + ')',
+            }"
           >
-            <image class="disImg" :src="sheep.$url.static('/static/img/shop/goods/dis.png')" />
-            <view class="discountCont">
-              <view class="disContT">
-                <view class="disContT1">
-                  <view class="disContT1P">
-                    ￥{{ fen2yuan(state.settlementSku.promotionPrice) }}
-                  </view>
-                  <view class="disContT1End">
-                    直降￥
-                    {{ fen2yuan(state.settlementSku.price - state.settlementSku.promotionPrice) }}
-                  </view>
-                </view>
-                <view class="disContT2" v-if="state.settlementSku.promotionType === 4">
-                  限时折扣
-                </view>
-                <view class="disContT2" v-else-if="state.settlementSku.promotionType === 6">
-                  会员折扣
-                </view>
+            <view class="banner-left ss-flex ss-col-center">
+              <view class="price-unit">￥</view>
+              <view class="price-value">{{ fen2yuan(state.settlementSku.promotionPrice) }}</view>
+              <view class="price-tag-box ss-flex ss-col-center">
+                <view class="price-tag-unit">/盒</view>
+                <view class="price-tag-label"
+                  >已省￥{{
+                    fen2yuan(state.settlementSku.price - state.settlementSku.promotionPrice)
+                  }}</view
+                >
               </view>
-              <view class="disContB">
-                <view class="disContB1">
-                  价格：￥{{ fen2yuan(state.settlementSku.price) }} 丨 剩余：
-                  {{ state.settlementSku.stock }}
-                </view>
-                <view class="disContB2" v-if="state.settlementSku.promotionEndTime > 0">
-                  距结束仅剩
-                  <s-count-down
-                    :tipText="' '"
-                    :bgColor="bgColor"
-                    :dayText="':'"
-                    :hourText="':'"
-                    :minuteText="':'"
-                    :secondText="' '"
-                    :datatime="state.settlementSku.promotionEndTime / 1000"
-                    :isDay="false"
-                  />
-                </view>
+            </view>
+            <view class="banner-right ss-flex ss-col-center">
+              <view class="brand-info">
+                <view class="brand-name">仙草甄选</view>
+                <view class="brand-desc">源自风头 · 品质保障</view>
               </view>
+              <image
+                class="brand-icon"
+                :src="sheep.$url.static('/static/img/shop/goods/m-icon.png')"
+              />
             </view>
           </view>
           <!-- 价格+标题 -->
@@ -93,51 +79,32 @@
                 </view>
               </view>
               <view class="sales-text">
-                {{ formatSales('exact', state.goodsInfo.salesCount) }}
+                已售{{ formatSales('exact', state.goodsInfo.salesCount) }}
               </view>
             </view>
-            <view class="discounts-box ss-flex ss-row-between ss-m-b-28">
-              <!-- 查看优惠劵的描述 -->
-              <view
-                class="tag ss-m-r-10"
-                v-for="coupon in state.couponInfo.slice(0, 1)"
-                :key="coupon.id"
-                @tap="onOpenActivity"
-              >
-                [劵]满{{ fen2yuanSimple(coupon.usePrice) }}元{{
-                  coupon.discountType === 1
-                    ? '减' + fen2yuanSimple(coupon.discountPrice) + '元'
-                    : '打' + formatDiscountPercent(coupon.discountPercent) + '折'
-                }}
-              </view>
-              <!-- 查看满减送的描述 -->
-              <div class="tag-content">
-                <view class="tag-box ss-flex">
-                  <!-- 最多打印 3 条，所以需要扣除优惠劵已打印的 -->
-                  <view
-                    v-for="item in getRewardActivityRuleItemDescriptions(
-                      state.rewardActivity,
-                    ).slice(0, 3 - state.couponInfo.slice(0, 1).length)"
-                    :key="item"
-                    class="tag ss-m-r-10"
-                    @tap="onOpenActivity"
-                  >
-                    <text>{{ item }}</text>
-                  </view>
-                </view>
-              </div>
-              <!-- 领取优惠劵的按钮 -->
-              <view
-                class="get-coupon-box ss-flex ss-col-center ss-m-l-20"
-                @tap="onOpenActivity"
-                v-if="state.couponInfo.length"
-              >
-                <view class="discounts-title ss-m-r-8">领券</view>
-                <text class="cicon-forward"></text>
-              </view>
+            <view class="title-text ss-line-2 ss-m-b-16">{{ state.goodsInfo.name }}</view>
+            <view class="subtitle-text ss-line-2">{{ state.goodsInfo.introduction }}</view>
+          </view>
+
+          <!-- VIP 卡片 -->
+          <view
+            class="vip-card ss-flex ss-row-between ss-col-center ss-m-x-20 ss-m-b-20 ss-p-x-20"
+            :style="{
+              backgroundImage: 'url(' + sheep.$url.static('/static/goods/vipBg.png') + ')',
+            }"
+          >
+            <view class="vip-left ss-flex ss-col-center">
+              <image
+                class="vip-icon"
+                :src="sheep.$url.static('/static/goods/vipIcon.png')"
+                mode="aspectFit"
+              />
+              <view class="vip-text">会员可享95折，更有超值会员商品等你来~</view>
             </view>
-            <view class="title-text ss-line-2 ss-m-b-6">{{ state.goodsInfo.name }}</view>
-            <view class="subtitle-text ss-line-1">{{ state.goodsInfo.introduction }}</view>
+            <view class="vip-right ss-flex ss-col-center">
+              <view class="vip-btn">去看看</view>
+              <text class="cicon-forward"></text>
+            </view>
           </view>
 
           <!-- 功能卡片 -->
@@ -147,6 +114,101 @@
               :sku="state.selectedSku"
               @tap="state.showSelectSku = true"
             />
+            <!-- 积分 -->
+            <view class="info-cell ss-flex ss-col-center ss-p-20">
+              <view class="label">积分</view>
+              <view class="value ss-flex-1 ss-flex ss-col-center">
+                <text class="tag ss-m-r-10">赠送积分</text>
+                <text>购买本商品最少可获得100积分</text>
+              </view>
+            </view>
+            <!-- 服务 -->
+            <view class="info-cell ss-flex ss-col-center ss-p-20">
+              <view class="label">服务</view>
+              <view class="value ss-flex-1 ss-flex ss-col-center">
+                <view class="service-item ss-flex ss-col-center ss-m-r-20">
+                  <text class="cicon-check-round ss-m-r-5"></text>极速配送
+                </view>
+                <view class="service-item ss-flex ss-col-center ss-m-r-20">
+                  <text class="cicon-check-round ss-m-r-5"></text>退换无忧
+                </view>
+                <view class="service-item ss-flex ss-col-center">
+                  <text class="cicon-check-round ss-m-r-5"></text>假一赔十
+                </view>
+              </view>
+              <text class="cicon-forward"></text>
+            </view>
+            <!-- 规格预览 -->
+            <view class="info-cell ss-flex ss-col-center ss-p-20">
+              <view class="label">规格</view>
+              <view class="value ss-flex-1 ss-flex ss-col-center ss-row-around">
+                <view class="spec-preview-item ss-flex-col ss-col-center">
+                  <view class="spec-val">人参萃取液</view>
+                  <view class="spec-label">品名</view>
+                </view>
+                <view class="spec-preview-item ss-flex-col ss-col-center">
+                  <view class="spec-val">180天</view>
+                  <view class="spec-label">保质期</view>
+                </view>
+                <view class="spec-preview-item ss-flex-col ss-col-center">
+                  <view class="spec-val">吉林省长春...</view>
+                  <view class="spec-label">原产地</view>
+                </view>
+              </view>
+              <text class="cicon-forward"></text>
+            </view>
+          </view>
+
+          <!-- 仙草检测 Banner -->
+          <view
+            class="quality-check-banner ss-m-x-20 ss-m-b-20"
+            :style="{
+              backgroundImage: 'url(' + sheep.$url.static('/static/goods/reportBg.png') + ')',
+            }"
+          >
+            <!-- 暂时使用一个占位图或者静态结构 -->
+            <view class="check-box ss-flex ss-row-between ss-col-center ss-p-20">
+              <view class="check-left">
+                <view class="check-title ss-flex ss-col-center">
+                  <text class="check-name">仙草检测</text>
+                  <text class="check-tag">真实透明</text>
+                </view>
+                <view class="check-desc">
+                  本地质检由第三方平台权威检测，检测报告与实物不符，承诺假一赔十，平台先行赔付。
+                </view>
+                <view class="check-result ss-flex ss-row-between ss-col-center">
+                  <view class="check-result-left">
+                    <view class="check-result-title">通过308项农残检测</view>
+                    <view class="check-result-date">2026.03.12</view>
+                  </view>
+                  <view class="check-result-right">
+                    <image
+                      class="check-report-img"
+                      :src="sheep.$url.static('/static/goods/report.png')"
+                      mode="heightFix"
+                    />
+                  </view>
+                </view>
+              </view>
+            </view>
+          </view>
+
+          <!-- 规格信息表格 -->
+          <view class="detail-card ss-p-20">
+            <view class="card-header ss-m-b-20 ss-font-30 ss-bold">规格信息</view>
+            <view class="spec-table" :class="{ collapsed: !state.showAllSpec }">
+              <view class="spec-row ss-flex" v-for="(item, index) in specList" :key="index">
+                <view class="spec-key">{{ item.label }}</view>
+                <view class="spec-val">{{ item.value }}</view>
+              </view>
+            </view>
+            <view
+              class="collapse-btn ss-flex ss-row-center ss-col-center ss-m-t-20"
+              @tap="toggleSpec"
+            >
+              <text>{{ state.showAllSpec ? '收起' : '展开' }}</text>
+              <text class="cicon-forward" :class="{ 'rotate-up': state.showAllSpec }"></text>
+            </view>
           </view>
 
           <!-- 规格与数量弹框 -->
@@ -257,7 +319,28 @@
     showActivityModel: false, // 【满减送/限时折扣】是否展示 Activity 营销活动的弹窗
     rewardActivity: {}, // 【满减送】活动
     activityList: [], // 【秒杀/拼团/砍价】可参与的 Activity 营销活动的列表
+    showAllSpec: false,
   });
+
+  const specList = [
+    { label: '包装', value: '盒装、瓶装' },
+    { label: '保质期', value: '180天' },
+    { label: '产品剂型', value: '人参萃取液' },
+    { label: '种类', value: '人参' },
+    { label: '品名', value: '每日人参补液' },
+    { label: '商品产地', value: '吉林省长春市' },
+    { label: '配料表', value: '人参、红枣、黄芪、枸杞、铁皮石斛、菊花、白术、覆盆子' },
+    { label: '净含量', value: '7日装: 25克*7瓶\n30日装: 25克*30瓶' },
+    { label: '适宜人群', value: '人参膏适合人群' },
+    {
+      label: '温馨提示',
+      value: '1、人参性质温补热药食品，阴虚火旺者\n有问题不可随意进补\n2、开瓶后请尽快食用',
+    },
+  ];
+
+  function toggleSpec() {
+    state.showAllSpec = !state.showAllSpec;
+  }
 
   // 规格变更
   function onSkuChange(e) {
@@ -430,32 +513,126 @@
 <style lang="scss" scoped>
   .detail-card {
     background-color: #ffff;
-    margin: 14rpx 20rpx;
-    border-radius: 10rpx;
+    margin: 20rpx;
+    border-radius: 20rpx;
     overflow: hidden;
+  }
+
+  // 轮播图指示器样式
+  :deep(.ui-swiper-dot.tag) {
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 20rpx;
+    padding: 4rpx 16rpx;
+    bottom: 30rpx;
+    right: 30rpx;
+    color: #fff;
+    font-size: 24rpx;
+  }
+
+  // 折扣横幅
+  .discount-banner {
+    width: 100%;
+    height: 152rpx;
+    // background: linear-gradient(90deg, #28b389 0%, #1a9c75 100%);
+    background-size: cover;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30rpx;
+    color: #fff;
+
+    .banner-left {
+      .price-unit {
+        font-size: 32rpx;
+        margin-top: 10rpx;
+      }
+      .price-value {
+        font-size: 56rpx;
+        font-weight: bold;
+        font-family: OPPOSANS;
+      }
+      .price-tag-box {
+        margin-left: 10rpx;
+        .price-tag-unit {
+          font-size: 24rpx;
+          margin-top: 10rpx;
+        }
+        .price-tag-label {
+          margin-left: 10rpx;
+          padding: 2rpx 12rpx;
+          background: rgba(255, 255, 255, 0.2);
+          border-radius: 20rpx;
+          font-size: 22rpx;
+        }
+      }
+    }
+
+    .banner-right {
+      .brand-info {
+        text-align: right;
+        margin-right: 10rpx;
+        .brand-name {
+          font-size: 28rpx;
+          font-weight: bold;
+        }
+        .brand-desc {
+          font-size: 20rpx;
+          opacity: 0.8;
+        }
+      }
+      .brand-icon {
+        width: 40rpx;
+        height: 40rpx;
+      }
+    }
+  }
+
+  // 会员卡片
+  .vip-card {
+    height: 80rpx;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 16rpx;
+    color: #e6d0a3;
+    overflow: hidden;
+
+    .vip-icon {
+      width: 66rpx;
+      height: 30rpx;
+      margin-right: 16rpx;
+    }
+    .vip-text {
+      font-size: 24rpx;
+    }
+    .vip-btn {
+      font-size: 24rpx;
+      margin-right: 4rpx;
+    }
+    .cicon-forward {
+      font-size: 24rpx;
+    }
   }
 
   // 价格标题卡片
   .title-card {
     .price-box {
       .price-text {
-        font-size: 42rpx;
-        font-weight: 500;
+        font-size: 48rpx;
+        font-weight: bold;
         color: #ff3000;
-        line-height: 30rpx;
         font-family: OPPOSANS;
 
         &::before {
           content: '￥';
-          font-size: 30rpx;
+          font-size: 32rpx;
         }
       }
 
       .origin-price-text {
         font-size: 26rpx;
-        font-weight: 400;
         text-decoration: line-through;
-        color: $gray-c;
+        color: #999;
+        margin-left: 12rpx;
         font-family: OPPOSANS;
 
         &::before {
@@ -465,89 +642,198 @@
     }
 
     .sales-text {
-      font-size: 26rpx;
-      font-weight: 500;
-      color: $gray-c;
-    }
-
-    .discounts-box {
-      .tag-content {
-        flex: 1;
-        min-width: 0;
-        white-space: nowrap;
-      }
-
-      .tag-box {
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
-      .tag {
-        flex-shrink: 0;
-        padding: 4rpx 10rpx;
-        font-size: 24rpx;
-        font-weight: 500;
-        border-radius: 4rpx;
-        color: var(--ui-BG-Main);
-        background: var(--ui-BG-Main-tag);
-      }
-
-      .discounts-title {
-        font-size: 24rpx;
-        font-weight: 500;
-        color: var(--ui-BG-Main);
-        line-height: normal;
-      }
-
-      .cicon-forward {
-        color: var(--ui-BG-Main);
-        font-size: 24rpx;
-        line-height: normal;
-        margin-top: 4rpx;
-      }
+      font-size: 24rpx;
+      color: #999;
     }
 
     .title-text {
-      font-size: 30rpx;
+      font-size: 34rpx;
       font-weight: bold;
-      line-height: 42rpx;
+      line-height: 1.4;
+      color: #333;
     }
 
     .subtitle-text {
       font-size: 26rpx;
-      font-weight: 400;
-      color: $dark-9;
-      line-height: 42rpx;
+      color: #666;
+      line-height: 1.5;
+    }
+  }
+
+  // 功能单元格
+  .info-cell {
+    border-bottom: 1rpx solid #f5f5f5;
+    &:last-child {
+      border-bottom: none;
+    }
+    .label {
+      width: 100rpx;
+      font-size: 26rpx;
+      color: #999;
+    }
+    .value {
+      font-size: 26rpx;
+      color: #333;
+      .tag {
+        background: #e6f7f2;
+        color: #28b389;
+        padding: 2rpx 12rpx;
+        border-radius: 4rpx;
+        font-size: 22rpx;
+      }
+      .service-item {
+        color: #333;
+        .cicon-check-round {
+          color: #28b389;
+          font-size: 28rpx;
+        }
+      }
+    }
+    .spec-preview-item {
+      .spec-val {
+        font-size: 26rpx;
+        font-weight: 400;
+        color: #333;
+      }
+      .spec-label {
+        font-size: 22rpx;
+        color: #999;
+        margin-top: 4rpx;
+      }
+    }
+    .cicon-forward {
+      color: #ccc;
+      font-size: 24rpx;
+    }
+  }
+
+  // 检测 Banner
+  .quality-check-banner {
+    // background: #f0f9f7;
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-radius: 20rpx;
+    overflow: hidden;
+    .check-box {
+      // background: linear-gradient(135deg, #f0f9f7 0%, #e6f5f1 100%);
+    }
+    .check-title {
+      margin-bottom: 12rpx;
+      .check-name {
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #1a9c75;
+      }
+      .check-tag {
+        background: linear-gradient(127deg, #63da91 0%, #02bb8c 100%);
+        color: #fff;
+        font-size: 20rpx;
+        padding: 2rpx 10rpx;
+        border-radius: 10rpx 10rpx 10rpx 0rpx;
+        margin-left: 12rpx;
+      }
+    }
+    .check-desc {
+      font-size: 20rpx;
+      color: #99A9A5;
+      line-height: 1.4;
+      margin-bottom: 16rpx;
+    }
+    .check-result {
+      background-color: #f8f9f3;
+      border-radius: 10rpx;
+      padding: 20rpx;
+      .check-result-title {
+        font-size: 28rpx;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 8rpx;
+      }
+      .check-result-date {
+        font-size: 24rpx;
+        color: #1a9c75;
+      }
+      .check-report-img {
+        width: 140rpx;
+        height: 140rpx;
+        margin-right: -20rpx;
+        margin-bottom: -30rpx;
+      }
+    }
+  }
+
+  // 规格表格
+  .spec-table {
+    border: 1rpx solid #eee;
+    border-radius: 8rpx;
+    overflow: hidden;
+    &.collapsed {
+      max-height: 400rpx;
+    }
+    .spec-row {
+      border-bottom: 1rpx solid #eee;
+      &:last-child {
+        border-bottom: none;
+      }
+      .spec-key {
+        width: 160rpx;
+        padding: 20rpx;
+        background: #fafafa;
+        font-size: 24rpx;
+        color: #666;
+        border-right: 1rpx solid #eee;
+      }
+      .spec-val {
+        flex: 1;
+        padding: 20rpx;
+        font-size: 24rpx;
+        color: #333;
+        white-space: pre-line;
+      }
+    }
+  }
+  .collapse-btn {
+    color: #333;
+    font-size: 24rpx;
+    .cicon-forward {
+      margin-left: 8rpx;
+      transform: rotate(90deg);
+      &.rotate-up {
+        transform: rotate(-90deg);
+      }
     }
   }
 
   // 购买
   .buy-box {
+    padding: 0 20rpx;
+    flex: 1;
     .add-btn {
-      width: 214rpx;
-      height: 72rpx;
-      font-weight: 500;
+      flex: 1;
+      height: 80rpx;
+      font-weight: bold;
       font-size: 28rpx;
-      border-radius: 40rpx 0 0 40rpx;
-      background-color: var(--ui-BG-Main-light);
-      color: var(--ui-BG-Main);
+      border-radius: 12rpx;
+      background-color: #fff;
+      color: #1a9c75;
+      border: 2rpx solid #1a9c75;
+      margin-right: 20rpx;
     }
 
     .buy-btn {
-      width: 214rpx;
-      height: 72rpx;
-      font-weight: 500;
+      flex: 1;
+      height: 80rpx;
+      font-weight: bold;
       font-size: 28rpx;
-
-      border-radius: 0 40rpx 40rpx 0;
-      background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
-      color: $white;
+      border-radius: 12rpx;
+      background: #1a3a32;
+      color: #fff;
     }
 
     .disabled-btn {
-      width: 428rpx;
-      height: 72rpx;
-      border-radius: 40rpx;
+      flex: 1;
+      height: 80rpx;
+      border-radius: 12rpx;
       background: #999999;
       color: $white;
     }
