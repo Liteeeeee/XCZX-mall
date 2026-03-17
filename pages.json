@@ -365,6 +365,16 @@
 						"title": "用户积分",
 						"group": "用户中心"
 					}
+				},
+				{
+					"path": "vip-result",
+					"style": {
+						"navigationBarTitleText": "开通结果"
+					},
+					"meta": {
+						"auth": true,
+						"title": "开通结果"
+					}
 				}
 			]
 		},

@@ -378,6 +378,12 @@ export function getPayMethods(channels) {
 
 // 支付结果跳转,success:成功，fail:失败
 export function goPayResult(id, orderType, resultType) {
+  if (orderType === 'vip_upgrade') {
+    sheep.$router.redirect('/pages/user/vip-result', {
+      payState: resultType,
+    });
+    return;
+  }
   sheep.$router.redirect('/pages/pay/result', {
     id,
     orderType,

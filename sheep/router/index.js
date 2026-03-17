@@ -48,7 +48,18 @@ const _go = (
     }
   }
 
-  const nextRoute = ROUTES_MAP[page];
+  let nextRoute = ROUTES_MAP[page];
+
+  // Temporary fix for new page not in ROUTES_MAP until restart
+  if (!nextRoute && page === '/pages/user/vip-result') {
+    nextRoute = {
+      path: '/pages/user/vip-result',
+      meta: {
+        auth: true,
+        title: '开通结果'
+      }
+    };
+  }
 
   // 未找到指定跳转页面
   // mark: 跳转404页

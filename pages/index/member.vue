@@ -82,7 +82,7 @@
                 </view>
                 <text class="text_23">/{{ currentLevel.upgradeName }}</text>
               </view>
-              <view class="text-wrapper_4 flex-col" @tap="sheep.$router.go('/pages/pay/recharge')">
+              <view class="text-wrapper_4 flex-col" @tap="onUpgrade">
                 <text class="text_24">升级会员</text>
               </view>
             </view>
@@ -126,6 +126,7 @@
   import memberData from '@/sheep/data/member';
   import sMemberLevelCard from '@/sheep/components/s-member-level-card/s-member-level-card.vue';
   import sMemberLevelRights from '@/sheep/components/s-member-level-card/s-member-level-rights.vue';
+  import PayWalletApi from '@/sheep/api/pay/wallet';
 
   onShow(() => {
     // 页面显示时再次强制隐藏原生 tabBar，确保自定义 tabbar 渲染
@@ -257,6 +258,24 @@
   const onSwiperChange = (e) => {
     state.currentLevelIndex = e.detail.current;
   };
+
+  async function onUpgrade() {
+    if (!state.isAgreement) {
+      sheep.$helper.toast('请先阅读并同意协议');
+      return;
+    }
+    // 微信开发者工具无法唤起真实支付，直接跳转到失败结果页（模拟）
+    sheep.$router.go('/pages/user/vip-result', {
+      payState: 'fail',
+    });
+    
+    // const price = currentLevel.value.price * 100;
+    // const { code, data } = await PayWalletApi.createWalletRecharge({
+    //   payPrice: price,
+    // });
+    // if (code !== 0) return;
+    // sheep.$platform.pay('wechat', 'vip_upgrade', data.payOrderId);
+  }
 
   const advantageRows = [
     { name: '最低8折专属折扣', normal: '-', upgrade: 'check' },
