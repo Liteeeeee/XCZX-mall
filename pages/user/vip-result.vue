@@ -17,8 +17,7 @@
           <!-- Success State -->
           <block v-if="state.payState === 'success'">
             <image class="state-img" :src="sheep.$url.static('/static/success.png')" mode="aspectFit" />
-            <view class="state-title">黄金会员开通成功</view>
-            <view class="state-desc">黄金会员有效期截止：2026.12.21</view>
+            <view class="state-title">会员开通成功</view>
           </block>
 
           <!-- Failure State -->
