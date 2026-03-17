@@ -1,35 +1,37 @@
 <!-- 地址卡片 -->
 <template>
   <view
-    class="address-item ss-flex ss-row-between ss-col-center"
+    class="address-item"
     :class="[{ 'border-bottom': props.hasBorderBottom }]"
   >
-    <view class="item-left" v-if="!isEmpty(props.item)">
-      <view class="area-text ss-flex ss-col-center">
-        <uni-tag
-          class="ss-m-r-10"
-          size="small"
-          custom-style="background-color: var(--ui-BG-Main); border-color: var(--ui-BG-Main); color: #fff;"
-          v-if="props.item.defaultStatus"
-          text="默认"
-        />
-        {{ props.item.areaName }}
+    <view v-if="!isEmpty(props.item)">
+      <view class="person-text ss-flex ss-col-center">
+        <text class="name">{{ props.item.name }}</text>
+        <text class="mobile">{{ props.item.mobile }}</text>
       </view>
-      <view class="address-text">
-        {{ props.item.detailAddress }}
+      <view class="area-text">
+        {{ props.item.areaName }} {{ props.item.detailAddress }}
       </view>
-      <view class="person-text"> {{ props.item.name }} {{ props.item.mobile }} </view>
+      <view class="address-footer ss-flex ss-row-between ss-col-center">
+         <view class="default-status ss-flex ss-col-center" v-if="props.item.defaultStatus">
+         <view class="checkbox-icon is-checked ss-flex ss-row-center ss-col-center">
+            <text class="cicon-check"></text>
+         </view>
+         <text class="default-text">设为默认</text>
+      </view>
+         <view class="default-status ss-flex ss-col-center" v-else>
+            <view class="checkbox-icon ss-flex ss-row-center ss-col-center"></view>
+            <text class="default-text" style="color: #999;">设为默认</text>
+         </view>
+         
+         <view class="item-right">
+            <slot name="action"></slot>
+         </view>
+      </view>
     </view>
     <view v-else>
       <view class="address-text ss-m-b-10">请选择收货地址</view>
     </view>
-    <slot>
-      <button class="ss-reset-button edit-btn" @tap.stop="onEdit">
-        <view class="edit-icon ss-flex ss-row-center ss-col-center">
-          <image :src="sheep.$url.static('/static/img/shop/user/address/edit.png')" />
-        </view>
-      </button>
-    </slot>
   </view>
 </template>
 
@@ -66,45 +68,73 @@
 
 <style lang="scss" scoped>
   .address-item {
-    padding: 24rpx 30rpx;
+    padding: 30rpx;
+    background: #fff;
+    margin: 20rpx;
+    border-radius: 16rpx;
 
-    .item-left {
-      width: 600rpx;
+    .person-text {
+      margin-bottom: 16rpx;
+      .name {
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #333;
+        margin-right: 20rpx;
+      }
+      .mobile {
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #333;
+      }
     }
 
     .area-text {
       font-size: 26rpx;
-      font-weight: 400;
-      color: $dark-9;
+      color: #999;
+      line-height: 1.4;
+      margin-bottom: 0;
+      padding-right: 20rpx;
     }
 
-    .address-text {
-      font-size: 32rpx;
-      font-weight: 500;
-      color: #333333;
-      line-height: 48rpx;
+    .address-footer {
+       margin-top: 20rpx;
     }
 
-    .person-text {
-      font-size: 28rpx;
-      font-weight: 400;
-      color: $dark-9;
-    }
-  }
+    .default-status {
+      .checkbox-icon {
+        width: 32rpx;
+        height: 32rpx;
+        border-radius: 4rpx;
+        border: 2rpx solid #999;
+        margin-right: 10rpx;
+        box-sizing: border-box;
 
-  .edit-btn {
-    width: 44rpx;
-    height: 44rpx;
-    background: $gray-f;
-    border-radius: 50%;
-
-    .edit-icon {
-      width: 24rpx;
-      height: 24rpx;
+        &.is-checked {
+          background-color: #202020;
+          border-color: #202020;
+          position: relative;
+          
+          .cicon-check {
+            color: #fff !important;
+            font-size: 24rpx;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+          }
+        }
+      }
+      .default-text {
+        font-size: 26rpx;
+        color: #333;
+      }
     }
-  }
-  image {
-    width: 100%;
-    height: 100%;
+    
+    .item-right {
+       display: flex;
+       align-items: center;
+    }
   }
 </style>

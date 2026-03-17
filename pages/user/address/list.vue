@@ -1,7 +1,18 @@
 <!-- 收件地址列表 -->
 <template>
-  <s-layout :bgStyle="{ color: '#FFF' }" title="收货地址" navbar="normal">
-    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+  <s-layout :bgStyle="{ color: '#F5F5F5' }" navbar="clear">
+    <su-fixed alway :noNav="true" placeholder :bgStyles="{ background: '#F5F5F5' }" :index="100">
+      <su-status-bar />
+      <view class="custom-nav-bar" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+        <view class="nav-content ss-flex ss-col-center">
+          <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
+            <text class="sicon-back"></text>
+          </view>
+          <text class="nav-title">{{ state.openType === 'select' ? '地址选择' : '收货地址' }}</text>
+        </view>
+      </view>
+    </su-fixed>
+    
     <view v-if="state.list.length">
       <s-address-item
         hasBorderBottom
@@ -9,7 +20,14 @@
         :key="item.id"
         :item="item"
         @tap="onSelect(item)"
-      />
+      >
+        <template #action>
+          <view class="action-btn ss-flex ss-col-center">
+            <view class="delete-btn ss-reset-button" @tap.stop="onDelete(item.id)">删除</view>
+            <view class="edit-btn ss-reset-button" @tap.stop="onEdit(item.id)">修改</view>
+          </view>
+        </template>
+      </s-address-item>
     </view>
 
     <su-fixed bottom placeholder>
@@ -18,13 +36,12 @@
         <button
           v-if="['WechatMiniProgram', 'WechatOfficialAccount'].includes(sheep.$platform.name)"
           @tap="importWechatAddress"
-          class="border ss-reset-button sync-wxaddress ss-m-20 ss-flex ss-row-center ss-col-center"
+          class="wx-btn ss-reset-button ss-flex ss-row-center ss-col-center"
         >
-          <text class="cicon-weixin ss-p-r-10" style="color: #09bb07; font-size: 40rpx"></text>
-          导入微信地址
+          微信导入
         </button>
         <button
-          class="add-btn ss-reset-button ui-Shadow-Main"
+          class="add-btn ss-reset-button"
           @tap="sheep.$router.go('/pages/user/address/edit')"
         >
           新增收货地址
@@ -33,7 +50,7 @@
     </su-fixed>
     <s-empty
       v-if="state.list.length === 0 && !state.loading"
-      text="暂无收货地址"
+      text="无收货地址~"
       icon="/static/data-empty.png"
     />
   </s-layout>
@@ -62,6 +79,28 @@
       addressInfo,
     });
     sheep.$router.back();
+  };
+
+  const onDelete = (id) => {
+    uni.showModal({
+      title: '提示',
+      content: '确认删除此收货地址吗？',
+      success: async function (res) {
+        if (!res.confirm) {
+          return;
+        }
+        const { code } = await AddressApi.deleteAddress(id);
+        if (code === 0) {
+          state.list = (await AddressApi.getAddressList()).data;
+        }
+      },
+    });
+  };
+
+  const onEdit = (id) => {
+    sheep.$router.go('/pages/user/address/edit', {
+      id,
+    });
   };
 
   // 导入微信地址
@@ -139,28 +178,85 @@
 </script>
 
 <style lang="scss" scoped>
-  .footer-box {
-    .add-btn {
-      flex: 1;
-      background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
-      border-radius: 80rpx;
-      font-size: 30rpx;
-      font-weight: 500;
-      line-height: 80rpx;
-      color: $white;
-      position: relative;
-      z-index: 1;
+  .custom-nav-bar {
+    position: relative;
+    width: 100%;
+
+    .nav-content {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 20rpx;
+      height: 100%;
+    }
+    
+    .back-btn {
+      width: 60rpx;
+      height: 60rpx;
+      margin-right: 10rpx;
+      .sicon-back {
+        font-size: 36rpx;
+        color: #1E3F1C;
+        font-weight: bold;
+      }
     }
 
-    .sync-wxaddress {
+    .nav-title {
+      font-size: 32rpx;
+      font-weight: bold;
+      color: #1E3F1C;
+    }
+  }
+
+  .action-btn {
+    .edit-btn,
+    .delete-btn {
+      width: 100rpx;
+      height: 50rpx;
+      background: #F5F5F5;
+      border-radius: 6rpx;
+      font-size: 24rpx;
+      font-weight: 500;
+      color: #333;
+      text-align: center;
+      line-height: 50rpx;
+    }
+    
+    .delete-btn {
+      margin-right: 20rpx;
+    }
+  }
+
+  .footer-box {
+    background-color: #fff;
+    padding: 20rpx;
+    box-sizing: border-box;
+
+    .add-btn {
       flex: 1;
-      line-height: 80rpx;
-      background: $white;
-      border-radius: 80rpx;
+      height: 80rpx;
+      background: #1E3F1C;
+      border-radius: 16rpx;
       font-size: 30rpx;
       font-weight: 500;
-      color: $dark-6;
-      margin-right: 18rpx;
+      line-height: 80rpx;
+      color: #fff;
+      text-align: center;
+    }
+
+    .wx-btn {
+      flex: 1;
+      height: 80rpx;
+      line-height: 76rpx;
+      background: #fff;
+      border: 2rpx solid #1E3F1C;
+      border-radius: 16rpx;
+      font-size: 30rpx;
+      font-weight: 500;
+      color: #1E3F1C;
+      margin-right: 20rpx;
+      text-align: center;
+      box-sizing: border-box;
     }
   }
 </style>

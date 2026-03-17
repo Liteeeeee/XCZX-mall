@@ -1,7 +1,18 @@
 <!-- 收货地址的新增/编辑 -->
 <template>
-  <s-layout :title="state.model.id ? '编辑地址' : '新增地址'" navbar="normal">
-    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+  <s-layout :bgStyle="{ color: '#F5F5F5' }" navbar="clear">
+    <su-fixed alway :noNav="true" placeholder :bgStyles="{ background: '#F5F5F5' }" :index="100">
+      <su-status-bar />
+      <view class="custom-nav-bar" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+        <view class="nav-content ss-flex ss-col-center">
+          <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
+            <text class="sicon-back"></text>
+          </view>
+          <text class="nav-title">{{ state.model.id ? '编辑地址' : '新增地址' }}</text>
+        </view>
+      </view>
+    </su-fixed>
+    
     <uni-forms
       ref="addressFormRef"
       v-model="state.model"
@@ -12,29 +23,34 @@
       border
       :labelStyle="{ fontWeight: 'bold' }"
     >
-      <view class="bg-white form-box ss-p-x-30">
+      <view class="bg-white form-box">
         <uni-forms-item name="name" label="收货人" class="form-item">
           <uni-easyinput
             v-model="state.model.name"
-            placeholder="请填写收货人姓名"
+            placeholder="李小刚"
             :inputBorder="false"
             placeholderStyle="color:#BBBBBB;font-size:30rpx;font-weight:400;line-height:normal"
           />
         </uni-forms-item>
 
         <uni-forms-item name="mobile" label="手机号" class="form-item">
-          <uni-easyinput
-            v-model="state.model.mobile"
-            type="number"
-            placeholder="请输入手机号"
-            :inputBorder="false"
-            placeholderStyle="color:#BBBBBB;font-size:30rpx;font-weight:400;line-height:normal"
-          >
-          </uni-easyinput>
+          <view class="mobile-input-wrap ss-flex ss-col-center">
+            <text class="prefix">+86</text>
+            <text class="sicon-down"></text>
+            <uni-easyinput
+              v-model="state.model.mobile"
+              type="number"
+              placeholder="请输入您的手机号"
+              :inputBorder="false"
+              placeholderStyle="color:#BBBBBB;font-size:30rpx;font-weight:400;line-height:normal"
+              class="mobile-input"
+            >
+            </uni-easyinput>
+          </view>
         </uni-forms-item>
         <uni-forms-item
           name="areaName"
-          label="省市区"
+          label="所在地区"
           @tap="state.showRegion = true"
           class="form-item"
         >
@@ -44,7 +60,7 @@
             :inputBorder="false"
             :styles="{ disableColor: '#fff', color: '#333' }"
             placeholderStyle="color:#BBBBBB;font-size:30rpx;font-weight:400;line-height:normal"
-            placeholder="请选择省市区"
+            placeholder="请选择省/市/区"
           >
             <template v-slot:right>
               <uni-icons type="right" />
@@ -55,7 +71,6 @@
           name="detailAddress"
           label="详细地址"
           :formItemStyle="{ alignItems: 'flex-start' }"
-          :labelStyle="{ lineHeight: '5em' }"
           class="textarea-item"
         >
           <uni-easyinput
@@ -68,19 +83,21 @@
           />
         </uni-forms-item>
       </view>
-      <view class="ss-m-y-20 bg-white ss-p-x-30 ss-flex ss-row-between ss-col-center default-box">
-        <view class="default-box-title"> 设为默认地址 </view>
-        <su-switch style="transform: scale(0.8)" v-model="state.model.defaultStatus" />
+      <view class="default-box">
+        <view class="default-box-inner ss-flex ss-col-center" @tap="state.model.defaultStatus = !state.model.defaultStatus">
+          <view class="checkbox-icon" :class="{ 'is-checked': state.model.defaultStatus }">
+            <text class="sicon-check" v-if="state.model.defaultStatus"></text>
+          </view>
+          <view class="default-box-title">设置为默认地址</view>
+        </view>
       </view>
     </uni-forms>
-    <su-fixed bottom :opacity="false" bg="" placeholder :noFixed="false" :index="10">
-      <view class="footer-box ss-flex-col ss-row-between ss-p-20">
-        <view class="ss-m-b-20">
-          <button class="ss-reset-button save-btn ui-Shadow-Main" @tap="onSave">保存</button>
-        </view>
+    <su-fixed bottom :opacity="false" bg="#fff" placeholder :noFixed="false" :index="10">
+      <view class="footer-box ss-flex ss-row-between ss-p-20">
         <button v-if="state.model.id" class="ss-reset-button cancel-btn" @tap="onDelete">
           删除
         </button>
+        <button class="ss-reset-button save-btn" :class="{ 'full-width': !state.model.id }" @tap="onSave">确认</button>
       </view>
     </su-fixed>
 
@@ -241,33 +258,101 @@
 </script>
 
 <style lang="scss" scoped>
+  .custom-nav-bar {
+    position: relative;
+    width: 100%;
+
+    .nav-content {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 20rpx;
+      height: 100%;
+    }
+    
+    .back-btn {
+      width: 60rpx;
+      height: 60rpx;
+      margin-right: 10rpx;
+      .sicon-back {
+        font-size: 36rpx;
+        color: #1E3F1C;
+        font-weight: bold;
+      }
+    }
+
+    .nav-title {
+      font-size: 32rpx;
+      font-weight: bold;
+      color: #1E3F1C;
+    }
+  }
+
+  .form-box {
+    margin: 20rpx 30rpx;
+    border-radius: 16rpx;
+    padding: 0 30rpx;
+  }
+
+  .mobile-input-wrap {
+    width: 100%;
+    .prefix {
+      font-size: 30rpx;
+      color: #BBBBBB;
+      margin-right: 10rpx;
+    }
+    .sicon-down {
+      font-size: 24rpx;
+      color: #BBBBBB;
+      margin-right: 20rpx;
+    }
+    .mobile-input {
+      flex: 1;
+    }
+  }
+
   :deep() {
+    .uni-forms-item {
+      padding: 30rpx 0;
+      margin-bottom: 0 !important;
+      border-bottom: 2rpx solid #F5F5F5;
+      
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+    .uni-forms-item__label {
+      padding: 0 20rpx 0 0;
+    }
     .uni-forms-item__label .label-text {
-      font-size: 28rpx !important;
+      font-size: 30rpx !important;
       color: #333333 !important;
       line-height: normal !important;
+      font-weight: normal !important;
     }
 
     .uni-easyinput__content-input {
-      font-size: 28rpx !important;
+      font-size: 30rpx !important;
       color: #333333 !important;
       line-height: normal !important;
       padding-left: 0 !important;
     }
 
     .uni-easyinput__content-textarea {
-      font-size: 28rpx !important;
+      font-size: 30rpx !important;
       color: #333333 !important;
       line-height: normal !important;
-      margin-top: 8rpx !important;
+      margin-top: 0 !important;
+      padding: 0 !important;
     }
 
     .uni-icons {
-      font-size: 40rpx !important;
+      font-size: 32rpx !important;
+      color: #BBBBBB !important;
     }
 
     .is-textarea-icon {
-      margin-top: 22rpx;
+      margin-top: 0;
     }
 
     .is-disabled {
@@ -277,8 +362,33 @@
 
   .default-box {
     width: 100%;
+    padding: 0 30rpx;
     box-sizing: border-box;
-    height: 100rpx;
+
+    .default-box-inner {
+      padding: 20rpx 0;
+    }
+
+    .checkbox-icon {
+      width: 32rpx;
+      height: 32rpx;
+      border-radius: 50%;
+      background-color: #E5E5E5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 16rpx;
+      transition: all 0.3s;
+
+      &.is-checked {
+        background-color: #1E3F1C;
+      }
+
+      .sicon-check {
+        color: #fff;
+        font-size: 20rpx;
+      }
+    }
 
     .default-box-title {
       font-size: 28rpx;
@@ -288,19 +398,39 @@
   }
 
   .footer-box {
+    background-color: #fff;
+    padding: 20rpx 30rpx;
+    box-sizing: border-box;
+
     .save-btn {
-      width: 710rpx;
+      flex: 1;
       height: 80rpx;
-      border-radius: 40rpx;
-      background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+      border-radius: 16rpx;
+      background: #1E3F1C;
       color: $white;
+      font-size: 30rpx;
+      font-weight: 500;
+      line-height: 80rpx;
+      text-align: center;
+      
+      &.full-width {
+        width: 100%;
+      }
     }
 
     .cancel-btn {
-      width: 710rpx;
+      flex: 1;
       height: 80rpx;
-      border-radius: 40rpx;
-      background: var(--ui-BG);
+      line-height: 76rpx;
+      border-radius: 16rpx;
+      background: #fff;
+      border: 2rpx solid #1E3F1C;
+      color: #1E3F1C;
+      font-size: 30rpx;
+      font-weight: 500;
+      margin-right: 20rpx;
+      text-align: center;
+      box-sizing: border-box;
     }
   }
 </style>
