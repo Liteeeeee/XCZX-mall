@@ -1,53 +1,39 @@
 <!-- 我的积分 -->
 <template>
-  <s-layout class="wallet-wrap" title="我的积分" navbar="normal">
-    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
-    <view
-      class="header-box ss-flex ss-flex-col ss-row-center ss-col-center"
-
-    >
-      <view class="header-bg">
-        <view class="bg" />
-      </view>
-      <view class="score-box ss-flex-col ss-row-center ss-col-center">
-        <view class="ss-m-b-30"
-              :style="{
-        paddingTop: '30rpx',
-      }"
-        >
-          <text class="all-title ss-m-r-8">当前积分</text>
+  <s-layout class="wallet-wrap" title="积分明细" navbar="clear" :bgStyle="{ backgroundColor: '#f8f9f3' }">
+    <view class="header-box">
+      <su-status-bar />
+      <view class="custom-nav" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+        <view class="nav-inner ss-flex ss-col-center">
+          <view class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20" @tap="sheep.$router.back()">
+            <text class="sicon-back"></text>
+          </view>
+          <view class="title">积分明细</view>
         </view>
-        <text class="all-num">{{ userInfo.point || 0 }}</text>
+      </view>
+
+      <view class="score-container ss-flex ss-row-between ss-col-center ss-p-x-40">
+        <view class="score-box ss-flex-col">
+          <view class="ss-m-b-10">
+            <text class="all-title">当前积分</text>
+          </view>
+          <text class="all-num">{{ userInfo.point || 0 }}</text>
+        </view>
+        <view class="use-btn ss-flex ss-row-center ss-col-center" @tap="sheep.$router.go('/pages/goods/index')">
+          去使用
+        </view>
       </view>
     </view>
     <!-- tab -->
     <su-sticky :customNavHeight="sys_navBar">
-      <!-- 统计 -->
-      <view class="filter-box ss-p-x-30 ss-flex ss-col-center ss-row-between">
-        <uni-datetime-picker
-          v-model="state.date"
-          type="daterange"
-          @change="onChangeTime"
-          :end="state.today"
-        >
-          <button class="ss-reset-button date-btn">
-            <text>{{ dateFilterText }}</text>
-            <text class="cicon-drop-down ss-seldate-icon"></text>
-          </button>
-        </uni-datetime-picker>
-
-        <!-- TODO 芋艿：【钱包-可优化】展示一下 -->
-        <!--				<view class="total-box">-->
-        <!--					<view class="ss-m-b-10">总收入￥{{ state.pagination.income }}</view>-->
-        <!--					<view>总支出￥{{ -state.pagination.expense }}</view>-->
-        <!--				</view>-->
+      <view class="tab-box">
+        <su-tabs
+          :list="tabMaps"
+          @change="onChange"
+          :scrollable="false"
+          :current="state.currentTab"
+        ></su-tabs>
       </view>
-      <su-tabs
-        :list="tabMaps"
-        @change="onChange"
-        :scrollable="false"
-        :current="state.currentTab"
-      ></su-tabs>
     </su-sticky>
 
     <!-- list -->
@@ -59,11 +45,12 @@
           :key="item.id"
         >
           <view class="ss-flex-col">
-            <view class="name"
-              >{{ item.title }}{{ item.description ? ' - ' + item.description : '' }}</view
-            >
+            <view class="name ss-flex ss-col-center"
+              >{{ item.title }}{{ item.description ? ' - ' + item.description : '' }}
+              <image class="coin-icon ss-m-l-10" src="https://file.sheepjs.com/storage/img/2024/11/12/f2a417df4eb042d3be477eb0c8715837.png" mode="aspectFit" />
+            </view>
             <view class="time">{{
-              sheep.$helper.timeFormat(item.createTime, 'yyyy-mm-dd hh:MM:ss')
+              sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd hh:MM')
             }}</view>
           </view>
           <view class="add" v-if="item.point > 0">+{{ item.point }}</view>
@@ -111,7 +98,7 @@
 
   const tabMaps = [
     {
-      name: '全部',
+      name: '明细',
       value: 'all',
     },
     {
@@ -138,8 +125,6 @@
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
       addStatus: state.currentTab > 0 ? tabMaps[state.currentTab].value : undefined,
-      'createTime[0]': state.date[0] + ' 00:00:00',
-      'createTime[1]': state.date[1] + ' 23:59:59',
     });
     if (code !== 0) {
       return;
@@ -150,8 +135,6 @@
   }
 
   onLoad(() => {
-    state.today = dayjs().format('YYYY-MM-DD');
-    state.date = [state.today, state.today];
     getLogList();
   });
 
@@ -182,99 +165,121 @@
 </script>
 
 <style lang="scss" scoped>
+  .custom-nav {
+    position: relative;
+    width: 100%;
+    
+    .nav-inner {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 100%;
+      width: 100%;
+      
+      .left-box {
+        .sicon-back {
+          font-size: 32rpx;
+          color: #1e3f1c;
+        }
+      }
+      
+      .title {
+        font-size: 32rpx;
+        font-weight: 500;
+        color: #1e3f1c;
+      }
+    }
+  }
+
   .header-box {
     width: 100%;
-    background: linear-gradient(180deg, var(--ui-BG-Main) 0%, var(--ui-BG-Main-gradient) 100%)
-      no-repeat;
-    background-size: 750rpx 100%;
+    background: url('https://file.sheepjs.com/storage/img/2024/11/12/3df8a9a4b8784d1ab1b83d81f2113f8c.png') no-repeat;
+    background-size: 100% 100%;
     padding: 0 0 120rpx 0;
     box-sizing: border-box;
 
-    .score-box {
-      height: 100%;
+    .score-container {
+      padding-top: 30rpx;
+    }
 
+    .score-box {
       .all-num {
-        font-size: 50rpx;
-        font-weight: bold;
-        color: #fff;
-        font-family: OPPOSANS;
+        font-size: 64rpx;
+        font-family: AlibabaPuHuiTiB;
+        color: #000000;
+        line-height: 88rpx;
       }
 
       .all-title {
-        font-size: 26rpx;
-        font-weight: 500;
-        color: #fff;
-      }
-
-      .cicon-help-o {
-        color: #fff;
         font-size: 28rpx;
+        color: #9d9c96;
+        line-height: 40rpx;
       }
+    }
+    
+    .use-btn {
+      background: linear-gradient(270deg, #0f5c31 0%, #06943f 100%);
+      border-radius: 34rpx;
+      padding: 0 39rpx;
+      height: 68rpx;
+      font-size: 28rpx;
+      color: #fffefa;
     }
   }
 
   // 筛选
-  .filter-box {
-    height: 114rpx;
-    background-color: $bg-page;
-
-    .total-box {
-      font-size: 24rpx;
-      font-weight: 500;
-      color: $dark-9;
-    }
-
-    .date-btn {
-      background-color: $white;
-      line-height: 54rpx;
-      border-radius: 27rpx;
-      padding: 0 20rpx;
-      font-size: 24rpx;
-      font-weight: 500;
-      color: $dark-6;
-
-      .ss-seldate-icon {
-        font-size: 50rpx;
-        color: $dark-9;
-      }
-    }
+  .tab-box {
+    background-color: #fffefa;
+    border-radius: 22rpx 22rpx 0 0;
+    margin: -80rpx 33rpx 0;
+    overflow: hidden;
   }
 
   .list-box {
+    background: #fffefa;
+    margin: 0 33rpx;
+    padding: 0 30rpx;
+    border-radius: 0 0 22rpx 22rpx;
+    
     .list-item {
-      background: #fff;
-      border-bottom: 1rpx solid #dfdfdf;
-      padding: 30rpx;
+      border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
+      padding: 30rpx 0;
+      &:last-child {
+        border-bottom: none;
+      }
 
       .name {
         font-size: 28rpx;
-
         font-weight: 500;
-        color: rgba(102, 102, 102, 1);
+        color: rgba(0, 0, 0, 1);
         line-height: 28rpx;
         margin-bottom: 20rpx;
+        
+        .coin-icon {
+          width: 32rpx;
+          height: 32rpx;
+        }
       }
 
       .time {
-        font-size: 24rpx;
-
-        font-weight: 500;
-        color: rgba(196, 196, 196, 1);
-        line-height: 24px;
+        font-size: 28rpx;
+        font-weight: normal;
+        color: rgba(157, 156, 150, 1);
+        line-height: 28rpx;
       }
 
       .add {
-        font-size: 30rpx;
-
-        font-weight: 500;
-        color: #e6b873;
+        font-size: 32rpx;
+        font-family: Helvetica;
+        font-weight: normal;
+        color: rgba(54, 208, 7, 1);
       }
 
       .minus {
-        font-size: 30rpx;
-
-        font-weight: 500;
-        color: $dark-3;
+        font-size: 32rpx;
+        font-family: Helvetica;
+        font-weight: normal;
+        color: rgba(255, 0, 0, 1);
       }
     }
   }
