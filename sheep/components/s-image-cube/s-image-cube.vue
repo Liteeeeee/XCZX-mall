@@ -7,7 +7,7 @@
         :style="[parseImgStyle(item), { margin: data.space + 'px' }]"
         @tap="sheep.$router.go(item.url)"
       >
-        <image class="cube-img" :src="sheep.$url.cdn(item.imgUrl)" mode="aspectFill"></image>
+        <image class="cube-img" :src="sheep.$url.cdn(item.imgUrl)" mode="aspectFit"></image>
       </view>
     </view>
   </view>

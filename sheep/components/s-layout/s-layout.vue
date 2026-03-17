@@ -22,7 +22,11 @@
         v-else-if="navbar === 'custom' && navbarMode === 'normal'"
         :data="navbarStyle"
         :showLeftButton="showLeftButton"
-      />
+      >
+        <template #left>
+          <slot name="navbarLeft"></slot>
+        </template>
+      </s-custom-navbar>
       <view class="page-body" :style="[bgBody]">
         <!-- 顶部导航栏-情况3：沉浸式头部 -->
         <su-inner-navbar v-if="navbar === 'inner'" :title="title" />
@@ -37,7 +41,11 @@
           v-if="navbar === 'custom' && navbarMode === 'inner'"
           :data="navbarStyle"
           :showLeftButton="showLeftButton"
-        />
+        >
+          <template #left>
+            <slot name="navbarLeft"></slot>
+          </template>
+        </s-custom-navbar>
 
         <!-- 页面内容插槽 -->
         <slot />

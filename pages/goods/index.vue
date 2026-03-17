@@ -265,6 +265,11 @@
           @get="onTakeCoupon"
         />
       </block>
+
+      <!-- 返回顶部按钮 -->
+      <view class="back-top-btn" v-if="state.showBackTop" @tap="onBackTop">
+        <image :src="sheep.$url.static('/static/goods/top.png')" mode="aspectFill" />
+      </view>
     </s-layout>
   </view>
 </template>
@@ -295,7 +300,17 @@
   import { isEmpty } from 'lodash-es';
   import SpuApi from '@/sheep/api/product/spu';
 
-  onPageScroll(() => {});
+  onPageScroll((e) => {
+    state.showBackTop = e.scrollTop > 200;
+  });
+
+  function onBackTop() {
+    uni.pageScrollTo({
+      scrollTop: 0,
+      duration: 300,
+    });
+  }
+
   import OrderApi from '@/sheep/api/trade/order';
   import { SharePageEnum } from '@/sheep/helper/const';
 
@@ -320,6 +335,7 @@
     rewardActivity: {}, // 【满减送】活动
     activityList: [], // 【秒杀/拼团/砍价】可参与的 Activity 营销活动的列表
     showAllSpec: false,
+    showBackTop: false,
   });
 
   const specList = [
@@ -511,6 +527,20 @@
 </script>
 
 <style lang="scss" scoped>
+  .back-top-btn {
+    position: fixed;
+    right: 20rpx;
+    bottom: 200rpx;
+    z-index: 99;
+    width: 72rpx;
+    height: 72rpx;
+    
+    image {
+      width: 100%;
+      height: 100%;
+    }
+  }
+
   .detail-card {
     background-color: #ffff;
     margin: 20rpx;
@@ -523,7 +553,7 @@
     background: rgba(0, 0, 0, 0.4);
     border-radius: 20rpx;
     padding: 4rpx 16rpx;
-    bottom: 30rpx;
+    bottom: 90rpx;
     right: 30rpx;
     color: #fff;
     font-size: 24rpx;

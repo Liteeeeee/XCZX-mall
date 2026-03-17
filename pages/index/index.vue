@@ -9,6 +9,18 @@
       :navbarStyle="template.navigationBar"
       onShareAppMessage
     >
+      <!-- 首页自定义导航左侧 -->
+      <template #navbarLeft>
+        <view class="navbar-left-box ss-flex ss-row-left ss-col-center">
+          <image
+            class="logo"
+            src="/static/log.png"
+            mode="aspectFit"
+          ></image>
+          <text class="title">仙草甄选</text>
+        </view>
+      </template>
+
       <s-block
         v-for="(item, index) in template.components"
         :key="index"
@@ -104,4 +116,21 @@
   onPageScroll(() => {});
 </script>
 
-<style></style>
+<style lang="scss" scoped>
+  .navbar-left-box {
+    display: flex;
+    align-items: center;
+
+    .logo {
+      width: 75rpx;
+      height: 72rpx;
+      margin-right: 12rpx;
+    }
+
+    .title {
+      font-size: 31rpx;
+      font-weight: bold;
+      color: #fff;
+    }
+  }
+</style>

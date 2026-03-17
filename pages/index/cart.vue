@@ -118,8 +118,42 @@
       </view>
       <!-- 底部 -->
       <su-fixed v-if="state.list.length > 0" :isInset="false" :val="50" bottom placeholder>
-        <view class="cart-footer ss-flex ss-col-center ss-row-between ss-p-x-30 border-bottom">
-          <view class="footer-left ss-flex ss-col-center">
+        <view class="footer-wrapper">
+          <!-- 金额明细弹窗 (相对底部定位) -->
+          <view v-if="state.showDetailPopup" class="detail-popup-mask" @tap="state.showDetailPopup = false"></view>
+          <view class="detail-popup-container" :class="{ 'show': state.showDetailPopup }">
+            <view class="detail-popup-box">
+              <view class="popup-header ss-flex ss-row-center ss-col-center">
+                <text class="popup-title">金额明细</text>
+                <view class="close-btn ss-flex ss-row-center ss-col-center" @tap="state.showDetailPopup = false">
+                  <text class="sicon-close">x</text>
+                </view>
+              </view>
+              <view class="popup-content">
+                <view class="detail-item ss-flex ss-row-between">
+                  <text class="item-label">商品总额</text>
+                  <text class="item-value">¥199.50</text>
+                </view>
+                <view class="detail-item ss-flex ss-row-between">
+                  <text class="item-label">优惠券</text>
+                  <text class="item-value">-¥16.20</text>
+                </view>
+                <view class="detail-item ss-flex ss-row-between">
+                  <text class="item-label">铂金会员9折</text>
+                  <text class="item-value">-¥10</text>
+                </view>
+                <view class="detail-item ss-flex ss-row-between">
+                  <text class="item-label">铂金会员立减</text>
+                  <text class="item-value">-¥10</text>
+                </view>
+                <!-- 底部留白 -->
+                <view class="ss-p-b-20"></view>
+              </view>
+            </view>
+          </view>
+          
+          <view class="cart-footer ss-flex ss-col-center ss-row-between ss-p-x-30 border-bottom">
+            <view class="footer-left ss-flex ss-col-center">
             <view class="check-box ss-flex ss-col-center" @tap="onSelectAll">
               <image
                 class="check-icon"
@@ -140,9 +174,9 @@
                 {{ fen2yuan(state.totalPriceSelected) }}
               </view>
             </view>
-            <view class="promo-pill ss-flex ss-col-center" v-if="state.totalPriceSelected > 0">
+            <view class="promo-pill ss-flex ss-col-center" v-if="state.totalPriceSelected > 0" @tap="state.showDetailPopup = true">
               <text class="promo-text">共减¥36.2</text>
-              <text class="cicon-forward ss-m-l-4"></text>
+              <text class="cicon-forward ss-m-l-4" style="transform: rotate(90deg); display: inline-block; font-size: 20rpx;"></text>
             </view>
           </view>
           <view class="footer-right ss-flex ss-col-center">
@@ -154,6 +188,7 @@
               {{ state.selectedIds?.length ? `(${state.selectedIds.length})` : '' }}
             </button>
           </view>
+        </view>
         </view>
       </su-fixed>
     </view>
@@ -197,6 +232,7 @@
     totalPriceSelected: computed(() => cart.totalPriceSelected),
     activeId: 0,
     startX: 0,
+    showDetailPopup: false,
   });
 
   // 滑动开始
@@ -417,6 +453,8 @@
       height: 120rpx;
       background-color: #fff;
       border-top: 1rpx solid #eee;
+      position: relative;
+      z-index: 12;
 
       .footer-left {
         flex-shrink: 0;
@@ -613,6 +651,94 @@
         align-items: center;
         color: #999;
         font-size: 32rpx;
+      }
+    }
+  }
+
+  .footer-wrapper {
+    position: relative;
+    width: 100%;
+  }
+
+  /* 明细弹窗样式 (附着在底部栏上方) */
+  .detail-popup-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 10;
+  }
+
+  .detail-popup-container {
+    position: absolute;
+    bottom: 100rpx; /* 位于 cart-footer 上方 */
+    left: 0;
+    right: 0;
+    z-index: 11;
+    transform: translateY(100%);
+    opacity: 0;
+    transition: all 0.3s ease-out;
+    pointer-events: none;
+
+    &.show {
+      transform: translateY(0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+  }
+
+  .detail-popup-box {
+    background: #ffffff;
+    border-radius: 20rpx 20rpx 0 0;
+    padding: 0 30rpx 40rpx;
+    box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.05);
+
+    .popup-header {
+      height: 100rpx;
+      position: relative;
+
+      .popup-title {
+        font-size: 32rpx;
+        font-weight: bold;
+        color: #333333;
+      }
+
+      .close-btn {
+        position: absolute;
+        right: 0;
+        width: 40rpx;
+        height: 40rpx;
+        background: #f5f5f5;
+        border-radius: 50%;
+        .sicon-close {
+          font-size: 20rpx;
+          color: #000000;
+        }
+      }
+    }
+
+    .popup-content {
+      padding-top: 20rpx;
+
+      .detail-item {
+        margin-bottom: 30rpx;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        .item-label {
+          font-size: 28rpx;
+          color: #333333;
+        }
+
+        .item-value {
+          font-size: 28rpx;
+          color: #333333;
+          font-weight: 500;
+        }
       }
     }
   }

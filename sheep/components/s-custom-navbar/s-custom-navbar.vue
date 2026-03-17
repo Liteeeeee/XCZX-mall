@@ -11,6 +11,9 @@
   >
     <template #item>
       <view class="nav-box">
+        <view class="nav-left">
+          <slot name="left"></slot>
+        </view>
         <view class="nav-icon" v-if="showLeftButton">
           <view class="icon-box ss-flex" :class="{ 'inner-icon-box': data.styleType === 'inner' }">
             <view class="icon-button icon-button-left ss-flex ss-row-center" @tap="onClickLeft">
@@ -148,6 +151,14 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
+    }
+
+    .nav-left {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      left: 20rpx;
+      z-index: 10;
     }
 
     .nav-icon {
