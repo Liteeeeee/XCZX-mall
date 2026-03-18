@@ -1,186 +1,105 @@
-<!-- 用户信息 -->
+<!-- 我的设置 -->
 <template>
-  <s-layout title="用户信息" class="set-userinfo-wrap" navbar="inner">
-    <su-status-bar />
-    <uni-forms
-      :model="state.model"
-      :rules="state.rules"
-      labelPosition="left"
-      border
-      class="form-box"
-    >
-      <view class="ss-flex ss-row-center ss-col-center ss-p-t-60 ss-p-b-0 bg-white">
-        <view class="header-box-content">
-          <su-image
-            class="content-img"
-            isPreview
-            :current="0"
-            :src="sheep.$url.avatar(state.model?.avatar)"
-            :height="160"
-            :width="160"
-            :radius="80"
-            mode="scaleToFill"
-          />
-          <view class="avatar-action">
+  <s-layout navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
+    <!-- 头部导航 -->
+    <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
+      <su-status-bar />
+      <view class="nav-bar-container" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+        <view class="nav-bar-inner ss-flex ss-col-center" :style="{ height: '100%', paddingLeft: '20rpx' }">
+          <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
+            <text class="sicon-back" style="font-size: 40rpx; color: #1E3F1C; font-weight: 600;"></text>
+          </view>
+          <text class="nav-title ss-m-l-10">设置</text>
+        </view>
+      </view>
+    </view>
+    <!-- 占位 -->
+    <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+
+    <!-- 表单内容 -->
+    <view class="content-box">
+      <view class="form-group">
+        <!-- 头像 -->
+        <view class="form-item ss-flex ss-row-between ss-col-center">
+          <text class="item-label">头像</text>
+          <view class="avatar-box">
+            <image class="avatar-img" :src="sheep.$url.avatar(state.model?.avatar)" mode="aspectFill" />
             <!-- #ifdef MP -->
-            <button
-              class="ss-reset-button avatar-action-btn"
-              open-type="chooseAvatar"
-              @chooseavatar="onChooseAvatar"
-            >
-              修改
-            </button>
+            <button class="ss-reset-button avatar-action-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar"></button>
             <!-- #endif -->
             <!-- #ifndef MP -->
-            <button class="ss-reset-button avatar-action-btn" @tap="onChangeAvatar">修改</button>
+            <button class="ss-reset-button avatar-action-btn" @tap="onChangeAvatar"></button>
             <!-- #endif -->
           </view>
         </view>
-      </view>
 
-      <view class="bg-white ss-p-x-30">
-        <!-- 昵称 + 性别 -->
-        <uni-forms-item name="nickname" label="昵称">
-          <uni-easyinput
-            v-model="state.model.nickname"
-            type="nickname"
-            placeholder="设置昵称"
-            :inputBorder="false"
-            :placeholderStyle="placeholderStyle"
-          />
-        </uni-forms-item>
-        <uni-forms-item name="sex" label="性别">
-          <view class="ss-flex ss-col-center ss-h-100">
+        <!-- 昵称 -->
+        <view class="form-item ss-flex ss-row-between ss-col-center ss-m-t-56">
+          <text class="item-label">昵称</text>
+          <view class="item-value-box ss-flex ss-col-center">
+            <input
+              class="nickname-input"
+              :class="{'has-value': state.model.nickname}"
+              v-model="state.model.nickname"
+              type="nickname"
+              placeholder="未填写"
+              placeholder-class="placeholder-text"
+              @blur="onSubmit"
+            />
+            <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
+          </view>
+        </view>
+
+        <!-- 手机号 -->
+        <view class="form-item ss-flex ss-row-between ss-col-center ss-m-t-70" @tap="onChangeMobile">
+          <text class="item-label">手机号</text>
+          <view class="item-value-box ss-flex ss-col-center">
+            <text class="item-value" :class="{'is-empty': !userInfo.mobile}">{{ maskMobile(userInfo.mobile) || '未绑定' }}</text>
+            <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
+          </view>
+        </view>
+
+        <!-- 生日 -->
+        <view class="form-item ss-flex ss-row-between ss-col-center ss-m-t-70">
+          <text class="item-label">生日</text>
+          <view class="item-value-box ss-flex ss-col-center">
+            <picker mode="date" :value="state.model.birthday" @change="onChangeBirthday">
+              <view class="ss-flex ss-col-center">
+                <text class="item-value" :class="{'is-empty': !state.model.birthday}">{{ formatBirthday(state.model.birthday) || '未设置' }}</text>
+                <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
+              </view>
+            </picker>
+          </view>
+        </view>
+
+        <!-- 性别 -->
+        <view class="form-item ss-flex ss-row-between ss-col-center ss-m-t-70">
+          <text class="item-label">性别</text>
+          <view class="item-value-box ss-flex ss-col-center">
             <radio-group @change="onChangeGender" class="ss-flex ss-col-center">
-              <label class="radio" v-for="item in sexRadioMap" :key="item.value">
-                <view class="ss-flex ss-col-center ss-m-r-32">
-                  <radio
-                    :value="item.value"
-                    color="var(--ui-BG-Main)"
-                    style="transform: scale(0.8)"
-                    :checked="parseInt(item.value) === state.model?.sex"
-                  />
-                  <view class="gender-name">{{ item.name }}</view>
-                </view>
+              <label class="radio ss-flex ss-col-center">
+                <radio value="1" color="#6DD400" style="transform: scale(0.8)" :checked="state.model.sex === 1" />
+                <text class="gender-text ss-m-l-10" :class="{'is-checked': state.model.sex === 1}">先生</text>
+              </label>
+              <label class="radio ss-flex ss-col-center ss-m-l-40">
+                <radio value="2" color="#6DD400" style="transform: scale(0.8)" :checked="state.model.sex === 2" />
+                <text class="gender-text ss-m-l-10" :class="{'is-checked': state.model.sex === 2}">女士</text>
               </label>
             </radio-group>
           </view>
-        </uni-forms-item>
-
-        <uni-forms-item name="mobile" label="手机号" @tap="onChangeMobile">
-          <uni-easyinput
-            v-model="userInfo.mobile"
-            placeholder="请绑定手机号"
-            :inputBorder="false"
-            disabled
-            :styles="{ disableColor: '#fff' }"
-            :placeholderStyle="placeholderStyle"
-            :clearable="false"
-          >
-            <template v-slot:right>
-              <view class="ss-flex ss-col-center">
-                <su-radio v-if="userInfo.verification?.mobile" :modelValue="true" />
-                <button v-else class="ss-reset-button ss-flex ss-col-center ss-row-center">
-                  <text class="_icon-forward" style="color: #bbbbbb; font-size: 26rpx"></text>
-                </button>
-              </view>
-            </template>
-          </uni-easyinput>
-        </uni-forms-item>
-
-        <uni-forms-item name="password" label="登录密码" @tap="onSetPassword">
-          <uni-easyinput
-            v-model="userInfo.password"
-            placeholder="点击修改登录密码"
-            :inputBorder="false"
-            :styles="{ disableColor: '#fff' }"
-            disabled
-            placeholderStyle="color:#BBBBBB;font-size:28rpx;line-height:normal"
-            :clearable="false"
-          >
-            <template v-slot:right>
-              <view class="ss-flex ss-col-center">
-                <su-radio
-                  class="ss-flex"
-                  v-if="userInfo.verification?.password"
-                  :modelValue="true"
-                />
-                <button v-else class="ss-reset-button ss-flex ss-col-center ss-row-center">
-                  <text class="_icon-forward" style="color: #bbbbbb; font-size: 26rpx" />
-                </button>
-              </view>
-            </template>
-          </uni-easyinput>
-        </uni-forms-item>
+        </view>
       </view>
 
-      <view class="bg-white ss-m-t-14">
-        <uni-list>
-          <uni-list-item
-            clickable
-            @tap="sheep.$router.go('/pages/user/address/list')"
-            title="地址管理"
-            showArrow
-            :border="false"
-            class="list-border"
-          />
-        </uni-list>
-      </view>
-    </uni-forms>
-
-    <!-- 当前社交平台的绑定关系，只处理 wechat 微信场景 -->
-    <view v-if="sheep.$platform.name !== 'H5'">
-      <view class="title-box ss-p-l-30">第三方账号绑定</view>
-      <view class="account-list ss-flex ss-row-between">
-        <view v-if="'WechatOfficialAccount' === sheep.$platform.name" class="ss-flex ss-col-center">
-          <image
-            class="list-img"
-            :src="sheep.$url.static('/static/img/shop/platform/WechatOfficialAccount.png')"
-          />
-          <text class="list-name">微信公众号</text>
-        </view>
-        <view v-if="'WechatMiniProgram' === sheep.$platform.name" class="ss-flex ss-col-center">
-          <image
-            class="list-img"
-            :src="sheep.$url.static('/static/img/shop/platform/WechatMiniProgram.png')"
-          />
-          <text class="list-name">微信小程序</text>
-        </view>
-        <view v-if="'App' === sheep.$platform.name" class="ss-flex ss-col-center">
-          <image
-            class="list-img"
-            :src="sheep.$url.static('/static/img/shop/platform/wechat.png')"
-          />
-          <text class="list-name">微信开放平台</text>
-        </view>
-        <view class="ss-flex ss-col-center">
-          <view class="info ss-flex ss-col-center" v-if="state.thirdInfo">
-            <image class="avatar ss-m-r-20" :src="sheep.$url.avatar(state.thirdInfo.avatar)" />
-            <text class="name">{{ state.thirdInfo.nickname }}</text>
-          </view>
-          <view class="bind-box ss-m-l-20">
-            <button
-              v-if="state.thirdInfo.openid"
-              class="ss-reset-button relieve-btn"
-              @tap="unBindThirdOauth"
-            >
-              解绑
-            </button>
-            <button v-else class="ss-reset-button bind-btn" @tap="bindThirdOauth">绑定</button>
-          </view>
-        </view>
+      <view class="hint-text ss-flex ss-row-center">
+        完善您的个人信息有助于我们为您提供更好的会员服务
       </view>
     </view>
 
-    <view class="ss-p-x-30 ss-m-t-20">
+    <!-- 底部按钮 -->
+    <view class="footer-box">
       <button class="ss-reset-button logout-btn" @tap="onLogout">退出登录</button>
+      <button class="ss-reset-button save-btn ss-m-t-20" @tap="onSubmit">保存</button>
     </view>
-
-    <su-fixed bottom placeholder bg="none">
-      <view class="footer-box ss-p-20">
-        <button class="ss-rest-button save-btn ui-Shadow-Main" @tap="onSubmit">保存</button>
-      </view>
-    </su-fixed>
   </s-layout>
 </template>
 
@@ -196,29 +115,40 @@
   } from '@/sheep/components/s-uploader/choose-and-upload-file';
 
   const state = reactive({
-    model: {}, // 个人信息
-    rules: {},
-    thirdInfo: {}, // 社交用户的信息
+    model: {
+      avatar: '',
+      nickname: '',
+      sex: 0,
+      birthday: '',
+    },
   });
-
-  const placeholderStyle = 'color:#BBBBBB;font-size:28rpx;line-height:normal';
-
-  const sexRadioMap = [
-    {
-      name: '男',
-      value: '1',
-    },
-    {
-      name: '女',
-      value: '2',
-    },
-  ];
 
   const userInfo = computed(() => sheep.$store('user').userInfo);
 
+  // 格式化手机号
+  const maskMobile = (mobile) => {
+    if (!mobile) return '';
+    return mobile.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
+  };
+
+  // 格式化生日
+  const formatBirthday = (dateStr) => {
+    if (!dateStr) return '';
+    // 如果设计图要求年份打码，可以这样写：return dateStr.replace(/^\d{4}/, '****').replace(/-/g, '.');
+    // 这里先保留年份，替换横线为点，参考设计图效果
+    return dateStr.replace(/^\d{4}/, '****').replace(/-/g, '.');
+  };
+
   // 选择性别
-  function onChangeGender(e) {
-    state.model.sex = e.detail.value;
+  async function onChangeGender(e) {
+    state.model.sex = parseInt(e.detail.value);
+    await onSubmit();
+  }
+
+  // 选择生日
+  async function onChangeBirthday(e) {
+    state.model.birthday = e.detail.value;
+    await onSubmit();
   }
 
   // 修改手机号
@@ -226,54 +156,24 @@
     showAuthModal('changeMobile');
   };
 
-  // 选择微信的头像，进行上传
+  // 选择微信头像
   async function onChooseAvatar(e) {
     const tempUrl = e.detail.avatarUrl || '';
     if (!tempUrl) return;
     const files = await uploadFilesFromPath(tempUrl);
     if (files.length > 0) {
       state.model.avatar = files[0].url;
+      await onSubmit();
     }
   }
 
-  // 手动选择头像，进行上传
+  // 手动选择头像
   async function onChangeAvatar() {
     const files = await chooseAndUploadFile({ type: 'image' });
     if (files.length > 0) {
       state.model.avatar = files[0].url;
+      await onSubmit();
     }
-  }
-
-  // 修改密码
-  function onSetPassword() {
-    showAuthModal('changePassword');
-  }
-
-  // 绑定第三方账号
-  async function bindThirdOauth() {
-    let result = await sheep.$platform.useProvider('wechat').bind();
-    if (result) {
-      await getUserInfo();
-    }
-  }
-
-  // 解绑第三方账号
-  function unBindThirdOauth() {
-    uni.showModal({
-      title: '解绑提醒',
-      content: '解绑后您将无法通过微信登录此账号',
-      cancelText: '再想想',
-      confirmText: '确定',
-      success: async function (res) {
-        if (!res.confirm) {
-          return;
-        }
-        const result = await sheep.$platform.useProvider('wechat').unbind(state.thirdInfo.openid);
-        if (result) {
-          await getUserInfo();
-        }
-      },
-    });
   }
 
   // 保存信息
@@ -282,13 +182,14 @@
       avatar: state.model.avatar,
       nickname: state.model.nickname,
       sex: state.model.sex,
+      birthday: state.model.birthday, // 假设后端支持 birthday 字段
     });
     if (code === 0) {
       await getUserInfo();
     }
   }
 
-  // 登出系统
+  // 退出登录
   function onLogout() {
     uni.showModal({
       title: '提示',
@@ -304,17 +205,10 @@
     });
   }
 
-  // 获得用户信息
+  // 获取用户信息
   const getUserInfo = async () => {
-    // 个人信息
     const userInfo = await sheep.$store('user').getInfo();
     state.model = clone(userInfo);
-
-    // 获得社交用户的信息
-    if (sheep.$platform.name !== 'H5') {
-      const result = await sheep.$platform.useProvider('wechat').getInfo();
-      state.thirdInfo = result || {};
-    }
   };
 
   onBeforeMount(() => {
@@ -323,181 +217,178 @@
 </script>
 
 <style lang="scss" scoped>
-  :deep() {
-    .uni-file-picker {
-      border-radius: 50%;
+  .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: rgba(248, 249, 243, 1);
+  }
+
+  .nav-bar-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .back-btn {
+    width: 60rpx;
+    height: 100%;
+  }
+
+  .nav-title {
+    color: rgba(30, 63, 28, 0.9);
+    font-size: 36rpx;
+    font-weight: 600;
+    font-family: PingFangSC-Semibold;
+  }
+
+  .content-box {
+    padding: 0;
+  }
+
+  .form-group {
+    background-color: rgba(255, 254, 250, 1);
+    border-radius: 20rpx;
+    width: 686rpx;
+    margin: 26rpx auto 0;
+    padding: 34rpx 24rpx 24rpx 23rpx;
+    box-sizing: border-box;
+  }
+
+  .form-item {
+    position: relative;
+  }
+
+  .ss-m-t-56 {
+    margin-top: 56rpx;
+  }
+
+  .ss-m-t-70 {
+    margin-top: 70rpx;
+  }
+
+  .item-label {
+    color: rgba(0, 0, 0, 1);
+    font-size: 28rpx;
+    font-weight: 400;
+    font-family: PingFangSC-Regular;
+  }
+
+  .avatar-box {
+    position: relative;
+    width: 68rpx;
+    height: 68rpx;
+    border-radius: 50%;
+    overflow: hidden;
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
     }
 
-    .uni-file-picker__container {
-      margin: -14rpx -12rpx;
-    }
-
-    .file-picker__progress {
-      height: 0 !important;
-    }
-
-    .uni-list-item__content-title {
-      font-size: 28rpx !important;
-      color: #333333 !important;
-      line-height: normal !important;
-    }
-
-    .uni-icons {
-      font-size: 40rpx !important;
-    }
-
-    .is-disabled {
-      color: #333333;
+    .avatar-action-btn {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      z-index: 1;
     }
   }
 
-  :deep(.disabled) {
-    opacity: 1;
+  .item-value-box {
+    position: relative;
   }
 
-  .gender-name {
+  .nickname-input {
+    width: 300rpx;
+    text-align: right;
     font-size: 28rpx;
     font-weight: 500;
-    line-height: normal;
-    color: #333333;
+    color: rgba(61, 61, 60, 1);
+    font-family: PingFangSC-Medium;
+
+    &.has-value {
+      color: rgba(61, 61, 60, 1);
+    }
   }
 
-  .title-box {
+  .placeholder-text {
+    color: rgba(212, 212, 213, 1);
+    font-weight: 500;
+  }
+
+  .item-value {
+    color: rgba(61, 61, 60, 1);
     font-size: 28rpx;
     font-weight: 500;
-    color: #666666;
-    line-height: 100rpx;
+    font-family: PingFangSC-Medium;
+
+    &.is-empty {
+      color: rgba(212, 212, 213, 1);
+    }
   }
 
-  .save-btn {
-    width: 710rpx;
-    height: 80rpx;
-    background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
-    border-radius: 40rpx;
-    font-size: 30rpx;
+  .arrow-icon {
+    color: rgba(212, 212, 213, 1);
+    font-size: 24rpx;
+  }
+
+  .gender-text {
+    color: rgba(61, 61, 60, 1);
+    font-size: 28rpx;
     font-weight: 500;
-    color: $white;
+    font-family: PingFangSC-Medium;
+  }
+
+  .hint-text {
+    color: rgba(181, 158, 109, 1);
+    font-size: 24rpx;
+    font-weight: 400;
+    font-family: PingFangSC-Regular;
+    margin-top: 41rpx;
+  }
+
+  .footer-box {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 24rpx 32rpx;
+    padding-bottom: calc(24rpx + env(safe-area-inset-bottom));
+    background-color: rgba(255, 255, 250, 1);
+    box-shadow: 0px -6rpx 10rpx 0px rgba(0, 0, 0, 0.02);
+    box-sizing: border-box;
+    z-index: 100;
   }
 
   .logout-btn {
     width: 100%;
-    height: 80rpx;
-    border-radius: 40rpx;
-    background: #fff;
-    color: #333333;
-    font-size: 28rpx;
-    font-weight: 500;
-  }
-
-  .radio-dark {
-    filter: grayscale(100%);
-    filter: gray;
-    opacity: 0.4;
-  }
-
-  .footer-box {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .content-img {
-    border-radius: 50%;
-  }
-  .header-box-content {
-    position: relative;
-    width: 160rpx;
-    height: 160rpx;
-    overflow: hidden;
-    border-radius: 50%;
-  }
-  .avatar-action {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    bottom: 0;
-    z-index: 1;
-    width: 160rpx;
-    height: 46rpx;
-    background: rgba(#000000, 0.3);
-
-    .avatar-action-btn {
-      width: 160rpx;
-      height: 46rpx;
-      font-weight: 500;
-      font-size: 24rpx;
-      color: #ffffff;
-    }
-  }
-
-  // 绑定项
-  .account-list {
-    background-color: $white;
-    height: 100rpx;
-    padding: 0 20rpx;
-
-    .list-img {
-      width: 40rpx;
-      height: 40rpx;
-      margin-right: 10rpx;
-    }
-
-    .list-name {
-      font-size: 28rpx;
-      color: #333333;
-    }
-
-    .info {
-      .avatar {
-        width: 38rpx;
-        height: 38rpx;
-        border-radius: 50%;
-        overflow: hidden;
-      }
-
-      .name {
-        font-size: 28rpx;
-        font-weight: 400;
-        color: $dark-9;
-      }
-    }
-
-    .bind-box {
-      width: 100rpx;
-      height: 50rpx;
-      line-height: normal;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 24rpx;
-
-      .bind-btn {
-        width: 100%;
-        height: 100%;
-        border-radius: 25rpx;
-        background: #f4f4f4;
-        color: #999999;
-      }
-      .relieve-btn {
-        width: 100%;
-        height: 100%;
-        border-radius: 25rpx;
-        background: var(--ui-BG-Main-opacity-1);
-        color: var(--ui-BG-Main);
-      }
-    }
-  }
-
-  .list-border {
-    font-size: 28rpx;
+    height: 86rpx;
+    line-height: 86rpx;
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 20rpx;
+    border: 1px solid rgba(157, 156, 150, 1);
+    color: rgba(0, 0, 0, 1);
+    font-size: 32rpx;
     font-weight: 400;
-    color: #333333;
-    border-bottom: 2rpx solid #eeeeee;
+    font-family: PingFangSC-Regular;
+    text-align: center;
   }
 
-  image {
+  .save-btn {
     width: 100%;
-    height: 100%;
+    height: 86rpx;
+    line-height: 86rpx;
+    background-color: #6DD400;
+    border-radius: 20rpx;
+    color: rgba(255, 255, 255, 1);
+    font-size: 32rpx;
+    font-weight: 400;
+    font-family: PingFangSC-Regular;
+    text-align: center;
+    margin-top: 20rpx;
   }
 </style>
