@@ -246,8 +246,8 @@
 
   const addressState = ref({
     addressInfo: {}, // 选择的收货地址
-    deliveryType: undefined, // 收货方式：1-快递配送，2-门店自提
-    isPickUp: true, // 门店自提是否开启
+    deliveryType: 1, // 收货方式：1-快递配送，2-门店自提
+    isPickUp: false, // 门店自提是否开启
     pickUpInfo: {}, // 选择的自提门店信息
     receiverName: '', // 收件人名称
     receiverMobile: '', // 收件人手机

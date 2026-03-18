@@ -15,15 +15,34 @@
     <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
 
     <view class="state-box ss-flex ss-row-between ss-col-center">
-      <view class="state-text-box ss-flex-col">
-        <view class="state-title">{{ formatOrderStatus(state.orderInfo) }}</view>
-        <view class="state-desc ss-m-t-14" v-if="state.orderInfo.status === 0">
-          {{ formatOrderStatusDescription(state.orderInfo) }}
-          <text class="pay-timer ss-m-x-10">{{ formatPayCountdown(state.orderInfo.createTime) }}</text>
-          <text>内支付</text>
-        </view>
-        <view class="state-desc ss-m-t-14" v-else>
-          {{ formatOrderStatusDescription(state.orderInfo) }}
+      <view class="ss-flex ss-col-center">
+        <image
+          class="state-main-icon ss-m-r-20"
+          :src="
+            sheep.$url.static(
+              state.orderInfo.status === 0
+                ? '/static/dengdaizhifu.png'
+                : state.orderInfo.status === 10
+                ? '/static/daifahuo.png'
+                : state.orderInfo.status === 20
+                ? '/static/daishouhuo.png'
+                : state.orderInfo.status === 30
+                ? '/static/yiwancheng.png'
+                : '/static/yiquxiao.png',
+            )
+          "
+          mode="heightFix"
+        />
+        <view class="state-text-box ss-flex-col">
+          <view class="state-title">{{ formatOrderStatus(state.orderInfo) }}</view>
+          <view class="state-desc ss-m-t-14" v-if="state.orderInfo.status === 0">
+            {{ formatOrderStatusDescription(state.orderInfo) }}
+            <text class="pay-timer ss-m-x-10">{{ formatPayCountdown(state.orderInfo.createTime) }}</text>
+            <text>内支付</text>
+          </view>
+          <view class="state-desc ss-m-t-14" v-else>
+            {{ formatOrderStatusDescription(state.orderInfo) }}
+          </view>
         </view>
       </view>
       <view class="state-icon-box">
@@ -58,7 +77,7 @@
     <!-- 收货地址 -->
     <view class="order-address-box ss-flex ss-col-center" v-if="state.orderInfo.receiverAreaId > 0">
       <view class="address-icon-box ss-flex ss-col-center ss-row-center">
-        <image class="address-icon" :src="sheep.$url.static('/static/img/shop/order/address_icon.png')" />
+        <image class="address-icon" :src="sheep.$url.static('/static/address.png')" />
       </view>
       <view class="address-info ss-m-l-20 ss-flex-1">
         <view class="address-detail ss-line-2">
@@ -569,6 +588,10 @@
   .state-box {
     padding: 36rpx 32rpx 0 32rpx;
     background: #F8F9F3;
+
+    .state-main-icon {
+      height: 100rpx; // 默认给一个合适的高度，会自动撑开
+    }
 
     .state-text-box {
       .state-title {

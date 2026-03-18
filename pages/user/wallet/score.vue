@@ -1,6 +1,13 @@
 <!-- 我的积分 -->
 <template>
-  <s-layout class="wallet-wrap" title="积分明细" navbar="clear" :bgStyle="{ backgroundColor: '#f8f9f3' }">
+  <s-layout
+    class="wallet-wrap"
+    title="积分明细"
+    navbar="clean"
+  >
+    <view class="full-page-bg">
+      <image :src="sheep.$url.static('/static/jifenbg.png')" mode="widthFix" class="bg-img" />
+    </view>
     <view class="header-box">
       <su-status-bar />
       <view class="custom-nav" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
@@ -26,13 +33,33 @@
     </view>
     <!-- tab -->
     <su-sticky :customNavHeight="sys_navBar">
-      <view class="tab-box">
-        <su-tabs
-          :list="tabMaps"
-          @change="onChange"
-          :scrollable="false"
-          :current="state.currentTab"
-        ></su-tabs>
+      <view class="section_2 flex-col">
+        <view class="text-wrapper_4 flex-row justify-between">
+          <text
+            class="tab-item"
+            :class="state.currentTab === 0 ? 'text_6' : 'text_7'"
+            @tap="onTabChange(0)"
+            >明细</text
+          >
+          <text
+            class="tab-item"
+            :class="state.currentTab === 1 ? 'text_6' : 'text_7'"
+            @tap="onTabChange(1)"
+            >收入</text
+          >
+          <text
+            class="tab-item"
+            :class="state.currentTab === 2 ? 'text_6' : 'text_7'"
+            @tap="onTabChange(2)"
+            >支出</text
+          >
+        </view>
+        <view class="group_39 flex-row">
+          <view
+            class="block_12 flex-col"
+            :style="{ transform: `translateX(${state.currentTab * 229}rpx)` }"
+          ></view>
+        </view>
       </view>
     </su-sticky>
 
@@ -46,8 +73,12 @@
         >
           <view class="ss-flex-col">
             <view class="name ss-flex ss-col-center"
-              >{{ item.title }}{{ item.description ? ' - ' + item.description : '' }}
-              <image class="coin-icon ss-m-l-10" src="https://file.sheepjs.com/storage/img/2024/11/12/f2a417df4eb042d3be477eb0c8715837.png" mode="aspectFit" />
+              >{{ item.title }}
+              <image
+                class="coin-icon ss-m-l-10"
+                :src="sheep.$url.static('/static/countIcon.png')"
+                mode="aspectFit"
+              />
             </view>
             <view class="time">{{
               sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd hh:MM')
@@ -86,7 +117,7 @@
   const state = reactive({
     currentTab: 0,
     pagination: {
-      list: 0,
+      list: [],
       total: 0,
       pageSize: 6,
       pageNo: 1,
@@ -138,8 +169,8 @@
     getLogList();
   });
 
-  function onChange(e) {
-    state.currentTab = e.index;
+  function onTabChange(index) {
+    state.currentTab = index;
     resetPagination(state.pagination);
     getLogList();
   }
@@ -165,6 +196,17 @@
 </script>
 
 <style lang="scss" scoped>
+  .full-page-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: -1;
+    .bg-img {
+      width: 100%;
+    }
+  }
+
   .custom-nav {
     position: relative;
     width: 100%;
@@ -228,11 +270,54 @@
   }
 
   // 筛选
-  .tab-box {
-    background-color: #fffefa;
-    border-radius: 22rpx 22rpx 0 0;
+  .section_2 {
+    background-image: linear-gradient(
+      180deg,
+      rgba(255, 255, 253, 0.8) 0,
+      rgba(234, 243, 229, 0.8) 100%
+    );
+    border-radius: 22px 22px 0px 0px;
+    padding: 38rpx 82rpx 0 82rpx;
     margin: -80rpx 33rpx 0;
-    overflow: hidden;
+    position: relative;
+    z-index: 1;
+  }
+  .text-wrapper_4 {
+    width: 522rpx;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .text_6 {
+    overflow-wrap: break-word;
+    color: rgba(30, 63, 28, 1);
+    font-size: 32rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 45rpx;
+  }
+  .text_7 {
+    overflow-wrap: break-word;
+    color: rgba(61, 61, 60, 1);
+    font-size: 32rpx;
+    font-weight: normal;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 45rpx;
+  }
+  .group_39 {
+    margin: 27rpx 0 0 0;
+    display: flex;
+    flex-direction: row;
+  }
+  .block_12 {
+    background-color: rgba(30, 63, 28, 1);
+    border-radius: 45px;
+    width: 64rpx;
+    height: 10rpx;
+    transition: transform 0.3s;
   }
 
   .list-box {
@@ -240,6 +325,8 @@
     margin: 0 33rpx;
     padding: 0 30rpx;
     border-radius: 0 0 22rpx 22rpx;
+    position: relative;
+    z-index: 1;
     
     .list-item {
       border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
