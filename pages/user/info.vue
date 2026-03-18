@@ -44,7 +44,6 @@
               type="nickname"
               placeholder="未填写"
               placeholder-class="placeholder-text"
-              @blur="onSubmit"
             />
             <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
           </view>
@@ -132,23 +131,20 @@
   };
 
   // 格式化生日
-  const formatBirthday = (dateStr) => {
-    if (!dateStr) return '';
-    // 如果设计图要求年份打码，可以这样写：return dateStr.replace(/^\d{4}/, '****').replace(/-/g, '.');
-    // 这里先保留年份，替换横线为点，参考设计图效果
+  const formatBirthday = (date) => {
+    if (!date) return '';
+    const dateStr = sheep.$helper.timeFormat(date, 'yyyy-mm-dd');
     return dateStr.replace(/^\d{4}/, '****').replace(/-/g, '.');
   };
 
   // 选择性别
-  async function onChangeGender(e) {
+  function onChangeGender(e) {
     state.model.sex = parseInt(e.detail.value);
-    await onSubmit();
   }
 
   // 选择生日
-  async function onChangeBirthday(e) {
+  function onChangeBirthday(e) {
     state.model.birthday = e.detail.value;
-    await onSubmit();
   }
 
   // 修改手机号
@@ -163,7 +159,6 @@
     const files = await uploadFilesFromPath(tempUrl);
     if (files.length > 0) {
       state.model.avatar = files[0].url;
-      await onSubmit();
     }
   }
 
@@ -172,7 +167,6 @@
     const files = await chooseAndUploadFile({ type: 'image' });
     if (files.length > 0) {
       state.model.avatar = files[0].url;
-      await onSubmit();
     }
   }
 
@@ -182,9 +176,13 @@
       avatar: state.model.avatar,
       nickname: state.model.nickname,
       sex: state.model.sex,
-      birthday: state.model.birthday, // 假设后端支持 birthday 字段
+      birthday: state.model.birthday ? new Date(state.model.birthday).getTime() : 0,
     });
     if (code === 0) {
+      uni.showToast({
+        title: '保存成功',
+        icon: 'success',
+      });
       await getUserInfo();
     }
   }
@@ -209,6 +207,10 @@
   const getUserInfo = async () => {
     const userInfo = await sheep.$store('user').getInfo();
     state.model = clone(userInfo);
+    // 将获取到的时间戳转换为 YYYY-MM-DD 字符串，供 picker 使用
+    if (userInfo.birthday) {
+      state.model.birthday = sheep.$helper.timeFormat(userInfo.birthday, 'yyyy-mm-dd');
+    }
   };
 
   onBeforeMount(() => {
@@ -382,7 +384,7 @@
     width: 100%;
     height: 86rpx;
     line-height: 86rpx;
-    background-color: #6DD400;
+    background-color: rgba(30, 63, 28, 1);
     border-radius: 20rpx;
     color: rgba(255, 255, 255, 1);
     font-size: 32rpx;
