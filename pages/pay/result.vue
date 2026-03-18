@@ -1,62 +1,63 @@
 <!-- 支付结果页面 -->
 <template>
-  <s-layout :bgStyle="{ color: '#FFF' }" title="支付结果">
-    <view class="pay-result-box ss-flex-col ss-row-center ss-col-center">
-      <!-- 信息展示 -->
-      <view class="pay-waiting ss-m-b-30" v-if="payResult === 'waiting'" />
-      <image
-        class="pay-img ss-m-b-30"
-        v-if="payResult === 'success'"
-        :src="sheep.$url.static('/static/img/shop/order/order_pay_success.gif')"
-      />
-      <image
-        class="pay-img ss-m-b-30"
-        v-if="['failed', 'closed'].includes(payResult)"
-        :src="sheep.$url.static('/static/img/shop/order/order_paty_fail.gif')"
-      />
-      <view class="tip-text ss-m-b-30" v-if="payResult === 'success'">支付成功</view>
-      <view class="tip-text ss-m-b-30" v-if="payResult === 'failed'">支付失败</view>
-      <view class="tip-text ss-m-b-30" v-if="payResult === 'closed'">该订单已关闭</view>
-      <view class="tip-text ss-m-b-30" v-if="payResult === 'waiting'">正在查询支付结果...</view>
-      <view class="pay-total-num ss-flex" v-if="payResult === 'success'">
-        <view>￥{{ fen2yuan(state.orderInfo.price) }}</view>
+  <s-layout navbar="clear" :bgStyle="{ color: '#f8f9f3' }" title="支付订单">
+    <view class="custom-header">
+      <su-status-bar />
+      <view class="nav-bar">
+        <view class="back-btn" @tap="onBack">
+          <text class="sicon-back"></text>
+        </view>
+        <view class="nav-title">支付订单</view>
       </view>
+    </view>
+    <view class="pay-result-box ss-flex-col ss-row-center ss-col-center">
+      <view class="result-card ss-flex-col ss-col-center">
+        <!-- 信息展示 -->
+        <view class="pay-waiting ss-m-b-30" v-if="payResult === 'waiting'" />
+        <view class="pay-img-box ss-flex ss-row-center ss-col-center ss-m-b-30">
+          <image
+            class="pay-img"
+            v-if="payResult === 'success'"
+            :src="sheep.$url.static('/static/zhifuchenggong.png')"
+            mode="aspectFit"
+          />
+          <image
+            class="pay-img"
+            v-if="['failed', 'closed'].includes(payResult)"
+            :src="sheep.$url.static('/static/pay_fail_icon.png')"
+            mode="aspectFit"
+          />
+        </view>
+        <view class="tip-text ss-m-b-60" v-if="payResult === 'success'">支付成功</view>
+        <view class="tip-text ss-m-b-60" v-if="payResult === 'failed'">支付失败</view>
+        <view class="tip-text ss-m-b-60" v-if="payResult === 'closed'">该订单已关闭</view>
+        <view class="tip-text ss-m-b-60" v-if="payResult === 'waiting'">正在查询支付结果...</view>
 
-      <!-- 操作区 -->
-      <view class="btn-box ss-flex ss-row-center ss-m-t-50">
-        <button class="back-btn ss-reset-button" @tap="sheep.$router.go('/pages/index/index')">
-          返回首页
-        </button>
-        <button
-          class="check-btn ss-reset-button"
-          v-if="payResult === 'failed'"
-          @tap="
-            sheep.$router.redirect('/pages/pay/index', { id: state.id, orderType: state.orderType })
-          "
-        >
-          重新支付
-        </button>
-        <button class="check-btn ss-reset-button" v-if="payResult === 'success'" @tap="onOrder">
-          查看订单
-        </button>
-        <button
-          class="check-btn ss-reset-button"
-          v-if="payResult === 'success' && state.tradeOrder.type === 3"
-          @tap="sheep.$router.redirect('/pages/activity/groupon/order')"
-        >
-          我的拼团
-        </button>
+        <!-- 操作区 -->
+        <view class="btn-box ss-flex ss-row-between">
+          <button class="check-btn ss-reset-button" v-if="payResult === 'success'" @tap="onOrder">
+            查看订单
+          </button>
+          <button
+            class="check-btn ss-reset-button"
+            v-if="payResult === 'failed'"
+            @tap="
+              sheep.$router.redirect('/pages/pay/index', {
+                id: state.id,
+                orderType: state.orderType,
+              })
+            "
+          >
+            重新支付
+          </button>
+          <button class="back-btn ss-reset-button" @tap="sheep.$router.go('/pages/index/index')">
+            回到首页
+          </button>
+        </view>
       </view>
 
       <!-- #ifdef MP -->
-      <view
-        class="subscribe-box ss-flex ss-m-t-44"
-        v-if="showSubscribeBtn && state.orderType === 'goods'"
-      >
-        <image class="subscribe-img" :src="sheep.$url.static('/static/img/shop/order/cargo.png')" />
-        <view class="subscribe-title ss-m-r-48 ss-m-l-16">获取实时发货信息与订单状态</view>
-        <view class="subscribe-start" @tap="subscribeMessage">立即订阅</view>
-      </view>
+      
       <!-- #endif -->
     </view>
   </s-layout>
@@ -241,6 +242,36 @@
 </script>
 
 <style lang="scss" scoped>
+.custom-header {
+    width: 100%;
+    background-color: transparent;
+  }
+  
+  .nav-bar {
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    padding: 0 30rpx;
+    
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding-right: 20rpx;
+      height: 100%;
+      
+      .sicon-back {
+        font-size: 32rpx;
+        color: #000;
+      }
+    }
+    
+    .nav-title {
+      font-size: 32rpx;
+      font-weight: 500;
+      color: #000;
+    }
+  }
   @keyframes rotation {
     0% {
       transform: rotate(0deg);
@@ -258,81 +289,69 @@
   }
 
   .pay-result-box {
-    padding: 60rpx 0;
+    padding: 40rpx 30rpx;
+
+    .result-card {
+      width: 100%;
+      background: #ffffff;
+      border-radius: 40rpx;
+      padding: 100rpx 0 80rpx;
+      margin-top: 40rpx;
+    }
 
     .pay-waiting {
-      margin-top: 20rpx;
       width: 60rpx;
       height: 60rpx;
       border: 10rpx solid rgb(233, 231, 231);
       border-bottom-color: rgb(204, 204, 204);
       border-radius: 50%;
       display: inline-block;
-      // -webkit-animation: rotation 1s linear infinite;
       animation: rotation 1s linear infinite;
     }
 
-    .pay-img {
-      width: 130rpx;
-      height: 130rpx;
+    .pay-img-box {
+      width: 442rpx;
+      height: 384rpx;
+
+      .pay-img {
+        width: 100%;
+        height: 100%;
+      }
     }
 
     .tip-text {
-      font-size: 30rpx;
-      font-weight: bold;
-      color: #333333;
-    }
-
-    .pay-total-num {
-      font-size: 36rpx;
+      font-size: 40rpx;
       font-weight: 500;
-      color: #333333;
-      font-family: OPPOSANS;
+      color: #000000;
+      line-height: 56rpx;
     }
 
     .btn-box {
-      width: 100%;
+      width: 85%;
+      padding: 60rpx;
 
       .back-btn {
-        width: 190rpx;
-        height: 70rpx;
-        font-size: 28rpx;
-        border: 2rpx solid #dfdfdf;
-        border-radius: 35rpx;
-        font-weight: 400;
-        color: #595959;
+        width: 270rpx;
+        height: 84rpx;
+        background: #1e3f1c;
+        border-radius: 42rpx;
+        font-size: 32rpx;
+        font-weight: 500;
+        color: #ffffff;
+        line-height: 84rpx;
+        text-align: center;
       }
 
       .check-btn {
-        width: 190rpx;
-        height: 70rpx;
-        font-size: 28rpx;
-        border: 2rpx solid #dfdfdf;
-        border-radius: 35rpx;
-        font-weight: 400;
-        color: #595959;
-        margin-left: 32rpx;
-      }
-    }
-
-    .subscribe-box {
-      .subscribe-img {
-        width: 44rpx;
-        height: 44rpx;
-      }
-
-      .subscribe-title {
+        width: 270rpx;
+        height: 84rpx;
+        border: 2rpx solid #1e3f1c;
+        border-radius: 42rpx;
+        font-size: 32rpx;
         font-weight: 500;
-        font-size: 32rpx;
-        line-height: 36rpx;
-        color: #434343;
-      }
-
-      .subscribe-start {
-        color: var(--ui-BG-Main);
-        font-weight: 700;
-        font-size: 32rpx;
-        line-height: 36rpx;
+        color: #1e3f1c;
+        line-height: 84rpx;
+        text-align: center;
       }
     }
   }

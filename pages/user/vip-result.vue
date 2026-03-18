@@ -16,7 +16,7 @@
         <view class="state-box flex-col flex-x-center">
           <!-- Success State -->
           <block v-if="state.payState === 'success'">
-            <image class="state-img" :src="sheep.$url.static('/static/success.png')" mode="aspectFit" />
+            <image class="state-img" :src="sheep.$url.static('/static/kaitongchenggong.png')" mode="aspectFit" />
             <view class="state-title">会员开通成功</view>
           </block>
 

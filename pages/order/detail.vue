@@ -3,11 +3,17 @@
   <s-layout navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
     <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
       <su-status-bar />
-      <view class="nav-bar-container" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
-        <view class="nav-bar-inner ss-flex ss-col-center" :style="{ height: '100%', paddingLeft: '20rpx' }">
+      <view
+        class="nav-bar-container"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{ height: '100%', paddingLeft: '20rpx' }"
+        >
           <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
-              <text class="sicon-back"></text>
-            </view>
+            <text class="sicon-back"></text>
+          </view>
           <text class="nav-title ss-m-l-10">订单详情</text>
         </view>
       </view>
@@ -37,7 +43,9 @@
           <view class="state-title">{{ formatOrderStatus(state.orderInfo) }}</view>
           <view class="state-desc ss-m-t-14" v-if="state.orderInfo.status === 0">
             {{ formatOrderStatusDescription(state.orderInfo) }}
-            <text class="pay-timer ss-m-x-10">{{ formatPayCountdown(state.orderInfo.createTime) }}</text>
+            <text class="pay-timer ss-m-x-10">{{
+              formatPayCountdown(state.orderInfo.createTime)
+            }}</text>
             <text>内支付</text>
           </view>
           <view class="state-desc ss-m-t-14" v-else>
@@ -101,7 +109,11 @@
             @tap="onGoodsDetail(item.spuId)"
             :img="item.picUrl"
             :title="item.spuName"
-            :skuText="item.properties ? '已选：' + item.properties.map((property) => property.valueName).join('，') : ''"
+            :skuText="
+              item.properties
+                ? '已选：' + item.properties.map((property) => property.valueName).join('，')
+                : ''
+            "
             :price="item.price"
             priceColor="#F53F3F"
           >
@@ -220,19 +232,18 @@
         <text class="title">会员优惠</text>
         <text class="detail">-¥{{ fen2yuan(state.orderInfo.vipPrice) }}</text>
       </view>
-      
+
       <view class="price-divider"></view>
-      
+
       <view class="notice-item all-rpice-item ss-flex">
         <text class="title">{{ state.orderInfo.payStatus ? '已付款' : '需付款' }}</text>
         <text class="detail all-price ss-m-l-10">￥{{ fen2yuan(state.orderInfo.payPrice) }}</text>
       </view>
-      <view
-        class="notice-item all-rpice-item ss-flex"
-        v-if="state.orderInfo.refundPrice > 0"
-      >
+      <view class="notice-item all-rpice-item ss-flex" v-if="state.orderInfo.refundPrice > 0">
         <text class="title">已退款</text>
-        <text class="detail all-price ss-m-l-10">￥{{ fen2yuan(state.orderInfo.refundPrice) }}</text>
+        <text class="detail all-price ss-m-l-10"
+          >￥{{ fen2yuan(state.orderInfo.refundPrice) }}</text
+        >
       </view>
     </view>
 
@@ -304,11 +315,7 @@
   import { reactive, ref, onUnmounted } from 'vue';
   import { isEmpty } from 'lodash-es';
   import dayjs from 'dayjs';
-  import {
-    fen2yuan,
-    formatOrderStatus,
-    handleOrderButtons,
-  } from '@/sheep/hooks/useGoods';
+  import { fen2yuan, formatOrderStatus, handleOrderButtons } from '@/sheep/hooks/useGoods';
   import OrderApi from '@/sheep/api/trade/order';
   import DeliveryApi from '@/sheep/api/trade/delivery';
   import PayOrderApi from '@/sheep/api/pay/order';
@@ -559,7 +566,7 @@
     left: 0;
     width: 100%;
     z-index: 999;
-    background: #F8F9F3;
+    background: #f8f9f3;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
@@ -570,7 +577,7 @@
     /* #endif */
   }
   .nav-bar-container {
-    background: #F8F9F3;
+    background: #f8f9f3;
     display: flex;
     align-items: center;
   }
@@ -587,7 +594,7 @@
 
   .state-box {
     padding: 36rpx 32rpx 0 32rpx;
-    background: #F8F9F3;
+    background: #f8f9f3;
 
     .state-main-icon {
       height: 100rpx; // 默认给一个合适的高度，会自动撑开
@@ -595,20 +602,20 @@
 
     .state-text-box {
       .state-title {
-        color: #1D2129;
+        color: #1d2129;
         font-size: 40rpx;
         font-weight: 600;
         line-height: 44rpx;
       }
       .state-desc {
-        color: #86909C;
+        color: #86909c;
         font-size: 28rpx;
         line-height: 40rpx;
         display: flex;
         align-items: center;
       }
       .pay-timer {
-        color: #FF0000;
+        color: #ff0000;
         font-size: 28rpx;
         font-weight: 500;
       }
@@ -632,12 +639,11 @@
     .address-icon-box {
       width: 48rpx;
       height: 48rpx;
-      background-color: rgba(204, 204, 204, 1);
       border-radius: 50%;
-      
+
       .address-icon {
-        width: 22rpx;
-        height: 22rpx;
+        width: 48rpx;
+        height: 48rpx;
       }
     }
 
@@ -645,14 +651,14 @@
       .address-detail {
         font-size: 28rpx;
         font-weight: 500;
-        color: #3D3D3C;
+        color: #3d3d3c;
         line-height: 40rpx;
       }
 
       .address-username,
       .address-phone {
         font-size: 24rpx;
-        color: #9D9C96;
+        color: #9d9c96;
         font-weight: normal;
         line-height: 33rpx;
       }
@@ -670,16 +676,16 @@
 
       .order-card {
         padding: 20rpx 0;
-        
+
         .goods-count-text {
-          color: #3D3D3C;
+          color: #3d3d3c;
           font-size: 24rpx;
           margin-top: 10rpx;
           text-align: right;
         }
 
         :deep(.price-text) {
-          color: #F53F3F !important;
+          color: #f53f3f !important;
           font-size: 40rpx;
           font-weight: 700;
         }
@@ -753,12 +759,12 @@
 
       .title {
         font-size: 26rpx;
-        color: #3D3D3C;
+        color: #3d3d3c;
       }
 
       .detail {
         font-size: 26rpx;
-        color: #3D3D3C;
+        color: #3d3d3c;
         flex: 1;
         text-align: right;
       }
@@ -773,7 +779,7 @@
     background: transparent;
     font-size: 26rpx;
     font-weight: 400;
-    color: #FF0000;
+    color: #ff0000;
     margin-left: 20rpx;
   }
 
@@ -790,19 +796,19 @@
 
       .title {
         font-size: 26rpx;
-        color: #3D3D3C;
+        color: #3d3d3c;
       }
 
       .detail {
         font-size: 26rpx;
-        color: #3D3D3C;
+        color: #3d3d3c;
         font-family: OPPOSANS;
       }
     }
 
     .price-divider {
       height: 1rpx;
-      background-color: #EEEEEE;
+      background-color: #eeeeee;
       margin: 30rpx 0;
     }
 
@@ -823,7 +829,7 @@
         font-weight: 600;
         font-family: OPPOSANS;
         line-height: normal;
-        color: #FF0000;
+        color: #ff0000;
       }
     }
   }
@@ -839,13 +845,13 @@
     .cancel-btn {
       width: 160rpx;
       height: 60rpx;
-      background: #FFFFFF;
+      background: #ffffff;
       border-radius: 30rpx;
-      border: 2rpx solid #9D9C96;
+      border: 2rpx solid #9d9c96;
       margin-right: 20rpx;
       font-size: 28rpx;
       font-weight: 400;
-      color: #9D9C96;
+      color: #9d9c96;
       line-height: 56rpx;
     }
 
@@ -856,7 +862,7 @@
       border-radius: 30rpx;
       font-weight: 500;
       color: #fff;
-      background: #1E3F1C;
+      background: #1e3f1c;
       line-height: 60rpx;
     }
   }
