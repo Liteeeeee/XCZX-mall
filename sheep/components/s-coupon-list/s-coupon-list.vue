@@ -99,7 +99,7 @@
     margin-bottom: 24rpx;
     
     .rule-box {
-        background-color: #faeed1;
+        background: linear-gradient(90deg, #f9efde 0%, #ffdea8 100%);
         border-radius: 16rpx;
         font-size: 24rpx;
         color: rgba(134, 144, 156, 1);
@@ -118,7 +118,7 @@
   .coupon-item {
     position: relative;
     z-index: 1;
-    background-color: #faeed1;
+    background: linear-gradient(90deg, #f9efde 0%, #ffdea8 100%);
     border-radius: 16rpx;
     height: 220rpx;
     overflow: hidden;
@@ -180,14 +180,11 @@
       .split-line {
         width: 100%;
         border-top: 2rpx dashed rgba(255, 255, 255, 1);
-        margin: 10rpx 0;
         height: 2rpx;
       }
 
       .bottom-box {
         width: 100%;
-        margin-top: 6rpx;
-
         .rule {
           font-size: 24rpx;
           color: rgba(134, 144, 156, 1);
