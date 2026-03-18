@@ -50,14 +50,13 @@
         <s-coupon-list
           :data="item"
           type="user"
-          @tap="sheep.$router.go('/pages/coupon/detail', { id: item.id })"
         >
           <template #default>
             <button
               class="ss-reset-button card-btn ss-flex ss-row-center ss-col-center"
               :class="item.status !== 1 ? 'disabled-btn' : ''"
               :disabled="item.status !== 1"
-              @click.stop="sheep.$router.go('/pages/coupon/detail', { id: item.id })"
+              @click.stop="item.status === 1 ? sheep.$router.go('/pages/index/index') : sheep.$router.go('/pages/coupon/detail', { id: item.id })"
             >
               {{ item.status === 1 ? '立即使用' : item.status === 2 ? '已使用' : '已过期' }}
             </button>
@@ -160,6 +159,7 @@
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
       status: state.type,
+      discountType: state.currentTab === 0 ? undefined : tabMaps[state.currentTab].value,
     });
     if (code !== 0) {
       return;

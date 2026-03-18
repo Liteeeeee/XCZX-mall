@@ -47,23 +47,22 @@
           <view class="sku-item ss-m-b-20" v-for="property in propertyList" :key="property.id">
             <view class="label-text ss-m-b-20">{{ property.name }}</view>
             <view class="ss-flex ss-col-center ss-flex-wrap">
-              <button
-                class="ss-reset-button spec-btn"
+              <view
+                class="spec-btn ss-flex ss-row-center ss-col-center"
                 v-for="value in property.values"
                 :class="[
                   {
-                    'ui-BG-Main-Gradient': state.currentPropertyArray[property.id] === value.id,
+                    'spec-btn-selected': state.currentPropertyArray[property.id] === value.id,
                   },
                   {
                     'disabled-btn': value.disabled === true,
                   },
                 ]"
                 :key="value.id"
-                :disabled="value.disabled === true"
-                @tap="onSelectSku(property.id, value.id)"
+                @tap="value.disabled !== true && onSelectSku(property.id, value.id)"
               >
-                {{ value.name }}
-              </button>
+                <text class="spec-btn-text">{{ value.name }}</text>
+              </view>
             </view>
           </view>
           <view class="buy-num-box ss-flex ss-col-center ss-row-between ss-m-b-40">
@@ -82,10 +81,8 @@
       <!-- 操作区 -->
       <view class="modal-footer border-top">
         <view class="buy-box ss-flex ss-col-center ss-flex ss-col-center ss-row-center">
-          <button class="ss-reset-button add-btn ui-Shadow-Main" @tap="onAddCart"
-            >加入购物车</button
-          >
-          <button class="ss-reset-button buy-btn ui-Shadow-Main" @tap="onBuy">立即购买</button>
+          <button class="ss-reset-button add-btn" @tap="onAddCart">加入购物车</button>
+          <button class="ss-reset-button buy-btn" @tap="onBuy">立即购买</button>
         </view>
       </view>
     </view>
@@ -323,15 +320,16 @@
       width: 356rpx;
       height: 80rpx;
       border-radius: 40rpx 0 0 40rpx;
-      background-color: var(--ui-BG-Main-light);
-      color: var(--ui-BG-Main);
+      background-color: #f8f9f3;
+      color: #1e3f1c;
+      border: 2rpx solid #1e3f1c;
     }
 
     .buy-btn {
       width: 356rpx;
       height: 80rpx;
       border-radius: 0 40rpx 40rpx 0;
-      background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+      background: #1e3f1c;
       color: #fff;
     }
 
@@ -426,21 +424,38 @@
         }
 
         .spec-btn {
-          height: 60rpx;
           min-width: 100rpx;
-          padding: 0 30rpx;
-          background: #f4f4f4;
-          border-radius: 30rpx;
-          color: #434343;
-          font-size: 26rpx;
-          margin-right: 10rpx;
-          margin-bottom: 10rpx;
+          padding: 13rpx 34rpx 11rpx 34rpx;
+          background: rgba(242, 242, 242, 1);
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 250, 1);
+          color: rgba(0, 0, 0, 1);
+          margin-right: 20rpx;
+          margin-bottom: 20rpx;
+
+          .spec-btn-text {
+            overflow-wrap: break-word;
+            font-size: 30rpx;
+            font-weight: normal;
+            text-align: left;
+            white-space: nowrap;
+            line-height: 42rpx;
+            color: inherit;
+          }
+        }
+
+        .spec-btn-selected {
+          background: rgba(8, 141, 62, 0.05) !important;
+          border: 1px solid rgba(30, 63, 28, 1) !important;
+          color: rgba(30, 63, 28, 1) !important;
         }
 
         .disabled-btn {
           font-weight: 400;
-          color: #c6c6c6;
-          background: #f8f8f8;
+          color: #c6c6c6 !important;
+          background: #f8f8f8 !important;
+          border-color: #eeeeee !important;
+          opacity: 0.5;
         }
       }
     }

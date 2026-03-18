@@ -37,7 +37,7 @@
     </view>
 
     <!-- 下半部分：大盒子包裹订单和信息 (UserOrder & UserInfo) -->
-    <view class="user-bottom-content" v-if="orderCardList.length > 0 || userInfoList.length > 0">
+    <view class="user-bottom-content" :style="{ 'margin-top': marginTop }" v-if="orderCardList.length > 0 || userInfoList.length > 0">
       <view v-for="(item, index) in orderCardList" :key="'order-' + index">
         <s-block-item :type="item.id" :data="item.property" :styles="item.property.style || {}" />
       </view>
@@ -90,6 +90,21 @@
     ),
   );
 
+  // 计算 margin-top
+  const marginTop = computed(() => {
+    const user = sheep.$store('user');
+    const isLogin = user.isLogin;
+    const userInfo = user.userInfo;
+    // 判断是否为VIP：已登录 且 levelName存在 且 不等于'普通会员'
+    const isVip = !isLogin || userInfo && userInfo.levelName && userInfo.levelName === '普通会员';
+    
+    // 根据你的需求，默认是 -139rpx，VIP 是 -169rpx (即 -139 - 30)
+    const value = isVip ? '-100rpx' : '-139rpx'; 
+    console.log('当前是否为VIP:', !!isVip, ' | 期望的 rpx 值为:', value);
+    
+    return value;
+  });
+
   onShow(() => {
     sheep.$store('user').updateUserData();
   });
@@ -113,7 +128,7 @@
     width: 100%;
     min-height: calc(100vh - 480rpx);
     padding: 80rpx 30rpx 20rpx;
-    margin-top: -139rpx; // 向上移动以覆盖在卡片下方
+    // margin-top: -139rpx; // 向上移动以覆盖在卡片下方，现已通过js动态计算
     position: relative;
     z-index: 1;
     box-sizing: border-box;

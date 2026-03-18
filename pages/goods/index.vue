@@ -843,10 +843,10 @@
       height: 80rpx;
       font-weight: bold;
       font-size: 28rpx;
-      border-radius: 10rpx 0 0 10rpx;
-      background-color: #F8F9F3;
-      color: #1E3F1C;
-      border: 1rpx solid #1E3F1C;
+      border-radius: 40rpx 0 0 40rpx;
+      background-color: #f8f9f3;
+      color: #1e3f1c;
+      border: 2rpx solid #1e3f1c;
     }
 
     .buy-btn {
@@ -854,15 +854,15 @@
       height: 80rpx;
       font-weight: bold;
       font-size: 28rpx;
-      border-radius: 0rpx 10rpx 10rpx 0rpx;
-      background: #1E3F1C;
+      border-radius: 0rpx 40rpx 40rpx 0rpx;
+      background: #1e3f1c;
       color: #fff;
     }
 
     .disabled-btn {
       flex: 1;
       height: 80rpx;
-      border-radius: 12rpx;
+      border-radius: 40rpx;
       background: #999999;
       color: $white;
     }
