@@ -12,29 +12,35 @@
       </view>
     </view>
     <su-sticky bgColor="#f8f9f3" :offset="sheep.$platform.navbar">
-      <view class="tab-container ss-p-x-20 ss-p-t-20">
-        <su-tabs
-          :list="tabMaps"
-          :scrollable="false"
-          @change="onTabsChange"
-          :current="state.currentTab"
-          :activeColor="'rgba(30, 63, 28, 1.0)'"
-          :inactiveColor="'rgba(29, 33, 41, 1.0)'"
-          :barStyle="{ backgroundColor: 'rgba(30, 63, 28, 1.0)' }"
-          :customStyle="{ backgroundColor: '#f8f9f3' }"
-        />
-      </view>
-      
-      <!-- 二级过滤标签 -->
-      <view class="sub-tabs ss-flex ss-row-around ss-col-center ss-p-y-20 ss-p-x-20">
-        <view 
-          v-for="(item, index) in subTabMaps" 
-          :key="index"
-          class="sub-tab-item"
-          :class="{ active: state.currentSubTab === index }"
-          @tap="onSubTabsChange(index, item.value)"
-        >
-          {{ item.name }}
+      <view class="section_2 flex-col">
+        <view class="text-wrapper_9 flex-row ss-flex">
+          <text
+            class="tab-item"
+            :class="state.currentSubTab === 0 ? 'text_3' : 'text_all_inactive'"
+            @tap="onSubTabsChange(0, 'all')"
+            >全部</text
+          >
+          <text
+            class="tab-item"
+            :class="state.currentSubTab === 1 ? 'text_3' : 'text_inactive_color'"
+            @tap="onSubTabsChange(1, '1')"
+            >未使用</text
+          >
+          <text
+            class="tab-item"
+            :class="state.currentSubTab === 2 ? 'text_3' : 'text_inactive_color'"
+            @tap="onSubTabsChange(2, '2')"
+            >已失效</text
+          >
+        </view>
+        <view class="section_7">
+          <view
+            class="section_3"
+            :style="{
+              transform: `translateX(${state.currentSubTab * 250 + 109}rpx)`,
+              transition: 'transform 0.3s',
+            }"
+          ></view>
         </view>
       </view>
     </su-sticky>
@@ -53,7 +59,7 @@
         >
           <template #default>
             <button
-              class="ss-reset-button card-btn ss-flex ss-row-center ss-col-center"
+              class="ss-reset-button coupon-btn  ss-flex ss-row-center ss-col-center"
               :class="item.status !== 1 ? 'disabled-btn' : ''"
               :disabled="item.status !== 1"
               @click.stop="item.status === 1 ? sheep.$router.go('/pages/index/index') : sheep.$router.go('/pages/coupon/detail', { id: item.id })"
@@ -88,7 +94,7 @@
   const state = reactive({
     currentTab: 0, // 当前 tab
     currentSubTab: 0, // 当前子 tab
-    type: '1',
+    type: 'all',
     pagination: {
       list: [],
       total: 0,
@@ -114,17 +120,16 @@
   ];
 
   const subTabMaps = [
-    { name: '全部', value: '1' },
-    { name: '最新领取', value: '2' },
-    { name: '即将到期', value: '3' },
-    { name: '已失效', value: '4' }
+    { name: '全部', value: 'all' },
+    { name: '未使用', value: '1' },
+    { name: '已失效', value: '2' },
   ];
 
   function onTabsChange(e) {
     state.currentTab = e.index;
     // 重置二级标签
     state.currentSubTab = 0;
-    state.type = subTabMaps[0].value;
+    state.type = 'all';
     resetPagination(state.pagination);
     getCoupon();
   }
@@ -155,12 +160,15 @@
   // 获得我的优惠劵
   async function getCoupon() {
     state.loadStatus = 'loading';
-    const { data, code } = await CouponApi.getCouponPage({
+    const params = {
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
-      status: state.type,
       discountType: state.currentTab === 0 ? undefined : tabMaps[state.currentTab].value,
-    });
+    };
+    if (['1', '2'].includes(state.type)) {
+      params.status = state.type;
+    }
+    const { data, code } = await CouponApi.getCouponPage(params);
     if (code !== 0) {
       return;
     }
@@ -195,20 +203,15 @@
 
   onLoad((Option) => {
     if (Option.type) {
-      // 兼容原有的路由跳转参数
-      const typeMap = {
-        'all': 0, // 对应子标签'全部'，但通常不这样传
-        'geted': 0, // 原'已领取' -> 现子标签'全部'
-        'used': 0, // 原'已使用' -> 现无对应，默认跳到'全部'
-        'expired': 3, // 原'已失效' -> 现子标签'已失效'
-      };
-      
       if (Option.type === 'expired') {
-        state.currentSubTab = 3;
-        state.type = '4'; // 已失效的 status
+        state.currentSubTab = 2;
+        state.type = '2'; // 已失效的 status 为 2
+      } else if (Option.type === 'geted' || Option.type === 'unused') {
+        state.currentSubTab = 1;
+        state.type = '1'; // 未使用的 status 为 1
       } else {
         state.currentSubTab = 0;
-        state.type = '1'; // 默认全部的 status
+        state.type = 'all'; // 默认全部
       }
     }
     getCoupon();
@@ -250,28 +253,66 @@
     background-color: #f8f9f3;
   }
   
-  .sub-tabs {
-    background-color: #f8f9f3;
-    .sub-tab-item {
-      padding: 10rpx 36rpx;
-      font-size: 24rpx;
-      color: rgba(29, 33, 41, 1.0);
-      background-color: #fff;
-      border-radius: 30rpx;
-      font-family: PingFangSC-Regular;
-      border: 1px solid transparent;
-      
-      &.active {
-        color: rgba(30, 63, 28, 1.0);
-        border: 1px solid rgba(30, 63, 28, 1);
-        font-family: PingFangSC-Semibold;
-        font-weight: 600;
-        background-color: #fff;
-      }
-    }
+  .section_2 {
+    box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.03);
+    background-color: rgba(248, 249, 243, 1);
+    padding: 24rpx 0 0 0;
   }
 
-  .card-btn {
+  .text-wrapper_9 {
+    display: flex;
+    width: 100%;
+  }
+
+  .tab-item {
+    flex: 1;
+    text-align: center;
+  }
+
+  .text_3 {
+    overflow-wrap: break-word;
+    color: rgba(30, 63, 28, 1) !important;
+    font-size: 32rpx;
+    font-family: PingFangSC-Semibold;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 48rpx;
+  }
+
+  .text_all_inactive {
+    overflow-wrap: break-word;
+    color: rgba(29, 33, 41, 1);
+    font-size: 32rpx;
+    font-weight: normal;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 48rpx;
+  }
+
+  .text_inactive_color {
+    color: rgba(29, 33, 41, 1) !important;
+    font-weight: normal !important;
+  }
+
+  .section_7 {
+    margin-top: 18rpx;
+    position: relative;
+    width: 100%;
+    height: 6rpx;
+  }
+
+  .section_3 {
+    background-color: rgba(30, 63, 28, 1);
+    border-radius: 1998px;
+    width: 32rpx;
+    height: 6rpx;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+  }
+
+  .coupon-btn {
     padding: 12rpx 24rpx;
     height: 52rpx;
     border-radius: 26rpx;
