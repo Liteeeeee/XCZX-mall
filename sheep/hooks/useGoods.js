@@ -143,7 +143,7 @@ export function formatOrderStatus(order) {
  */
 export function formatOrderStatusDescription(order) {
   if (order.status === 0) {
-    return `请在 ${formatDate(order.payExpireTime)} 前完成支付`;
+    return `请在`;
   }
   if (order.status === 10) {
     return '商家未发货，请耐心等待';

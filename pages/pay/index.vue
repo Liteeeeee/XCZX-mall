@@ -90,7 +90,7 @@
     orderType: 'goods', // 订单类型; goods - 商品订单, recharge - 充值订单
     orderInfo: {}, // 支付单信息
     payStatus: 0, // 0=检测支付环境, -2=未查询到支付单信息， -1=支付已过期， 1=待支付，2=订单已支付
-    payMethods: [], // 可选的支付方式
+    payMethods: getPayMethods([]), // 可选的支付方式
     payment: '', // 选中的支付方式
   });
 
@@ -164,6 +164,7 @@
 
   // 设置支付订单信息
   async function setOrder(id) {
+    
     // 获得支付订单信息
     const { data, code } = await PayOrderApi.getOrder(id, true);
     if (code !== 0 || !data) {
@@ -183,7 +184,7 @@
     if (code !== 0) {
       return;
     }
-    state.payMethods = getPayMethods(data);
+    state.payMethods = getPayMethods(data || []);
     state.payMethods.find((item) => {
       if (item.value && !item.disabled) {
         state.payment = item.value;

@@ -342,6 +342,11 @@ export function getPayMethods(channels) {
   ];
   const platform = sheep.$platform.name;
 
+  // 如果没有渠道信息，直接返回默认的支付方式
+  if (!channels || !Array.isArray(channels)) {
+    return payMethods;
+  }
+
   // 1. 处理【微信支付】
   const wechatMethod = payMethods[0];
   if (

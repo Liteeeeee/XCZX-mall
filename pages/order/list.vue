@@ -1,48 +1,77 @@
 <!-- 订单列表 -->
 <template>
-  <s-layout title="我的订单" navbar="normal">
-    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
-    <su-sticky bgColor="#fff" :offset="sheep.$platform.navbar">
+  <s-layout navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
+    <view class="fixed-header">
+      <su-status-bar />
+      <view class="nav-bar-container" :style="{ position: 'relative', height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+        <view class="nav-bar-inner ss-flex ss-col-center" :style="{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', height: '100%', left: '0', width: '100%' }">
+          <uni-icons type="left" size="22" color="#000" @tap="sheep.$router.back()" class="ss-m-l-20"></uni-icons>
+          <text class="nav-title ss-m-l-10">订单</text>
+        </view>
+      </view>
       <su-tabs
         :list="tabMaps"
         :scrollable="false"
         @change="onTabsChange"
         :current="state.currentTab"
+        :activeStyle="{ color: '#1E3F1C', fontSize: '32rpx', fontWeight: 600 }"
+        :inactiveStyle="{ color: '#1D2129', fontSize: '32rpx', fontWeight: 'normal' }"
+        lineColor="#1E3F1C"
+        lineWidth="32"
+        lineHeight="6"
       />
-    </su-sticky>
+    </view>
+    <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 44 + 'px' }"></view>
+
     <s-empty v-if="state.pagination.total === 0" icon="/static/order-empty.png" text="暂无订单" />
-    <view v-if="state.pagination.total > 0">
+    <view v-if="state.pagination.total > 0" class="page-list-container">
       <view
-        class="bg-white order-list-card-box ss-r-10 ss-m-t-14 ss-m-20"
+        class="bg-white order-list-card-box ss-r-10 ss-m-t-14 ss-m-x-20"
         v-for="order in state.pagination.list"
         :key="order.id"
         @tap="onOrderDetail(order.id)"
       >
         <view class="order-card-header ss-flex ss-col-center ss-row-between ss-p-x-20">
-          <view class="order-no">订单号：{{ order.no }}</view>
-          <view class="order-state ss-font-26" :class="formatOrderColor(order)">
-            {{ formatOrderStatus(order) }}
+          <view class="order-no">{{ formatOrderTime(order.createTime) }}</view>
+          <view class="order-state-box ss-flex ss-col-center">
+            <template v-if="order.status === 0">
+              <view class="pay-timer-box ss-flex ss-col-center">
+                <view class="state-tag ss-flex ss-col-center ss-row-center">
+                  <text class="state-text">{{ formatOrderStatus(order) }}</text>
+                </view>
+                <text class="timer-text">{{ formatPayCountdown(order.createTime) }}</text>
+              </view>
+            </template>
+            <template v-else>
+              <view class="order-state ss-font-26" :class="formatOrderColor(order)">
+                {{ formatOrderStatus(order) }}
+              </view>
+            </template>
           </view>
         </view>
-        <view class="border-bottom" v-for="item in order.items" :key="item.id">
+        <view v-for="item in order.items" :key="item.id">
           <s-goods-item
             :img="item.picUrl"
             :title="item.spuName"
-            :skuText="item.properties.map((property) => property.valueName).join(' ')"
+            :skuText="item.properties ? '已选：' + item.properties.map((property) => property.valueName).join('，') : ''"
             :price="item.price"
-            :num="item.count"
-          />
+            priceColor="#F53F3F"
+          >
+            <template #tool>
+              <view class="goods-count-text">数量：{{ item.count }}</view>
+            </template>
+          </s-goods-item>
         </view>
         <view class="pay-box ss-m-t-30 ss-flex ss-row-right ss-p-r-20">
           <view class="ss-flex ss-col-center">
             <view class="discounts-title pay-color"
-              >共 {{ order.productCount }} 件商品,总金额:</view
+              >共{{ order.productCount }}件 支付总额 </view
             >
-            <view class="discounts-money pay-color"> ￥{{ fen2yuan(order.payPrice) }} </view>
+            <view class="discounts-money pay-color ss-m-l-10"> ￥{{ fen2yuan(order.payPrice) }} </view>
           </view>
         </view>
         <view
-          class="order-card-footer ss-flex ss-col-center ss-p-x-20"
+          class="order-card-footer ss-flex ss-col-center ss-p-x-20 ss-p-b-20"
           :class="order.buttons.length > 3 ? 'ss-row-between' : 'ss-row-right'"
         >
           <view class="ss-flex ss-col-center">
@@ -90,17 +119,17 @@
             </button>
             <button
               v-if="order.buttons.includes('delete')"
-              class="delete-btn ss-reset-button"
+              class="tool-btn delete-btn ss-reset-button"
               @tap.stop="onDelete(order.id)"
             >
               删除订单
             </button>
             <button
               v-if="order.buttons.includes('pay')"
-              class="tool-btn ss-reset-button ui-BG-Main-Gradient"
+              class="pay-btn ss-reset-button"
               @tap.stop="onPay(order.payOrderId)"
             >
-              继续支付
+              立即支付
             </button>
           </view>
         </view>
@@ -120,8 +149,9 @@
 </template>
 
 <script setup>
-  import { reactive } from 'vue';
+  import { reactive, onUnmounted } from 'vue';
   import { onLoad, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app';
+  import dayjs from 'dayjs';
   import {
     fen2yuan,
     formatOrderColor,
@@ -143,7 +173,27 @@
       pageSize: 5,
     },
     loadStatus: '',
+    now: dayjs(), // 增加响应式当前时间
   });
+
+  let timer = null;
+
+  // 格式化订单时间
+  function formatOrderTime(time) {
+    return dayjs(time).format('YYYY.MM.DD HH:mm');
+  }
+
+  // 格式化支付倒计时
+  function formatPayCountdown(createTime) {
+    if (!createTime) return '';
+    const create = dayjs(createTime);
+    const expire = create.add(24, 'hour');
+    const diff = expire.diff(state.now, 'second');
+    if (diff <= 0) return '已过期';
+    const hours = Math.floor(diff / 3600);
+    const minutes = Math.floor((diff % 3600) / 60);
+    return `${hours}小时${minutes}分`;
+  }
 
   const tabMaps = [
     {
@@ -341,6 +391,17 @@
       state.currentTab = options.type;
     }
     await getOrderList();
+    
+    // 开启定时器，每分钟更新一次当前时间以刷新倒计时
+    timer = setInterval(() => {
+      state.now = dayjs();
+    }, 60000);
+  });
+
+  onUnmounted(() => {
+    if (timer) {
+      clearInterval(timer);
+    }
   });
 
   // 加载更多
@@ -374,34 +435,6 @@
     margin: 0 4rpx;
   }
 
-  .tool-btn {
-    width: 160rpx;
-    height: 60rpx;
-    background: #f6f6f6;
-    font-size: 26rpx;
-    border-radius: 30rpx;
-    margin-right: 10rpx;
-
-    &:last-of-type {
-      margin-right: 0;
-    }
-  }
-
-  .delete-btn {
-    width: 160rpx;
-    height: 56rpx;
-    color: #ff3000;
-    background: #fee;
-    border-radius: 28rpx;
-    font-size: 26rpx;
-    margin-right: 10rpx;
-    line-height: normal;
-
-    &:last-of-type {
-      margin-right: 0;
-    }
-  }
-
   .apply-btn {
     width: 140rpx;
     height: 50rpx;
@@ -421,35 +454,129 @@
     }
   }
 
+  :deep(.uni-tooltip-popup) {
+    background: var(--ui-BG);
+  }
+
+  .warning-color {
+    color: #B59E6D;
+  }
+
+  .danger-color {
+    color: #ff3000;
+  }
+
+  .success-color {
+    color: #9D9C96;
+  }
+
+  .info-color {
+    color: #F53F3F;
+  }
+
+  /* 页面背景 */
+  .page-list-container {
+    padding-bottom: 20rpx;
+  }
+
+  /* 导航栏 */
+  .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background: #F8F9F3;
+  }
+  .nav-bar-container {
+    background: #F8F9F3;
+  }
+  .nav-title {
+    color: rgba(30, 63, 28, 0.9);
+    font-size: 36rpx;
+    font-weight: 600;
+  }
+  :deep(.u-tabs) {
+    background: #F8F9F3 !important;
+    border-bottom: none !important;
+  }
+
+  /* 订单列表卡片 */
   .order-list-card-box {
+    border-radius: 10rpx;
+    margin-top: 24rpx;
+    
     .order-card-header {
-      height: 80rpx;
+      height: 88rpx;
 
       .order-no {
-        font-size: 26rpx;
-        font-weight: 500;
+        font-size: 28rpx;
+        color: #9D9C96;
       }
 
       .order-state {
+        font-size: 28rpx;
+        font-weight: 700;
       }
+      
+      .pay-timer-box {
+        background-color: rgba(255, 228, 229, 1);
+        border-radius: 93rpx;
+        padding-right: 13rpx;
+        margin: 2rpx 0;
+      }
+
+      .state-tag {
+        background-color: rgba(251, 47, 33, 1);
+        border-radius: 36rpx 0px 36rpx 36rpx;
+        padding: 2rpx 25rpx;
+        margin-right: 12rpx;
+      }
+
+      .state-text {
+        color: rgba(255, 255, 255, 1);
+        font-size: 24rpx;
+        line-height: normal;
+      }
+
+      .timer-text {
+        color: rgba(255, 0, 0, 1);
+        font-size: 24rpx;
+        font-weight: 500;
+        line-height: normal;
+        margin-top: 2rpx;
+      }
+    }
+
+    .goods-count-text {
+      color: #3D3D3C;
+      font-size: 24rpx;
+      margin-top: 10rpx;
+      text-align: right;
+    }
+
+    :deep(.price-text) {
+      color: #F53F3F !important;
+      font-size: 40rpx;
+      font-weight: 700;
     }
 
     .pay-box {
       .discounts-title {
-        font-size: 24rpx;
+        font-size: 28rpx;
         line-height: normal;
-        color: #999999;
+        color: #3D3D3C;
       }
 
       .discounts-money {
-        font-size: 24rpx;
+        font-size: 28rpx;
         line-height: normal;
-        color: #999;
-        font-family: OPPOSANS;
+        color: #3D3D3C;
+        font-weight: 600;
       }
 
       .pay-color {
-        color: #333;
+        color: #3D3D3C;
       }
     }
 
@@ -482,23 +609,39 @@
     }
   }
 
-  :deep(.uni-tooltip-popup) {
-    background: var(--ui-BG);
+  .tool-btn {
+    width: 160rpx;
+    height: 60rpx;
+    background: #FFFFFF;
+    font-size: 28rpx;
+    border-radius: 30rpx;
+    border: 2rpx solid #1E3F1C;
+    color: #1E3F1C;
+    margin-right: 10rpx;
+    line-height: 56rpx;
+
+    &:last-of-type {
+      margin-right: 0;
+    }
   }
 
-  .warning-color {
-    color: #faad14;
+  .pay-btn {
+    width: 160rpx;
+    height: 60rpx;
+    background: #1E3F1C;
+    font-size: 28rpx;
+    border-radius: 30rpx;
+    color: #FFFFFF;
+    line-height: 60rpx;
+    margin-right: 10rpx;
+
+    &:last-of-type {
+      margin-right: 0;
+    }
   }
 
-  .danger-color {
+  .delete-btn {
     color: #ff3000;
-  }
-
-  .success-color {
-    color: #52c41a;
-  }
-
-  .info-color {
-    color: #999999;
+    border-color: #ff3000;
   }
 </style>

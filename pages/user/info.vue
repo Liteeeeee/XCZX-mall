@@ -228,7 +228,6 @@
 
   // 选择微信的头像，进行上传
   async function onChooseAvatar(e) {
-    debugger;
     const tempUrl = e.detail.avatarUrl || '';
     if (!tempUrl) return;
     const files = await uploadFilesFromPath(tempUrl);
