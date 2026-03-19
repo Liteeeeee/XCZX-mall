@@ -83,7 +83,7 @@
     </view>
 
     <!-- 收货地址 -->
-    <view class="order-address-box ss-flex ss-col-center" v-if="state.orderInfo.receiverAreaId > 0">
+    <view class="order-address-box ss-flex ss-col-center" v-if="state.orderInfo.receiverAreaId > 0" @tap="onSelectAddress">
       <view class="address-icon-box ss-flex ss-col-center ss-row-center">
         <image class="address-icon" :src="sheep.$url.static('/static/address.png')" />
       </view>
@@ -417,6 +417,33 @@
     });
   }
 
+  function onSelectAddress() {
+    if (![0, 10].includes(state.orderInfo.status)) {
+      sheep.$helper.toast('当前订单状态不可修改收货地址');
+      return;
+    }
+    uni.$once('SELECT_ADDRESS', async (e) => {
+      if (![0, 10].includes(state.orderInfo.status)) {
+        return;
+      }
+      const info = e?.addressInfo || {};
+      if (!isEmpty(info)) {
+        const { code } = await OrderApi.updateOrderAddress({
+          id: state.orderInfo.id,
+          receiverName: info.name,
+          receiverMobile: info.mobile,
+          receiverAreaId: info.areaId,
+          receiverDetailAddress: info.detailAddress,
+        });
+        if (code === 0) {
+          skipNextOnShowRefresh.value = true;
+          await getOrderDetail(state.orderInfo.id);
+        }
+      }
+    });
+    sheep.$router.go('/pages/user/address/list?type=select');
+  }
+
   // 确认收货
   async function onConfirm(orderId, ignore = false) {
     // 需开启确认收货组件
@@ -490,6 +517,7 @@
   }
 
   const pickUpVerifyRef = ref();
+  const skipNextOnShowRefresh = ref(false);
 
   async function getOrderDetail(id) {
     // 对详情数据进行适配
@@ -521,6 +549,10 @@
   onShow(async () => {
     // onShow 中获取订单列表,保证跳转后页面为最新状态
     // 有几率在 onLoad 完成 state.orderInfo.id 赋值前进入 onShow
+    if (skipNextOnShowRefresh.value) {
+      skipNextOnShowRefresh.value = false;
+      return;
+    }
     if (state.orderInfo.id) {
       await getOrderDetail(state.orderInfo.id);
     }
@@ -543,6 +575,7 @@
     }
     state.orderInfo.id = id;
     // 完成 state.orderInfo.id 赋值后加载一次detail，但有几率与 onShow 重复可能导致 detail 会加载两次。
+    skipNextOnShowRefresh.value = true;
     await getOrderDetail(state.orderInfo.id);
 
     // 开启定时器，每秒更新一次当前时间以刷新倒计时

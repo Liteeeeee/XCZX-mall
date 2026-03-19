@@ -79,6 +79,13 @@ const OrderApi = {
       data,
     });
   },
+  updateOrderAddress: (data) => {
+    return request({
+      url: `/trade/order/update-address`,
+      method: 'PUT',
+      data,
+    });
+  },
   // 获得订单详细：sync 是可选参数
   getOrderDetail: (id, sync) => {
     return request({
