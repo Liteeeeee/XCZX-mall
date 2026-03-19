@@ -59,9 +59,9 @@
 
   const getIcon = (item) => {
     const iconMap = {
-      '我的设置': '/static/user/setting.png',
-      '地址管理': '/static/user/address.png',
-      '平台合伙人': '/static/user/friend.png',
+      '我的设置': '/static/user/setting.webp',
+      '地址管理': '/static/user/address.webp',
+      '平台合伙人': '/static/user/friend.webp',
     };
     if (iconMap[item.name]) {
       return sheep.$url.static(iconMap[item.name]);

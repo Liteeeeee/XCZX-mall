@@ -37,10 +37,10 @@ const app = defineStore({
       basic: {
         tabbar: {
           items: [
-            { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.png', activeIconUrl: '/static/tabbar/home_active.png' },
-            { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.png', activeIconUrl: '/static/tabbar/member_active.png' },
-            { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.png', activeIconUrl: '/static/tabbar/cart_active.png' },
-            { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.png', activeIconUrl: '/static/tabbar/user_active.png' }
+            { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.webp', activeIconUrl: '/static/tabbar/home_active.webp' },
+            { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.webp', activeIconUrl: '/static/tabbar/member_active.webp' },
+            { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.webp', activeIconUrl: '/static/tabbar/cart_active.webp' },
+            { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.webp', activeIconUrl: '/static/tabbar/user_active.webp' }
           ],
           style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#fff' }
         },
@@ -88,7 +88,7 @@ const app = defineStore({
       if (true) {
         this.info = {
           name: '仙草甄选商城',
-          logo: 'https://static.iocoder.cn/ruoyi-vue-pro-logo.png',
+          logo: 'https://static.iocoder.cn/ruoyi-vue-pro-logo.webp',
           version: '2026.01',
           copyright: '全部开源，个人与企业可 100% 免费使用',
           copytime: 'Copyright© 2018-2025',
@@ -101,9 +101,9 @@ const app = defineStore({
             methods: ['forward', 'poster', 'link'],
             linkAddress: h5Url,
             posterInfo: {
-              user_bg: '/static/img/shop/config/user-poster-bg.png',
-              goods_bg: '/static/img/shop/config/goods-poster-bg.png',
-              groupon_bg: '/static/img/shop/config/groupon-poster-bg.png',
+              user_bg: '/static/img/shop/config/user-poster-bg.webp',
+              goods_bg: '/static/img/shop/config/goods-poster-bg.webp',
+              groupon_bg: '/static/img/shop/config/groupon-poster-bg.webp',
             },
             forwardInfo: {
               title: '',
@@ -209,10 +209,10 @@ const adaptTemplate = async (appTemplate, templateId) => {
     // 提供基础兜底数据，防止首页白屏
     appTemplate.basic.tabbar = {
       items: [
-        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.png', activeIconUrl: '/static/tabbar/home_active.png' },
-        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.png', activeIconUrl: '/static/tabbar/member_active.png' },
-        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.png', activeIconUrl: '/static/tabbar/cart_active.png' },
-        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.png', activeIconUrl: '/static/tabbar/user_active.png' }
+        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.webp', activeIconUrl: '/static/tabbar/home_active.webp' },
+        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.webp', activeIconUrl: '/static/tabbar/member_active.webp' },
+        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.webp', activeIconUrl: '/static/tabbar/cart_active.webp' },
+        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.webp', activeIconUrl: '/static/tabbar/user_active.webp' }
       ],
       style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#fff' }
     };
@@ -250,10 +250,10 @@ const adaptTemplate = async (appTemplate, templateId) => {
     // 如果装修模板中没有配置 Tabbar，使用默认数据
     appTemplate.basic.tabbar = {
       items: [
-        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.png', activeIconUrl: '/static/tabbar/home_active.png' },
-        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.png', activeIconUrl: '/static/tabbar/member_active.png' },
-        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.png', activeIconUrl: '/static/tabbar/cart_active.png' },
-        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.png', activeIconUrl: '/static/tabbar/user_active.png' }
+        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.webp', activeIconUrl: '/static/tabbar/home_active.webp' },
+        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.webp', activeIconUrl: '/static/tabbar/member_active.webp' },
+        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.webp', activeIconUrl: '/static/tabbar/cart_active.webp' },
+        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.webp', activeIconUrl: '/static/tabbar/user_active.webp' }
       ],
       style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#fff' }
     };

@@ -30,7 +30,7 @@
       <view class="time-icon">
         <image
           class="ss-w-100 ss-h-100"
-          :src="sheep.$url.static('/static/img/shop/priceTag.png')"
+          :src="sheep.$url.static('/static/img/shop/priceTag.webp')"
         />
       </view>
       <scroll-view
@@ -158,7 +158,7 @@
   const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
   const pageHeight =
     (safeArea.height + safeAreaInsets.bottom) * 2 + statusBarHeight - sheep.$platform.navbar - 350;
-  const headerBg = sheep.$url.css('/static/img/shop/goods/seckill-header.png');
+  const headerBg = sheep.$url.css('/static/img/shop/goods/seckill-header.webp');
 
   // 商品控件显示的字段（不显示库存、销量。改为显示自定义的进度条）
   const goodsFields = {

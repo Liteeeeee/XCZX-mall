@@ -18,13 +18,13 @@
           <image
             class="pay-img"
             v-if="payResult === 'success'"
-            :src="sheep.$url.static('/static/zhifuchenggong.png')"
+            :src="sheep.$url.static('/static/zhifuchenggong.webp')"
             mode="aspectFit"
           />
           <image
             class="pay-img"
             v-if="['failed', 'closed'].includes(payResult)"
-            :src="sheep.$url.static('/static/pay_fail_icon.png')"
+            :src="sheep.$url.static('/static/pay_fail_icon.webp')"
             mode="aspectFit"
           />
         </view>

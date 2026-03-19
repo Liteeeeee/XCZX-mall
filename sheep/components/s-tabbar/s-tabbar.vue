@@ -51,10 +51,10 @@
     // 返回一个默认值作为最后一道防线
     return {
       items: [
-        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.png', activeIconUrl: '/static/tabbar/home_active.png' },
-        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.png', activeIconUrl: '/static/tabbar/member_active.png' },
-        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.png', activeIconUrl: '/static/tabbar/cart_active.png' },
-        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.png', activeIconUrl: '/static/tabbar/user_active.png' }
+        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.webp', activeIconUrl: '/static/tabbar/home_active.webp' },
+        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.webp', activeIconUrl: '/static/tabbar/member_active.webp' },
+        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.webp', activeIconUrl: '/static/tabbar/cart_active.webp' },
+        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.webp', activeIconUrl: '/static/tabbar/user_active.webp' }
       ],
       style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#fff' }
     };

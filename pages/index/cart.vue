@@ -8,7 +8,7 @@
   >
     <s-empty
       v-if="state.list.length === 0"
-      icon="/static/cart-empty.png"
+      icon="/static/cart-empty.webp"
       text="购物车空空如也,快去逛逛吧~"
     />
 
@@ -73,8 +73,8 @@
                   :src="
                     sheep.$url.static(
                       state.selectedIds.includes(item.id)
-                        ? '/static/cart/checked.png'
-                        : '/static/cart/unCheck.png',
+                        ? '/static/cart/checked.webp'
+                        : '/static/cart/unCheck.webp',
                     )
                   "
                   mode="aspectFit"
@@ -159,7 +159,7 @@
                 class="check-icon"
                 :src="
                   sheep.$url.static(
-                    state.isAllSelected ? '/static/cart/checked.png' : '/static/cart/unCheck.png',
+                    state.isAllSelected ? '/static/cart/checked.webp' : '/static/cart/unCheck.webp',
                   )
                 "
                 mode="aspectFit"

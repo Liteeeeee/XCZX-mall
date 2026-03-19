@@ -26,7 +26,7 @@
     <s-empty
       v-if="state.list.length === 0 && !state.loading"
       text="暂无常见问题"
-      icon="/static/collect-empty.png"
+      icon="/static/collect-empty.webp"
     />
   </s-layout>
 </template>

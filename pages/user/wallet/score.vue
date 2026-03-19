@@ -6,7 +6,7 @@
     navbar="clean"
   >
     <view class="full-page-bg">
-      <image :src="sheep.$url.static('/static/jifenbg.png')" mode="widthFix" class="bg-img" />
+      <image :src="sheep.$url.static('/static/jifenbg.webp')" mode="widthFix" class="bg-img" />
     </view>
     <view class="header-box">
       <su-status-bar />
@@ -76,7 +76,7 @@
               >{{ item.title }}
               <image
                 class="coin-icon ss-m-l-10"
-                :src="sheep.$url.static('/static/countIcon.png')"
+                :src="sheep.$url.static('/static/countIcon.webp')"
                 mode="aspectFit"
               />
             </view>
@@ -88,7 +88,7 @@
           <view class="minus" v-else>{{ item.point }}</view>
         </view>
       </view>
-      <s-empty v-else text="暂无数据" icon="/static/data-empty.png" />
+      <s-empty v-else text="暂无数据" icon="/static/data-empty.webp" />
     </view>
 
     <uni-load-more
@@ -235,7 +235,7 @@
 
   .header-box {
     width: 100%;
-    background: url('https://file.sheepjs.com/storage/img/2024/11/12/3df8a9a4b8784d1ab1b83d81f2113f8c.png') no-repeat;
+    background: url('https://file.sheepjs.com/storage/img/2024/11/12/3df8a9a4b8784d1ab1b83d81f2113f8c.webp') no-repeat;
     background-size: 100% 100%;
     padding: 0 0 120rpx 0;
     box-sizing: border-box;

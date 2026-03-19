@@ -113,7 +113,7 @@
     <s-empty
       v-if="state.pagination.total === 0"
       text="暂无浏览记录"
-      icon="/static/collect-empty.png"
+      icon="/static/collect-empty.webp"
     />
   </s-layout>
 </template>

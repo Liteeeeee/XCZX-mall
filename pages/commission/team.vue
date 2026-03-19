@@ -68,7 +68,7 @@
             />
           </view>
           <image
-            :src="sheep.$url.static('/static/img/shop/search.png')"
+            :src="sheep.$url.static('/static/img/shop/search.webp')"
             mode=""
             style="width: 60rpx; height: 64rpx"
             @click="submitForm"
@@ -82,7 +82,7 @@
               v-if="sort === 'userCountDESC'"
             >
               团队排序
-              <image :src="sheep.$url.static('/static/img/shop/sort1.png')" />
+              <image :src="sheep.$url.static('/static/img/shop/sort1.webp')" />
             </view>
             <view
               class="sortItem"
@@ -90,15 +90,15 @@
               v-else-if="sort === 'userCountASC'"
             >
               团队排序
-              <image :src="sheep.$url.static('/static/img/shop/sort3.png')" />
+              <image :src="sheep.$url.static('/static/img/shop/sort3.webp')" />
             </view>
             <view class="sortItem" @click="setSort('userCount', 'desc')" v-else>
               团队排序
-              <image :src="sheep.$url.static('/static/img/shop/sort2.png')" />
+              <image :src="sheep.$url.static('/static/img/shop/sort2.webp')" />
             </view>
             <view class="sortItem" @click="setSort('price', 'asc')" v-if="sort === 'priceDESC'">
               金额排序
-              <image :src="sheep.$url.static('/static/img/shop/sort1.png')" />
+              <image :src="sheep.$url.static('/static/img/shop/sort1.webp')" />
             </view>
             <view
               class="sortItem"
@@ -106,11 +106,11 @@
               v-else-if="sort === 'priceASC'"
             >
               金额排序
-              <image :src="sheep.$url.static('/static/img/shop/sort3.png')" />
+              <image :src="sheep.$url.static('/static/img/shop/sort3.webp')" />
             </view>
             <view class="sortItem" @click="setSort('price', 'desc')" v-else>
               金额排序
-              <image :src="sheep.$url.static('/static/img/shop/sort2.png')" />
+              <image :src="sheep.$url.static('/static/img/shop/sort2.webp')" />
             </view>
             <view
               class="sortItem"
@@ -118,7 +118,7 @@
               v-if="sort === 'orderCountDESC'"
             >
               订单排序
-              <image :src="sheep.$url.static('/static/img/shop/sort1.png')" />
+              <image :src="sheep.$url.static('/static/img/shop/sort1.webp')" />
             </view>
             <view
               class="sortItem"
@@ -126,11 +126,11 @@
               v-else-if="sort === 'orderCountASC'"
             >
               订单排序
-              <image :src="sheep.$url.static('/static/img/shop/sort3.png')" />
+              <image :src="sheep.$url.static('/static/img/shop/sort3.webp')" />
             </view>
             <view class="sortItem" @click="setSort('orderCount', 'desc')" v-else>
               订单排序
-              <image :src="sheep.$url.static('/static/img/shop/sort2.png')" />
+              <image :src="sheep.$url.static('/static/img/shop/sort2.webp')" />
             </view>
           </view>
           <block v-for="(item, index) in state.pagination.list" :key="index">
@@ -248,7 +248,7 @@
 				</uni-list-chat>
 			</uni-list>
 		</view>
-		<s-empty v-if="state.pagination.total === 0" icon="/static/data-empty.png" text="暂无团队信息">
+		<s-empty v-if="state.pagination.total === 0" icon="/static/data-empty.webp" text="暂无团队信息">
 		</s-empty> -->
   </s-layout>
 </template>
@@ -265,7 +265,7 @@
   const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
   // const agentInfo = computed(() => sheep.$store('user').agentInfo);
   const userInfo = computed(() => sheep.$store('user').userInfo);
-  const headerBg = sheep.$url.css('/static/img/shop/user/withdraw_bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/user/withdraw_bg.webp');
 
   onPageScroll((e) => {
     state.scrollTop = e.scrollTop <= 100;

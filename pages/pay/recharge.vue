@@ -60,7 +60,7 @@
 
   const userWallet = computed(() => sheep.$store('user').userWallet);
   const sys_navBar = sheep.$platform.navbar;
-  const headerBg = sheep.$url.css('/static/img/shop/user/withdraw_bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/user/withdraw_bg.webp');
 
   const state = reactive({
     recharge_money: '', // 输入的充值金额

@@ -19,7 +19,7 @@
       </view>
     </view>
     <view class="address-line">
-      <image :src="sheep.$url.static('/static/img/shop/line.png')" />
+      <image :src="sheep.$url.static('/static/img/shop/line.webp')" />
     </view>
   </view>
 </template>

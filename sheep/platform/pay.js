@@ -310,31 +310,31 @@ export default class SheepPay {
 export function getPayMethods(channels) {
   const payMethods = [
     {
-      icon: '/static/img/shop/pay/wechat.png',
+      icon: '/static/img/shop/pay/wechat.webp',
       title: '微信支付',
       value: 'wechat',
       disabled: true,
     },
     {
-      icon: '/static/img/shop/pay/alipay.png',
+      icon: '/static/img/shop/pay/alipay.webp',
       title: '支付宝支付',
       value: 'alipay',
       disabled: true,
     },
     {
-      icon: '/static/img/shop/pay/wallet.png',
+      icon: '/static/img/shop/pay/wallet.webp',
       title: '余额支付',
       value: 'wallet',
       disabled: true,
     },
     {
-      icon: '/static/img/shop/pay/apple.png',
+      icon: '/static/img/shop/pay/apple.webp',
       title: 'Apple Pay',
       value: 'apple',
       disabled: true,
     },
     {
-      icon: '/static/img/shop/pay/wallet.png',
+      icon: '/static/img/shop/pay/wallet.webp',
       title: '模拟支付',
       value: 'mock',
       disabled: true,

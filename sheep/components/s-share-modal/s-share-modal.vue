@@ -3,7 +3,7 @@
   <view>
     <su-popup :show="state.showShareGuide" :showClose="false" @close="onCloseGuide" />
     <view v-if="state.showShareGuide" class="guide-wrap">
-      <image class="guide-image" :src="sheep.$url.static('/static/img/shop/share/share_guide.png')" />
+      <image class="guide-image" :src="sheep.$url.static('/static/img/shop/share/share_guide.webp')" />
     </view>
 
     <su-popup :show="show" round="10" :showClose="false" @close="closeShareModal">
@@ -17,7 +17,7 @@
             open-type="share"
             @tap="onShareByForward"
           >
-            <image class="share-img" :src="sheep.$url.static('/static/img/shop/share/share_wx.png')" mode="" />
+            <image class="share-img" :src="sheep.$url.static('/static/img/shop/share/share_wx.webp')" mode="" />
             <text class="share-title">微信好友</text>
           </button>
 
@@ -29,7 +29,7 @@
           >
             <image
               class="share-img"
-              :src="sheep.$url.static('/static/img/shop/share/share_poster.png')"
+              :src="sheep.$url.static('/static/img/shop/share/share_poster.webp')"
               mode=""
             />
             <text class="share-title">生成海报</text>
@@ -41,7 +41,7 @@
             class="share-item share-btn ss-flex-col ss-col-center"
             @tap="onShareByCopyLink"
           >
-            <image class="share-img" :src="sheep.$url.static('/static/img/shop/share/share_link.png')" mode="" />
+            <image class="share-img" :src="sheep.$url.static('/static/img/shop/share/share_link.webp')" mode="" />
             <text class="share-title">复制链接</text>
           </button>
         </view>

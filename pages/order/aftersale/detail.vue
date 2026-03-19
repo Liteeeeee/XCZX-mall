@@ -104,7 +104,7 @@
     <!-- 操作区 -->
     <s-empty
       v-if="isEmpty(state.info) && state.loading"
-      icon="/static/order-empty.png"
+      icon="/static/order-empty.webp"
       text="暂无该订单售后详情"
     />
     <su-fixed bottom placeholder bg="bg-white" v-if="!isEmpty(state.info)">
@@ -147,7 +147,7 @@
   import AfterSaleApi from '@/sheep/api/trade/afterSale';
 
   const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
-  const headerBg = sheep.$url.css('/static/img/shop/order/order_bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/order/order_bg.webp');
   const state = reactive({
     id: 0, // 售后编号
     info: {}, // 收货信息

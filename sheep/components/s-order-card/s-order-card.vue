@@ -55,7 +55,7 @@
   const orderList = [
     {
       title: '待付款',
-      icon: '/static/user/dfk.png',
+      icon: '/static/user/dfk.webp',
       path: '/pages/order/list',
       type: 'unpaid',
       value: '1',
@@ -63,7 +63,7 @@
     },
     {
       title: '待发货',
-      icon: '/static/user/dfh.png',
+      icon: '/static/user/dfh.webp',
       path: '/pages/order/list',
       type: 'nosend',
       value: '2',
@@ -71,7 +71,7 @@
     },
     {
       title: '待收货',
-      icon: '/static/user/dsh.png',
+      icon: '/static/user/dsh.webp',
       path: '/pages/order/list',
       type: 'noget',
       value: '3',
@@ -79,7 +79,7 @@
     },
     {
       title: '已完成',
-      icon: '/static/user/ywc.png',
+      icon: '/static/user/ywc.webp',
       path: '/pages/order/list',
       type: 'completed',
       value: '4',

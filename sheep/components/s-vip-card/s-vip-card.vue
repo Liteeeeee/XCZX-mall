@@ -3,9 +3,9 @@
     class="vip-card ss-flex ss-row-between ss-col-center"
     @tap="sheep.$router.go('/pages/index/member')"
   >
-    <image class="vip-card-bg" :src="sheep.$url.static('/static/cart/header.png')" />
+    <image class="vip-card-bg" :src="sheep.$url.static('/static/cart/header.webp')" />
     <view class="ss-flex ss-col-center vip-card-content">
-      <image class="vip-icon ss-m-r-18" :src="sheep.$url.static('/static/cart/vipIcon.png')" />
+      <image class="vip-icon ss-m-r-18" :src="sheep.$url.static('/static/cart/vipIcon.webp')" />
       <view class="ss-flex-col">
         <view class="vip-title">开通黄金会员</view>
         <view class="vip-subtitle">购物可享受9折优惠哦～</view>

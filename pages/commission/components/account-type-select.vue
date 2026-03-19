@@ -58,32 +58,32 @@
 
   const typeList = [
     {
-      icon: '/static/img/shop/pay/wallet.png',
+      icon: '/static/img/shop/pay/wallet.webp',
       title: '钱包余额',
       value: '1',
     },
     {
-      icon: '/static/img/shop/pay/bank.png',
+      icon: '/static/img/shop/pay/bank.webp',
       title: '银行卡转账',
       value: '2',
     },
     {
-      icon: '/static/img/shop/pay/wechat.png',
+      icon: '/static/img/shop/pay/wechat.webp',
       title: '微信收款码', // 微信手动转账
       value: '3',
     },
     {
-      icon: '/static/img/shop/pay/alipay.png',
+      icon: '/static/img/shop/pay/alipay.webp',
       title: '支付宝收款码', // 支付宝手动转账
       value: '4',
     },
     {
-      icon: '/static/img/shop/pay/wechat_api.png',
+      icon: '/static/img/shop/pay/wechat_api.webp',
       title: '微信零钱', // 微信 API 转账
       value: '5',
     },
     {
-      icon: '/static/img/shop/pay/alipay_api.png',
+      icon: '/static/img/shop/pay/alipay_api.webp',
       title: '支付宝余额', // 支付宝 API 转账
       value: '6',
     },

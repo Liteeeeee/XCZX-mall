@@ -32,7 +32,7 @@ export default {
   // 获取用户头像
   avatar: (url = '') => {
     if (!url) {
-      return '/static/user/DefaultAvatar.png';
+      return '/static/user/DefaultAvatar.webp';
     }
     return cdn(url);
   },

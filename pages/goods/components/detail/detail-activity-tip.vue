@@ -10,12 +10,12 @@
             <view class="ss-m-r-16">
               <image
                 v-if="activity.type === 1"
-                :src="sheep.$url.static('/static/img/shop/goods/seckill-icon.png')"
+                :src="sheep.$url.static('/static/img/shop/goods/seckill-icon.webp')"
                 class="activity-icon"
               />
               <image
                 v-else-if="activity.type === 3"
-                :src="sheep.$url.static('/static/img/shop/goods/groupon-icon.png')"
+                :src="sheep.$url.static('/static/img/shop/goods/groupon-icon.webp')"
                 class="activity-icon"
               />
             </view>
@@ -31,8 +31,8 @@
 <script setup>
   import sheep from '@/sheep';
 
-  const seckillBg = sheep.$url.css('/static/img/shop/goods/seckill-tip-bg.png');
-  const grouponBg = sheep.$url.css('/static/img/shop/goods/groupon-tip-bg.png');
+  const seckillBg = sheep.$url.css('/static/img/shop/goods/seckill-tip-bg.webp');
+  const grouponBg = sheep.$url.css('/static/img/shop/goods/groupon-tip-bg.webp');
 
   const props = defineProps({
     activityList: {

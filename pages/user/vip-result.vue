@@ -16,13 +16,13 @@
         <view class="state-box flex-col flex-x-center">
           <!-- Success State -->
           <block v-if="state.payState === 'success'">
-            <image class="state-img" :src="sheep.$url.static('/static/kaitongchenggong.png')" mode="aspectFit" />
+            <image class="state-img" :src="sheep.$url.static('/static/kaitongchenggong.webp')" mode="aspectFit" />
             <view class="state-title">会员开通成功</view>
           </block>
 
           <!-- Failure State -->
           <block v-else>
-            <image class="state-img" :src="sheep.$url.static('/static/reject.png')" mode="aspectFit" />
+            <image class="state-img" :src="sheep.$url.static('/static/reject.webp')" mode="aspectFit" />
             <view class="state-title">会员开通失败</view>
           </block>
         </view>

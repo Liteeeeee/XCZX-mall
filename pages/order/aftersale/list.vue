@@ -10,7 +10,7 @@
         :current="state.currentTab"
       />
     </su-sticky>
-    <s-empty v-if="state.pagination.total === 0" icon="/static/data-empty.png" text="暂无数据" />
+    <s-empty v-if="state.pagination.total === 0" icon="/static/data-empty.webp" text="暂无数据" />
     <!-- 列表 -->
     <view v-if="state.pagination.total > 0">
       <view

@@ -195,7 +195,7 @@
       </view>
     </view>
 
-    <s-empty v-if="!state.data && !state.loading" icon="/static/goods-empty.png" />
+    <s-empty v-if="!state.data && !state.loading" icon="/static/goods-empty.webp" />
   </s-layout>
 </template>
 
@@ -210,7 +210,7 @@
   import SpuApi from '@/sheep/api/product/spu';
   import { SharePageEnum } from '@/sheep/helper/const';
 
-  const headerBg = sheep.$url.css('/static/img/shop/user/withdraw_bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/user/withdraw_bg.webp');
   const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
   const state = reactive({
     data: {}, // 拼团详情

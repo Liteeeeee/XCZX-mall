@@ -174,7 +174,7 @@
   import SLayout from '@/sheep/components/s-layout/s-layout.vue';
   import { getWeixinPayChannelCode, goBindWeixin } from '@/sheep/platform/pay';
 
-  const headerBg = sheep.$url.css('/static/img/shop/user/withdraw_bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/user/withdraw_bg.webp');
   const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
 
   const state = reactive({

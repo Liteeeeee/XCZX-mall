@@ -104,15 +104,15 @@
   const state = reactive({
     liveStatus: {
       101: {
-        img: sheep.$url.static('/static/img/shop/app/mplive/living.png'),
+        img: sheep.$url.static('/static/img/shop/app/mplive/living.webp'),
         title: '直播中',
       },
       102: {
-        img: sheep.$url.static('/static/img/shop/app/mplive/start.png'),
+        img: sheep.$url.static('/static/img/shop/app/mplive/start.webp'),
         title: '未开始',
       },
       103: {
-        img: sheep.$url.static('/static/img/shop/app/mplive/ended.png'),
+        img: sheep.$url.static('/static/img/shop/app/mplive/ended.webp'),
         title: '已结束',
       },
     },

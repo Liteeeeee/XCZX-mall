@@ -13,7 +13,7 @@
         <comment-item :item="item" />
       </view>
     </view>
-    <s-empty v-if="state.pagination.total === 0" text="暂无数据" icon="/static/data-empty.png" />
+    <s-empty v-if="state.pagination.total === 0" text="暂无数据" icon="/static/data-empty.webp" />
     <!-- 下拉 -->
     <uni-load-more
       icon-type="auto"

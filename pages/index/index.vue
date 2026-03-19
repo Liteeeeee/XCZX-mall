@@ -14,7 +14,7 @@
         <view class="navbar-left-box ss-flex ss-row-left ss-col-center">
           <image
             class="logo"
-            src="/static/log.png"
+            src="/static/log.webp"
             mode="aspectFit"
           ></image>
           <text class="title">仙草甄选</text>

@@ -25,7 +25,7 @@
       class="user-top-bg"
       :style="[
         {
-          background: `url(${sheep.$url.static('/static/user/userBg.png')}) no-repeat top center / 100% auto`,
+          background: `url(${sheep.$url.static('/static/user/userBg.webp')}) no-repeat top center / 100% auto`,
         },
       ]"
     >

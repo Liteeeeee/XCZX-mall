@@ -10,7 +10,7 @@
       <s-empty
         v-else-if="state.goodsInfo === null"
         text="商品不存在或已下架"
-        icon="/static/soldout-empty.png"
+        icon="/static/soldout-empty.webp"
         showAction
         actionText="再逛逛"
         actionUrl="/pages/goods/list"
@@ -34,7 +34,7 @@
               state.settlementSku && state.settlementSku.id && state.settlementSku.promotionPrice
             "
             :style="{
-              backgroundImage: 'url(' + sheep.$url.static('/static/goods/moneyBg.png') + ')',
+              backgroundImage: 'url(' + sheep.$url.static('/static/goods/moneyBg.webp') + ')',
             }"
           >
             <view class="banner-left ss-flex ss-col-center">
@@ -56,7 +56,7 @@
               </view>
               <image
                 class="brand-icon"
-                :src="sheep.$url.static('/static/img/shop/goods/m-icon.png')"
+                :src="sheep.$url.static('/static/img/shop/goods/m-icon.webp')"
               />
             </view>
           </view>
@@ -90,13 +90,13 @@
           <view
             class="vip-card ss-flex ss-row-between ss-col-center ss-m-x-20 ss-m-b-20 ss-p-x-20"
             :style="{
-              backgroundImage: 'url(' + sheep.$url.static('/static/goods/vipBg.png') + ')',
+              backgroundImage: 'url(' + sheep.$url.static('/static/goods/vipBg.webp') + ')',
             }"
           >
             <view class="vip-left ss-flex ss-col-center">
               <image
                 class="vip-icon"
-                :src="sheep.$url.static('/static/goods/vipIcon.png')"
+                :src="sheep.$url.static('/static/goods/vipIcon.webp')"
                 mode="aspectFit"
               />
               <view class="vip-text">会员可享95折，更有超值会员商品等你来~</view>
@@ -163,7 +163,7 @@
           <view
             class="quality-check-banner ss-m-x-20 ss-m-b-20"
             :style="{
-              backgroundImage: 'url(' + sheep.$url.static('/static/goods/reportBg.png') + ')',
+              backgroundImage: 'url(' + sheep.$url.static('/static/goods/reportBg.webp') + ')',
             }"
           >
             <!-- 暂时使用一个占位图或者静态结构 -->
@@ -184,7 +184,7 @@
                   <view class="check-result-right">
                     <image
                       class="check-report-img"
-                      :src="sheep.$url.static('/static/goods/report.png')"
+                      :src="sheep.$url.static('/static/goods/report.webp')"
                       mode="heightFix"
                     />
                   </view>
@@ -268,7 +268,7 @@
 
       <!-- 返回顶部按钮 -->
       <view class="back-top-btn" v-if="state.showBackTop" @tap="onBackTop">
-        <image :src="sheep.$url.static('/static/goods/top.png')" mode="aspectFill" />
+        <image :src="sheep.$url.static('/static/goods/top.webp')" mode="aspectFill" />
       </view>
     </s-layout>
   </view>

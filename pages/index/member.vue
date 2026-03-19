@@ -191,7 +191,7 @@
     {
       id: 'golden',
       name: '黄金会员',
-      cardBg: '/static/member/goldenCard.png',
+      cardBg: '/static/member/goldenCard.webp',
       price: 999,
       upgradeName: '永久黄金会员',
       bgGradient:
@@ -211,7 +211,7 @@
     {
       id: 'platinum',
       name: '铂金会员',
-      cardBg: '/static/member/platinum.png',
+      cardBg: '/static/member/platinum.webp',
       price: 999,
       upgradeName: '永久黄金会员',
       bgGradient:
@@ -231,7 +231,7 @@
     {
       id: 'diamond',
       name: '钻石会员',
-      cardBg: '/static/member/Dimond.png',
+      cardBg: '/static/member/Dimond.webp',
       price: 999,
       upgradeName: '永久黄金会员',
       bgGradient:

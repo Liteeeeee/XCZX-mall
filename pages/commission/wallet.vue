@@ -78,7 +78,7 @@
     </su-sticky>
     <s-empty
       v-if="state.pagination.total === 0"
-      icon="/static/data-empty.png"
+      icon="/static/data-empty.webp"
       text="暂无数据"
     ></s-empty>
 
@@ -196,7 +196,7 @@
   import { resetPagination } from '@/sheep/helper/utils';
   import PayTransferApi from '@/sheep/api/pay/transfer';
 
-  const headerBg = sheep.$url.css('/static/img/shop/user/wallet_card_bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/user/wallet_card_bg.webp');
 
   const state = reactive({
     showMoney: false,

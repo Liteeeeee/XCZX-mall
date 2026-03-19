@@ -16,7 +16,7 @@
             <view class="tig ss-flex ss-col-center">
               <view class="tig-icon ss-flex ss-col-center ss-row-center">
                 <view class="groupon-tag">
-                  <image :src="sheep.$url.static('/static/img/shop/goods/groupon-tag-white.png')" />
+                  <image :src="sheep.$url.static('/static/img/shop/goods/groupon-tag-white.webp')" />
                 </view>
               </view>
               <view class="tig-title">拼团价</view>
@@ -111,7 +111,7 @@
   import sheep from '@/sheep';
   import { convertProductPropertyList, initDefaultSelect, fen2yuan } from '@/sheep/hooks/useGoods';
 
-  const headerBg = sheep.$url.css('/static/img/shop/goods/groupon-btn-long.png');
+  const headerBg = sheep.$url.css('/static/img/shop/goods/groupon-btn-long.webp');
   const emits = defineEmits(['change', 'addCart', 'buy', 'close', 'ladder']);
   const props = defineProps({
     show: {

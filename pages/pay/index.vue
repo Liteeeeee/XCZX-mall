@@ -25,7 +25,7 @@
                 <image
                   class="pay-icon"
                   v-if="item.disabled"
-                  :src="sheep.$url.static('/static/img/shop/pay/cod_disabled.png')"
+                  :src="sheep.$url.static('/static/img/shop/pay/cod_disabled.webp')"
                   mode="aspectFit"
                 />
                 <image

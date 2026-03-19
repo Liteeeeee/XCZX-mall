@@ -55,7 +55,7 @@
         :current="state.currentTab"
       ></su-tabs>
     </su-sticky>
-    <s-empty v-if="state.pagination.total === 0" text="暂无数据" icon="/static/data-empty.png" />
+    <s-empty v-if="state.pagination.total === 0" text="暂无数据" icon="/static/data-empty.webp" />
 
     <!-- 钱包记录 -->
     <view v-if="state.pagination.total > 0">
@@ -100,7 +100,7 @@
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import { resetPagination } from '@/sheep/helper/utils';
 
-  const headerBg = sheep.$url.css('/static/img/shop/user/wallet_card_bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/user/wallet_card_bg.webp');
   const statusBarHeight = sheep.$platform.device.statusBarHeight;
   const navbarHeight = sheep.$platform.navbar;
 

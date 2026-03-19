@@ -27,14 +27,14 @@
           :src="
             sheep.$url.static(
               state.orderInfo.status === 0
-                ? '/static/dengdaizhifu.png'
+                ? '/static/dengdaizhifu.webp'
                 : state.orderInfo.status === 10
-                ? '/static/daifahuo.png'
+                ? '/static/daifahuo.webp'
                 : state.orderInfo.status === 20
-                ? '/static/daishouhuo.png'
+                ? '/static/daishouhuo.webp'
                 : state.orderInfo.status === 30
-                ? '/static/yiwancheng.png'
-                : '/static/yiquxiao.png',
+                ? '/static/yiwancheng.webp'
+                : '/static/yiquxiao.webp',
             )
           "
           mode="heightFix"
@@ -57,27 +57,27 @@
         <image
           v-if="state.orderInfo.status === 0"
           class="state-img"
-          :src="sheep.$url.static('/static/img/shop/order/order_state_icon.png')"
+          :src="sheep.$url.static('/static/img/shop/order/order_state_icon.webp')"
         />
         <image
           v-else-if="state.orderInfo.status === 10"
           class="state-img"
-          :src="sheep.$url.static('/static/img/shop/order/order_loading.png')"
+          :src="sheep.$url.static('/static/img/shop/order/order_loading.webp')"
         />
         <image
           v-else-if="state.orderInfo.status === 20"
           class="state-img"
-          :src="sheep.$url.static('/static/img/shop/order/order_express_icon.png')"
+          :src="sheep.$url.static('/static/img/shop/order/order_express_icon.webp')"
         />
         <image
           v-else-if="state.orderInfo.status === 30"
           class="state-img"
-          :src="sheep.$url.static('/static/img/shop/order/order_success_icon.png')"
+          :src="sheep.$url.static('/static/img/shop/order/order_success_icon.webp')"
         />
         <image
           v-else-if="state.orderInfo.status === 40"
           class="state-img"
-          :src="sheep.$url.static('/static/img/shop/order/order_close.png')"
+          :src="sheep.$url.static('/static/img/shop/order/order_close.webp')"
         />
       </view>
     </view>
@@ -85,7 +85,7 @@
     <!-- 收货地址 -->
     <view class="order-address-box ss-flex ss-col-center" v-if="state.orderInfo.receiverAreaId > 0" @tap="onSelectAddress">
       <view class="address-icon-box ss-flex ss-col-center ss-row-center">
-        <image class="address-icon" :src="sheep.$url.static('/static/address.png')" />
+        <image class="address-icon" :src="sheep.$url.static('/static/address.webp')" />
       </view>
       <view class="address-info ss-m-l-20 ss-flex-1">
         <view class="address-detail ss-line-2">
@@ -322,7 +322,7 @@
   import PickUpVerify from '@/pages/order/pickUpVerify.vue';
 
   const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
-  const headerBg = sheep.$url.css('/static/img/shop/order/order_bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/order/order_bg.webp');
 
   const state = reactive({
     orderInfo: {},

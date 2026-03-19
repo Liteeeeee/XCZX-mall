@@ -57,7 +57,7 @@
         >
           <image
             class="auto-login-img"
-            :src="sheep.$url.static('/static/img/shop/platform/wechat.png')"
+            :src="sheep.$url.static('/static/img/shop/platform/wechat.webp')"
           />
         </button>
 
@@ -69,7 +69,7 @@
         >
           <image
             class="auto-login-img"
-            :src="sheep.$url.static('/static/img/shop/platform/apple.png')"
+            :src="sheep.$url.static('/static/img/shop/platform/apple.webp')"
           />
         </button>
 
@@ -81,7 +81,7 @@
         >
           <image
             class="auto-login-img"
-            :src="sheep.$url.static('/static/img/shop/pay/alipay.png')"
+            :src="sheep.$url.static('/static/img/shop/pay/alipay.webp')"
           />
         </button>
       </view>

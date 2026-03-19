@@ -113,12 +113,12 @@
   const memberIcon = computed(() => {
     const levelName = userInfo.value.levelName || '普通会员';
     const icons = {
-      '普通会员': '/static/user/normal.png',
-      '黄金会员': '/static/user/vipGolden.png',
-      '铂金会员': '/static/user/vipBojin.png',
-      '钻石会员': '/static/user/vipDimond.png',
+      '普通会员': '/static/user/normal.webp',
+      '黄金会员': '/static/user/vipGolden.webp',
+      '铂金会员': '/static/user/vipBojin.webp',
+      '钻石会员': '/static/user/vipDimond.webp',
     };
-    return icons[levelName] || '/static/user/normal.png';
+    return icons[levelName] || '/static/user/normal.webp';
   });
 
   // 统计数据列表

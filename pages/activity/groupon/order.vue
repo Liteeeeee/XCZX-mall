@@ -9,7 +9,7 @@
         :current="state.currentTab"
       ></su-tabs>
     </su-sticky>
-    <s-empty v-if="state.pagination.total === 0" icon="/static/goods-empty.png" />
+    <s-empty v-if="state.pagination.total === 0" icon="/static/goods-empty.webp" />
     <view v-if="state.pagination.total > 0">
       <view
         class="order-list-card-box bg-white ss-r-10 ss-m-t-14 ss-m-20"

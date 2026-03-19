@@ -12,7 +12,7 @@
         state.goodsInfo.activity_type !== PromotionActivityTypeEnum.POINT.type
       "
       text="活动不存在或已结束"
-      icon="/static/soldout-empty.png"
+      icon="/static/soldout-empty.webp"
       showAction
       actionText="再逛逛"
       actionUrl="/pages/goods/list"
@@ -132,11 +132,11 @@
   import { PromotionActivityTypeEnum, SharePageEnum } from '@/sheep/helper/const';
   import PointApi from '@/sheep/api/promotion/point';
 
-  const headerBg = sheep.$url.css('/static/img/shop/goods/score-bg.png');
-  const btnBg = sheep.$url.css('/static/img/shop/goods/seckill-btn.png');
-  const disabledBtnBg = sheep.$url.css('/static/img/shop/goods/activity-btn-disabled.png');
-  const seckillBg = sheep.$url.css('/static/img/shop/goods/seckill-tip-bg.png');
-  const grouponBg = sheep.$url.css('/static/img/shop/goods/groupon-tip-bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/goods/score-bg.webp');
+  const btnBg = sheep.$url.css('/static/img/shop/goods/seckill-btn.webp');
+  const disabledBtnBg = sheep.$url.css('/static/img/shop/goods/activity-btn-disabled.webp');
+  const seckillBg = sheep.$url.css('/static/img/shop/goods/seckill-tip-bg.webp');
+  const grouponBg = sheep.$url.css('/static/img/shop/goods/groupon-tip-bg.webp');
 
   onPageScroll(() => {});
   const state = reactive({

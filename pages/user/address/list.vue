@@ -51,7 +51,7 @@
     <s-empty
       v-if="state.list.length === 0 && !state.loading"
       text="无收货地址~"
-      icon="/static/data-empty.png"
+      icon="/static/data-empty.webp"
     />
   </s-layout>
 </template>

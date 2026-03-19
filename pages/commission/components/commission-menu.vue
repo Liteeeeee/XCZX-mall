@@ -2,7 +2,7 @@
 <template>
   <view class="menu-box ss-flex-col">
     <view class="header-box">
-      <image class="header-bg" :src="sheep.$url.static('/static/img/shop/commission/title1.png')" />
+      <image class="header-bg" :src="sheep.$url.static('/static/img/shop/commission/title1.webp')" />
       <view class="ss-flex header-title">
         <view class="title">功能专区</view>
         <text class="cicon-forward"></text>
@@ -33,43 +33,43 @@
   const state = reactive({
     menuList: [
       {
-        img: '/static/img/shop/commission/commission_icon1.png',
+        img: '/static/img/shop/commission/commission_icon1.webp',
         title: '我的团队',
         path: '/pages/commission/team',
       },
       {
-        img: '/static/img/shop/commission/commission_icon2.png',
+        img: '/static/img/shop/commission/commission_icon2.webp',
         title: '佣金明细',
         path: '/pages/commission/wallet',
       },
       {
-        img: '/static/img/shop/commission/commission_icon3.png',
+        img: '/static/img/shop/commission/commission_icon3.webp',
         title: '分销订单',
         path: '/pages/commission/order',
       },
       {
-        img: '/static/img/shop/commission/commission_icon4.png',
+        img: '/static/img/shop/commission/commission_icon4.webp',
         title: '推广商品',
         path: '/pages/commission/goods',
       },
       // {
-      //   img: '/static/img/shop/commission/commission_icon5.png',
+      //   img: '/static/img/shop/commission/commission_icon5.webp',
       //   title: '我的资料',
       //   path: '/pages/commission/apply',
       //   isAgentFrom: true,
       // },
       {
-        img: '/static/img/shop/commission/commission_icon7.png',
+        img: '/static/img/shop/commission/commission_icon7.webp',
         title: '邀请海报',
         path: 'action:showShareModal',
       },
       {
-        img: '/static/img/shop/commission/commission_icon8.png',
+        img: '/static/img/shop/commission/commission_icon8.webp',
         title: '推广排行',
         path: '/pages/commission/promoter',
       },
       {
-        img: '/static/img/shop/commission/commission_icon9.png',
+        img: '/static/img/shop/commission/commission_icon9.webp',
         title: '佣金排行',
         path: '/pages/commission/commission-ranking',
       },

@@ -13,7 +13,7 @@
         state.activity.endTime < new Date().getTime()
       "
       text="活动不存在或已结束"
-      icon="/static/soldout-empty.png"
+      icon="/static/soldout-empty.webp"
       showAction
       actionText="返回上一页"
       @clickAction="sheep.$router.back()"
@@ -43,7 +43,7 @@
                   <view class="tig-icon ss-flex ss-col-center ss-row-center">
                     <view class="groupon-tag">
                       <image
-                        :src="sheep.$url.static('/static/img/shop/goods/groupon-tag.png')"
+                        :src="sheep.$url.static('/static/img/shop/goods/groupon-tag.webp')"
                       ></image>
                     </view>
                   </view>
@@ -161,10 +161,10 @@
   import SpuApi from '@/sheep/api/product/spu';
   import { SharePageEnum } from '@/sheep/helper/const';
 
-  const headerBg = sheep.$url.css('/static/img/shop/goods/groupon-bg.png');
-  const btnBg = sheep.$url.css('/static/img/shop/goods/groupon-btn.png');
-  const disabledBtnBg = sheep.$url.css('/static/img/shop/goods/activity-btn-disabled.png');
-  const grouponBg = sheep.$url.css('/static/img/shop/goods/groupon-tip-bg.png');
+  const headerBg = sheep.$url.css('/static/img/shop/goods/groupon-bg.webp');
+  const btnBg = sheep.$url.css('/static/img/shop/goods/groupon-btn.webp');
+  const disabledBtnBg = sheep.$url.css('/static/img/shop/goods/activity-btn-disabled.webp');
+  const grouponBg = sheep.$url.css('/static/img/shop/goods/groupon-tip-bg.webp');
 
   onPageScroll(() => {});
   const state = reactive({
