@@ -131,6 +131,7 @@
       font-size: 31rpx;
       font-weight: bold;
       color: #fff;
+      font-family: Kingsoft_Cloud_Font;
     }
   }
 </style>
