@@ -143,16 +143,10 @@
     // 动态加载字体
     uni.loadFontFace({
       family: 'Kingsoft_Cloud_Font',
-      source: 'url("/static/font/Kingsoft_Cloud_Font.TTF")',
+      source: `url("https://font-jin.oss-cn-beijing.aliyuncs.com/Kingsoft_Cloud_Font.TTF")`,
       scopes: ['native', 'webview'],
-      success: () => console.log('Kingsoft_Cloud_Font loaded'),
-      fail: (err) => {
-        uni.loadFontFace({
-          family: 'Kingsoft_Cloud_Font',
-          source: `url("https://file.sheepjs.com/static/font/Kingsoft_Cloud_Font.TTF")`,
-          success: () => console.log('Kingsoft_Cloud_Font loaded via CDN'),
-        });
-      },
+      success: () => console.log('Kingsoft_Cloud_Font loaded via CDN'),
+      fail: (err) => console.log('Kingsoft_Cloud_Font load failed', err),
     });
   });
 
@@ -472,7 +466,7 @@
     padding: 30rpx;
     box-sizing: border-box;
     position: fixed;
-    bottom: calc(78rpx + env(safe-area-inset-bottom));
+    bottom: calc(86rpx + env(safe-area-inset-bottom));
     left: 0;
     background: #fff;
     border-radius: 20rpx 20rpx 0 0;
