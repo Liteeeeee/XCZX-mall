@@ -18,6 +18,22 @@ export function showAuthModal(type = 'smsLogin') {
   // #endif
 
   // #ifndef H5
+  if (['smsLogin', 'accountLogin'].includes(type)) {
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+    const current = pages[pages.length - 1];
+    if (current?.route === 'pages/index/login') {
+      return;
+    }
+    const url = `/pages/index/login?type=${type}`;
+    uni.navigateTo({
+      url,
+      fail: () => {
+        uni.redirectTo({ url });
+      },
+    });
+    return;
+  }
+
   modal.$patch((state) => {
     state.auth = type;
   });

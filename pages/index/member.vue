@@ -143,7 +143,7 @@
     // 动态加载字体
     uni.loadFontFace({
       family: 'Kingsoft_Cloud_Font',
-      source: `url("https://font-jin.oss-cn-beijing.aliyuncs.com/Kingsoft_Cloud_Font.TTF")`,
+      source: `url("https://xiancao.oss-cn-beijing.aliyuncs.com/fonts/default_fonts.ttf")`,
       scopes: ['native', 'webview'],
       success: () => console.log('Kingsoft_Cloud_Font loaded via CDN'),
       fail: (err) => console.log('Kingsoft_Cloud_Font load failed', err),

@@ -73,6 +73,23 @@ http.interceptors.request.use(
   (config) => {
     // 自定义处理【auth 授权】：必须登录的接口，则跳出 AuthModal 登录弹窗
     if (config.custom.auth && !$store('user').isLogin) {
+      // #ifdef H5
+      uni.setStorageSync('returnUrl', location.href);
+      // #endif
+
+      // #ifndef H5
+      const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+      const current = pages[pages.length - 1];
+      if (current?.route && current.route !== 'pages/index/login') {
+        const opts = current.options || {};
+        const query = Object.keys(opts)
+          .map((k) => `${encodeURIComponent(k)}=${encodeURIComponent(opts[k] ?? '')}`)
+          .join('&');
+        const url = `/${current.route}${query ? `?${query}` : ''}`;
+        uni.setStorageSync('returnUrl', url);
+      }
+      // #endif
+
       showAuthModal();
       return Promise.reject();
     }

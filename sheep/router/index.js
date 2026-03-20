@@ -70,6 +70,10 @@ const _go = (
 
   // 页面登录拦截
   if (nextRoute.meta?.auth && !$store('user').isLogin) {
+    const targetUrl = page + (isEmpty(query) ? '' : `?${query}`);
+    if (page !== '/pages/index/login') {
+      uni.setStorageSync('returnUrl', targetUrl);
+    }
     showAuthModal();
     return;
   }
