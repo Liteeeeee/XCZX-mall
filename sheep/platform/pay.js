@@ -310,7 +310,7 @@ export default class SheepPay {
 export function getPayMethods(channels) {
   const payMethods = [
     {
-      icon: '/static/img/shop/pay/wechat.webp',
+      icon: '/static/cart/wechat.webp',
       title: '微信支付',
       value: 'wechat',
       disabled: true,
@@ -322,8 +322,8 @@ export function getPayMethods(channels) {
       disabled: true,
     },
     {
-      icon: '/static/img/shop/pay/wallet.webp',
-      title: '余额支付',
+      icon: '/static/cart/balance.webp',
+      title: '会员卡支付',
       value: 'wallet',
       disabled: true,
     },
