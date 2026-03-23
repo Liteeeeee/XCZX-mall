@@ -188,7 +188,7 @@
       return;
     }
 
-    uni.switchTab({ url: '/' });
+    sheep.$router.go('/pages/index/index', {}, { redirect: true });
   }
 
   const getPhoneNumber = async (e) => {
@@ -213,7 +213,7 @@
       sheep.$router.go(returnUrl, {}, { redirect: true });
       return;
     }
-    uni.switchTab({ url: '/' });
+    sheep.$router.go('/pages/index/index', {}, { redirect: true });
   };
 
   onLoad(async (options) => {
@@ -235,9 +235,7 @@
       uni.removeStorage({ key: 'returnUrl' });
       location.replace(returnUrl);
     } else {
-      uni.switchTab({
-        url: '/',
-      });
+      sheep.$router.go('/pages/index/index', {}, { redirect: true });
     }
     // #endif
   });
