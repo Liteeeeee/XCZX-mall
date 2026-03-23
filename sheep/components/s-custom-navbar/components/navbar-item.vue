@@ -58,8 +58,13 @@
 <style lang="scss" scoped>
   .nav-title {
     font-size: 36rpx;
-    color: #333;
     text-align: center;
+    font-family: PingFangSC, PingFang SC;
+    font-weight: 600;
+    color: #1E3F1C !important;
+    line-height: 50rpx;
+    padding-left: 34rpx;
+    box-sizing: border-box;
   }
 
   .menu-icon-wrap {

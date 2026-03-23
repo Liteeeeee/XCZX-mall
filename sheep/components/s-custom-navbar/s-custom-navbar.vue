@@ -157,8 +157,9 @@
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      left: 20rpx;
+      left: 34rpx;
       z-index: 10;
+      min-width: 34rpx;
     }
 
     .nav-icon {

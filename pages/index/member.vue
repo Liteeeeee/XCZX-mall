@@ -1,9 +1,9 @@
 <template>
   <s-layout
-    title="会员中心"
+    :title="navTitle"
     navbar="custom"
     :bgStyle="{ color: '#F8F9F3' }"
-    :navbarStyle="template?.navigationBar"
+    :navbarStyle="navbarStyle"
     tabbar="/pages/index/member"
   >
     <view class="page flex-col">
@@ -248,6 +248,31 @@
   ];
 
   const currentLevel = computed(() => memberLevels[state.currentLevelIndex]);
+
+  const navTitle = computed(() => currentLevel.value?.name || '会员中心');
+
+  const navbarStyle = computed(() => {
+    const base = template.value?.navigationBar;
+    if (!base) return base;
+    const patchCells = (cells) => {
+      if (!Array.isArray(cells)) return cells;
+      return cells.map((item) => {
+        if (item?.type === 'text') {
+          return {
+            ...item,
+            text: navTitle.value,
+          };
+        }
+        return item;
+      });
+    };
+    return {
+      ...base,
+      list: patchCells(base.list),
+      mpCells: patchCells(base.mpCells),
+      otherCells: patchCells(base.otherCells),
+    };
+  });
 
   const onSwiperChange = (e) => {
     state.currentLevelIndex = e.detail.current;
