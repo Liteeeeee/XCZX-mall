@@ -64,7 +64,7 @@
     </view>
 
     <!-- VIP 会员卡片 -->
-    <view v-if="isLogin" class="ss-p-b-30 ">
+    <view v-if="isLogin && showVipCard" class="ss-p-b-30 ">
       <s-vip-card />
     </view>
   </view>
@@ -108,6 +108,20 @@
   const userWallet = computed(() => sheep.$store('user').userWallet || { balance: 0 });
   const numData = computed(() => sheep.$store('user').numData || { coupon: 0, point: 0 });
   const isLogin = computed(() => sheep.$store('user').isLogin);
+  const showVipCard = computed(() => {
+    if (!isLogin.value) return false;
+    const rawLevel = userInfo.value?.level;
+    const level =
+      typeof rawLevel === 'object' && rawLevel
+        ? rawLevel.level ?? rawLevel.id ?? null
+        : rawLevel;
+    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return false;
+    const rawLevelName = userInfo.value?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石')) return false;
+    return true;
+  });
 
   // 会员等级图标
   const memberIcon = computed(() => {

@@ -42,7 +42,7 @@
       </view>
 
       <!-- 会员卡片 -->
-      <view class="ss-m-20 ss-w-100">
+      <view v-if="showVipCard" class="ss-m-20 ss-w-100">
         <s-vip-card />
       </view>
 
@@ -211,6 +211,7 @@
   const sys_navBar = sheep.$platform.navbar;
   const sys_capsule = sheep.$platform.capsule;
   const cart = sheep.$store('cart');
+  const userStore = sheep.$store('user');
 
   const navbarStyle = computed(() => {
     const homeTemplate = sheep.$store('app').template?.home;
@@ -221,6 +222,21 @@
         alwaysShow: true,
       }
     );
+  });
+
+  const showVipCard = computed(() => {
+    if (!userStore.isLogin) return true;
+    const rawLevel = userStore.userInfo?.level;
+    const level =
+      typeof rawLevel === 'object' && rawLevel
+        ? rawLevel.level ?? rawLevel.id ?? null
+        : rawLevel;
+    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return false;
+    const rawLevelName = userStore.userInfo?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石')) return false;
+    return true;
   });
 
   const state = reactive({
