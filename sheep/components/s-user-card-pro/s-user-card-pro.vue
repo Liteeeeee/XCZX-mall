@@ -103,7 +103,7 @@
     point: 0,
     balance: 0,
     coupon: 0,
-    levelName: '普通会员'
+    level: null
   });
   const userWallet = computed(() => sheep.$store('user').userWallet || { balance: 0 });
   const numData = computed(() => sheep.$store('user').numData || { coupon: 0, point: 0 });
@@ -111,14 +111,28 @@
 
   // 会员等级图标
   const memberIcon = computed(() => {
-    const levelName = userInfo.value.levelName || '普通会员';
-    const icons = {
-      '普通会员': '/static/user/normal.webp',
-      '黄金会员': '/static/user/vipGolden.webp',
-      '铂金会员': '/static/user/vipBojin.webp',
-      '钻石会员': '/static/user/vipDimond.webp',
+    const iconsByLevel = {
+      1: '/static/user/vipGolden.webp',
+      2: '/static/user/vipBojin.webp',
+      3: '/static/user/vipDimond.webp',
     };
-    return icons[levelName] || '/static/user/normal.webp';
+
+    const rawLevel = userInfo.value?.level;
+    const level =
+      typeof rawLevel === 'object' && rawLevel
+        ? rawLevel.level ?? rawLevel.id ?? null
+        : rawLevel;
+    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
+      return iconsByLevel[normalizedLevel] || '/static/user/normal.webp';
+    }
+
+    const rawLevelName = userInfo.value?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (levelName.includes('钻石')) return iconsByLevel[3];
+    if (levelName.includes('铂金')) return iconsByLevel[2];
+    if (levelName.includes('黄金')) return iconsByLevel[1];
+    return '/static/user/normal.webp';
   });
 
   // 统计数据列表

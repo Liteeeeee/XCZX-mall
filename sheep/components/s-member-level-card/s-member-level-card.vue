@@ -13,7 +13,7 @@
       ></image>
       <view style="position: relative; z-index: 1">
         <view class="text-wrapper_1 flex-col" :style="{ background: level.badgeBg }">
-          <text class="text_3" :style="{ color: level.badgeColor }">{{ isCurrent ? '当前等级' : '未解锁' }}</text>
+          <text class="text_3" :style="{ color: level.badgeColor }">{{ badgeText }}</text>
         </view>
         <view class="text-group_1 flex-col">
           <view style="width: 20rpx;"></view>
@@ -25,7 +25,7 @@
         <view class="group_6 flex-row">
           <text  class="text_6" :style="{ color: level.mainColor }" v-if="isCurrent">已有{{ userInfo.experience || 0 }}成长值</text>
           <text  class="text_6" :style="{ color: level.mainColor }" v-else>升级解锁更多权益</text>
-            <text class="text_7" @tap="sheep.$router.go('/pages/index/index')">
+            <text v-if="!isVipUser" class="text_7" @tap="sheep.$router.go('/pages/index/index')">
             {{ isCurrent ? '升级会员>' : '立即开通>' }}
           </text>
         </view>
@@ -54,7 +54,73 @@
   });
 
   const isCurrent = computed(() => {
-    return props.userInfo.levelName === props.level.name || (props.level.id === 'normal' && !props.userInfo.levelName);
+    const idByLevel = {
+      1: 'golden',
+      2: 'platinum',
+      3: 'diamond',
+    };
+
+    const rawLevel = props.userInfo?.level;
+    const level =
+      typeof rawLevel === 'object' && rawLevel
+        ? rawLevel.level ?? rawLevel.id ?? null
+        : rawLevel;
+    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
+      return idByLevel[normalizedLevel] === props.level.id;
+    }
+    if (normalizedLevel === 0 || normalizedLevel === null) {
+      return props.level.id === 'normal';
+    }
+
+    const rawLevelName = props.userInfo?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (!levelName) return props.level.id === 'normal';
+    return levelName === props.level.name;
+  });
+
+  const isVipUser = computed(() => {
+    const rawLevel = props.userInfo?.level;
+    const level =
+      typeof rawLevel === 'object' && rawLevel
+        ? rawLevel.level ?? rawLevel.id ?? null
+        : rawLevel;
+    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return true;
+
+    const rawLevelName = props.userInfo?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    return levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石');
+  });
+
+  const currentUserLevel = computed(() => {
+    const rawLevel = props.userInfo?.level;
+    const level =
+      typeof rawLevel === 'object' && rawLevel
+        ? rawLevel.level ?? rawLevel.id ?? null
+        : rawLevel;
+    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return normalizedLevel;
+    if (normalizedLevel === 0 || normalizedLevel === null) return 0;
+    const rawLevelName = props.userInfo?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (levelName.includes('钻石')) return 3;
+    if (levelName.includes('铂金')) return 2;
+    if (levelName.includes('黄金')) return 1;
+    return 0;
+  });
+
+  const currentCardLevel = computed(() => {
+    const id = props.level?.id;
+    if (id === 'diamond') return 3;
+    if (id === 'platinum') return 2;
+    if (id === 'golden') return 1;
+    return 0;
+  });
+
+  const badgeText = computed(() => {
+    if (isCurrent.value) return '当前等级';
+    return currentCardLevel.value <= currentUserLevel.value ? '已解锁' : '未解锁';
   });
 </script>
 

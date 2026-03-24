@@ -15,7 +15,7 @@
         </view>
       </view>
 
-      <text class="text_8">{{ isCurrent ? '已解锁' : '待解锁' }}{{ level.rights.length }}项权益</text>
+      <text class="text_8">{{ isUnlocked ? '已解锁' : '待解锁' }}{{ level.rights.length }}项权益</text>
       <view class="section_5 flex-row" v-if="level.rights && level.rights.length > 0">
         <view class="rights-item flex-col align-center" v-for="(item, index) in level.rights" :key="index">
           <image class="rights-icon" :src="sheep.$url.static(item.icon, 'local')" mode="aspectFit"></image>
@@ -44,8 +44,57 @@
   });
 
   const isCurrent = computed(() => {
-    return props.userInfo.levelName === props.level.name || (props.level.id === 'normal' && !props.userInfo.levelName);
+    const idByLevel = {
+      1: 'golden',
+      2: 'platinum',
+      3: 'diamond',
+    };
+
+    const rawLevel = props.userInfo?.level;
+    const level =
+      typeof rawLevel === 'object' && rawLevel
+        ? rawLevel.level ?? rawLevel.id ?? null
+        : rawLevel;
+    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
+      return idByLevel[normalizedLevel] === props.level.id;
+    }
+    if (normalizedLevel === 0 || normalizedLevel === null) {
+      return props.level.id === 'normal';
+    }
+
+    const rawLevelName = props.userInfo?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (!levelName) return props.level.id === 'normal';
+    return levelName === props.level.name;
   });
+
+  const currentUserLevel = computed(() => {
+    const rawLevel = props.userInfo?.level;
+    const level =
+      typeof rawLevel === 'object' && rawLevel
+        ? rawLevel.level ?? rawLevel.id ?? null
+        : rawLevel;
+    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return normalizedLevel;
+    if (normalizedLevel === 0 || normalizedLevel === null) return 0;
+    const rawLevelName = props.userInfo?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (levelName.includes('钻石')) return 3;
+    if (levelName.includes('铂金')) return 2;
+    if (levelName.includes('黄金')) return 1;
+    return 0;
+  });
+
+  const currentCardLevel = computed(() => {
+    const id = props.level?.id;
+    if (id === 'diamond') return 3;
+    if (id === 'platinum') return 2;
+    if (id === 'golden') return 1;
+    return 0;
+  });
+
+  const isUnlocked = computed(() => currentCardLevel.value <= currentUserLevel.value);
 </script>
 
 <style lang="scss" scoped>
