@@ -29,11 +29,19 @@
         <s-block-item :type="item.id" :data="item.property" :styles="item.property.style" />
       </s-block>
     </s-layout>
+
+    <!-- 下拉引导动图：移到 s-layout 外层，避免被容器裁剪或层级遮挡 -->
+    <image
+      v-show="showDownGuide"
+      class="down-guide"
+      src="/static/down.gif"
+      mode="aspectFit"
+    ></image>
   </view>
 </template>
 
 <script setup>
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import { onLoad, onShow, onPageScroll, onPullDownRefresh } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import $share from '@/sheep/platform/share';
@@ -43,6 +51,8 @@
   });
 
   const template = computed(() => sheep.$store('app').template?.home);
+  const showDownGuide = ref(true);
+
   // 在此处拦截改变一下首页轮播图 此处先写死后期复活 放到启动函数里
   // (async function() {
   // console.log('原代码首页定制化数据',template)
@@ -113,10 +123,24 @@
     }, 800);
   });
 
-  onPageScroll(() => {});
+  onPageScroll((e) => {
+    // 根据滚动距离判断是否展示下拉引导动图
+    showDownGuide.value = e.scrollTop < 50;
+  });
 </script>
 
 <style lang="scss" scoped>
+  .down-guide {
+    position: fixed;
+    bottom: 19vh;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140rpx;
+    height: 140rpx;
+    z-index: 99999;
+    pointer-events: none; /* 防止遮挡用户点击事件 */
+  }
+
   .navbar-left-box {
     display: flex;
     align-items: center;
