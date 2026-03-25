@@ -27,7 +27,7 @@
         <uni-forms-item name="name" label="收货人" class="form-item">
           <uni-easyinput
             v-model="state.model.name"
-            placeholder="李小刚"
+            placeholder="仙草"
             :inputBorder="false"
             placeholderStyle="color:#BBBBBB;font-size:30rpx;font-weight:400;line-height:normal"
           />
