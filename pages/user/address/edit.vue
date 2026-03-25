@@ -86,7 +86,7 @@
       <view class="default-box">
         <view class="default-box-inner ss-flex ss-col-center" @tap="state.model.defaultStatus = !state.model.defaultStatus">
           <view class="checkbox-icon" :class="{ 'is-checked': state.model.defaultStatus }">
-            <text class="sicon-check" v-if="state.model.defaultStatus"></text>
+            <uni-icons v-if="state.model.defaultStatus" type="checkmarkempty" size="16" color="#fff" />
           </view>
           <view class="default-box-title">设置为默认地址</view>
         </view>
@@ -382,11 +382,6 @@
 
       &.is-checked {
         background-color: #1E3F1C;
-      }
-
-      .sicon-check {
-        color: #fff;
-        font-size: 20rpx;
       }
     }
 

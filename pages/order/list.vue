@@ -104,7 +104,7 @@
               查看物流
             </button>
             <button
-              v-if="order.buttons.includes('cancel')"
+              v-if="order.buttons.includes('cancel') && !isOrderExpired(order.createTime)"
               class="tool-btn ss-reset-button"
               @tap.stop="onCancel(order.id)"
             >
@@ -125,7 +125,14 @@
               删除订单
             </button>
             <button
-              v-if="order.buttons.includes('pay')"
+              v-if="order.status === 0 && isOrderExpired(order.createTime)"
+              class="pay-btn ss-reset-button"
+              @tap.stop="onRepurchase(order)"
+            >
+              再次购买
+            </button>
+            <button
+              v-if="order.buttons.includes('pay') && !isOrderExpired(order.createTime)"
               class="pay-btn ss-reset-button"
               @tap.stop="onPay(order.payOrderId)"
             >
@@ -181,6 +188,15 @@
   // 格式化订单时间
   function formatOrderTime(time) {
     return dayjs(time).format('YYYY.MM.DD HH:mm');
+  }
+
+  // 检查订单是否过期
+  function isOrderExpired(createTime) {
+    if (!createTime) return false;
+    const create = dayjs(createTime);
+    const expire = create.add(24, 'hour');
+    const diff = expire.diff(state.now, 'second');
+    return diff <= 0;
   }
 
   // 格式化支付倒计时
@@ -254,6 +270,18 @@
     sheep.$router.go('/pages/goods/comment/add', {
       id,
     });
+  }
+
+  // 再次购买
+  function onRepurchase(order) {
+    // 假设再次购买就是跳转到商品详情页（这里可以根据实际需求改成跳转到确认订单页，或者将商品重新加入购物车等）
+    if (order.items && order.items.length > 0) {
+      sheep.$router.go('/pages/goods/index', {
+        id: order.items[0].spuId,
+      });
+    } else {
+      sheep.$helper.toast('商品信息不存在');
+    }
   }
 
   // 确认收货
