@@ -1,9 +1,28 @@
 <template>
   <s-layout
     class="chat-wrap"
-    :title="!isReconnecting ? '连接客服成功' : '会话重连中'"
-    navbar="inner"
+    navbar="clear"
+    :bgStyle="{ color: '#F8F9F3' }"
   >
+    <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
+      <su-status-bar />
+      <view
+        class="nav-bar-container"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{ height: '100%', paddingLeft: '20rpx' }"
+        >
+          <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
+            <text class="sicon-back"></text>
+          </view>
+          <text class="nav-title ss-m-l-10">{{ !isReconnecting ? '连接客服成功' : '会话重连中' }}</text>
+        </view>
+      </view>
+    </view>
+    <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+
     <!--  覆盖头部导航栏背景颜色  -->
     <view class="page-bg" :style="{ height: sys_navBar + 'px' }"></view>
     <!--  聊天区域  -->
@@ -195,14 +214,42 @@
 </script>
 
 <style scoped lang="scss">
+  /* 导航栏 */
+  .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background: #f8f9f3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* #ifdef H5 */
+    max-width: 750rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    /* #endif */
+  }
+  .nav-bar-container {
+    background: #f8f9f3;
+    display: flex;
+    align-items: center;
+  }
+  .back-btn {
+    width: 60rpx;
+    color: rgba(30, 63, 28, 0.9);
+    height: 60rpx;
+  }
+  .nav-title {
+    color: rgba(30, 63, 28, 0.9);
+    font-size: 36rpx;
+    font-weight: 600;
+  }
+
   .chat-wrap {
     .page-bg {
-      width: 100%;
-      position: absolute;
-      top: 0;
-      left: 0;
-      background-color: var(--ui-BG-Main);
-      z-index: 1;
+      display: none; // 隐藏原有的蓝色背景覆盖
     }
 
     .status {
