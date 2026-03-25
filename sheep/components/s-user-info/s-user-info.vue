@@ -78,6 +78,10 @@
       sheep.$router.go('/pages/user/address/list');
       return;
     }
+    if (item.name === '平台合伙人') {
+      sheep.$router.go('/pages/commission/index');
+      return;
+    }
     if (item.url) {
       sheep.$router.go(item.url);
     }

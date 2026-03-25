@@ -121,18 +121,27 @@
 
 <script setup>
   import sheep from '@/sheep';
-  import { computed, reactive, onBeforeMount } from 'vue';
+  import { computed, reactive, onBeforeMount, watch } from 'vue';
   import { onShow } from '@dcloudio/uni-app';
   import memberData from '@/sheep/data/member';
   import sMemberLevelCard from '@/sheep/components/s-member-level-card/s-member-level-card.vue';
   import sMemberLevelRights from '@/sheep/components/s-member-level-card/s-member-level-rights.vue';
   import PayWalletApi from '@/sheep/api/pay/wallet';
+  import MemberLevelApi from '@/sheep/api/member/level';
 
-  onShow(() => {
+  async function loadMemberLevelList() {
+    const { code, data } = await MemberLevelApi.getMemberLevelList();
+    if (code !== 0) return;
+    if (!Array.isArray(data)) return;
+    state.levelList = data;
+  }
+
+  onShow(async () => {
     // 页面显示时再次强制隐藏原生 tabBar，确保自定义 tabbar 渲染
     uni.hideTabBar({
       fail: () => {},
     });
+    await loadMemberLevelList();
   });
 
   onBeforeMount(() => {
@@ -156,13 +165,14 @@
   const state = reactive({
     isAgreement: true,
     currentLevelIndex: 0,
+    levelList: [],
   });
 
   // 获取装修模板，用于导航栏样式
   const template = computed(() => sheep.$store('app').template?.user || {});
 
   // 会员等级配置数据
-  const memberLevels = [
+  const defaultMemberLevels = [
     {
       id: 'normal',
       name: '普通会员',
@@ -247,7 +257,65 @@
     },
   ];
 
-  const currentLevel = computed(() => memberLevels[state.currentLevelIndex]);
+  const memberLevels = computed(() => {
+    const baseById = defaultMemberLevels.reduce((acc, item) => {
+      if (item?.id) acc[item.id] = item;
+      return acc;
+    }, {});
+
+    const apiList = state.levelList;
+    if (!Array.isArray(apiList) || apiList.length === 0) return defaultMemberLevels;
+
+    const idByLevel = {
+      1: 'golden',
+      2: 'platinum',
+      3: 'diamond',
+    };
+
+    const mapped = apiList
+      .filter((item) => item && (Number(item.level) === 1 || Number(item.level) === 2 || Number(item.level) === 3))
+      .sort((a, b) => Number(a.level) - Number(b.level))
+      .map((item) => {
+        const normalizedLevel = Number(item.level);
+        const id = idByLevel[normalizedLevel];
+        const base = baseById[id] || {};
+        const rawName = typeof item.name === 'string' ? item.name.replace(/\s/g, '') : '';
+        const name = rawName ? (rawName.endsWith('会员') ? rawName : `${rawName}会员`) : base.name;
+        const cardBg = item.backgroundUrl || base.cardBg;
+        const price = typeof item.price === 'number' ? item.price : base.price;
+        const upgradeName = typeof item.upgradeName === 'string' ? item.upgradeName : base.upgradeName;
+        const rights = Array.isArray(item.rights) && item.rights.length ? item.rights : base.rights;
+        return {
+          ...base,
+          id,
+          name,
+          cardBg,
+          price,
+          upgradeName,
+          rights,
+          experience: item.experience ?? base.experience,
+          discountPercent: item.discountPercent ?? base.discountPercent,
+          icon: item.icon ?? base.icon,
+        };
+      });
+
+    const result = [baseById.normal, ...mapped].filter(Boolean);
+    return result.filter((v, idx, arr) => arr.findIndex((x) => x.id === v.id) === idx);
+  });
+
+  watch(
+    memberLevels,
+    (list) => {
+      if (!Array.isArray(list) || list.length === 0) {
+        state.currentLevelIndex = 0;
+        return;
+      }
+      if (state.currentLevelIndex >= list.length) state.currentLevelIndex = 0;
+    },
+    { immediate: true },
+  );
+
+  const currentLevel = computed(() => memberLevels.value[state.currentLevelIndex] || memberLevels.value[0]);
 
   const navTitle = computed(() => currentLevel.value?.name || '会员中心');
 
