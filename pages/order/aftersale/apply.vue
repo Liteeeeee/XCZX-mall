@@ -1,6 +1,25 @@
 <!-- 售后申请 -->
 <template>
-  <s-layout title="申请售后">
+  <s-layout navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
+    <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
+      <su-status-bar />
+      <view
+        class="nav-bar-container"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{ height: '100%', paddingLeft: '20rpx' }"
+        >
+          <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
+            <text class="sicon-back"></text>
+          </view>
+          <text class="nav-title ss-m-l-10">申请售后</text>
+        </view>
+      </view>
+    </view>
+    <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+
     <!-- 售后商品 -->
     <view class="goods-box">
       <s-goods-item
@@ -24,8 +43,8 @@
               :key="index"
             >
               <radio
-                :checked="formData.type === item.value"
-                color="var(--ui-BG-Main)"
+                :checked="formData.way === item.value"
+                color="#1e3f1c"
                 style="transform: scale(0.8)"
                 :value="item.value"
               />
@@ -78,14 +97,12 @@
     </uni-forms>
 
     <!-- 底部按钮 -->
-    <su-fixed bottom placeholder>
-      <view class="foot-wrap">
-        <view class="foot_box ss-flex ss-col-center ss-row-between ss-p-x-30">
-          <button class="ss-reset-button contcat-btn" @tap="sheep.$router.go('/pages/chat/index')">
-            联系客服
-          </button>
-          <button class="ss-reset-button ui-BG-Main-Gradient sub-btn" @tap="submit">提交</button>
-        </view>
+    <su-fixed bottom placeholder bg="bg-white">
+      <view class="footer-box ss-flex ss-col-center ss-row-right">
+        <button class="ss-reset-button cancel-btn" @tap="sheep.$router.go('/pages/chat/index')">
+          联系客服
+        </button>
+        <button class="ss-reset-button pay-btn" @tap="submit">提交</button>
       </view>
     </su-fixed>
 
@@ -101,14 +118,14 @@
               <view class="ss-flex-1 ss-p-20">{{ item }}</view>
               <radio
                 :value="item"
-                color="var(--ui-BG-Main)"
+                color="#1e3f1c"
                 :checked="item === state.currentValue"
               />
             </label>
           </radio-group>
         </view>
         <view class="modal-foot foot_box ss-flex ss-row-center ss-col-center">
-          <button class="ss-reset-button close-btn ui-BG-Main-Gradient" @tap="onReason">
+          <button class="ss-reset-button close-btn" @tap="onReason">
             确定
           </button>
         </view>
@@ -141,7 +158,7 @@
         value: '10',
       },
       {
-        text: '退款退货',
+        text: '退货退款',
         value: '20',
       },
     ],
@@ -220,10 +237,52 @@
 
     // 读取配置
     state.config = (await TradeConfigApi.getTradeConfig()).data;
+
+    // 初始化默认选中
+    if (state.wayList.length > 0) {
+      formData.way = state.wayList[0].value;
+      state.reasonList =
+        formData.way === '10'
+          ? state.config.afterSaleRefundReasons || []
+          : state.config.afterSaleReturnReasons || [];
+    }
   });
 </script>
 
 <style lang="scss" scoped>
+  /* 导航栏 */
+  .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background: #f8f9f3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* #ifdef H5 */
+    max-width: 750rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    /* #endif */
+  }
+  .nav-bar-container {
+    background: #f8f9f3;
+    display: flex;
+    align-items: center;
+  }
+  .back-btn {
+    width: 60rpx;
+    color: rgba(30, 63, 28, 0.9);
+    height: 60rpx;
+  }
+  .nav-title {
+    color: rgba(30, 63, 28, 0.9);
+    font-size: 36rpx;
+    font-weight: 600;
+  }
+
   .item-title {
     font-size: 30rpx;
     font-weight: bold;
@@ -271,31 +330,36 @@
     margin-bottom: 20rpx;
   }
 
-  .foot-wrap {
+  // 底部
+  .footer-box {
     height: 100rpx;
     width: 100%;
-  }
+    box-sizing: border-box;
+    border-radius: 10rpx;
+    padding-right: 20rpx;
 
-  .foot_box {
-    height: 100rpx;
-    background-color: #fff;
-
-    .sub-btn {
-      width: 336rpx;
-      line-height: 74rpx;
-      border-radius: 38rpx;
-      color: rgba(#fff, 0.9);
-      font-size: 28rpx;
-    }
-
-    .contcat-btn {
-      width: 336rpx;
-      line-height: 74rpx;
-      background: rgba(238, 238, 238, 1);
-      border-radius: 38rpx;
+    .cancel-btn {
+      width: 160rpx;
+      height: 60rpx;
+      background: #ffffff;
+      border-radius: 30rpx;
+      border: 2rpx solid #9d9c96;
+      margin-right: 20rpx;
       font-size: 28rpx;
       font-weight: 400;
-      color: rgba(51, 51, 51, 1);
+      color: #9d9c96;
+      line-height: 56rpx;
+    }
+
+    .pay-btn {
+      width: 160rpx;
+      height: 60rpx;
+      font-size: 28rpx;
+      border-radius: 30rpx;
+      font-weight: 500;
+      color: #fff;
+      background: #1e3f1c;
+      line-height: 60rpx;
     }
   }
 
@@ -315,11 +379,15 @@
     }
 
     .modal-foot {
+      padding: 20rpx 0;
       .close-btn {
         width: 710rpx;
         line-height: 80rpx;
         border-radius: 40rpx;
-        color: rgba(#fff, 0.9);
+        color: #fff;
+        background: #1e3f1c;
+        font-size: 28rpx;
+        font-weight: 500;
       }
     }
   }

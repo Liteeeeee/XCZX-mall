@@ -125,44 +125,7 @@
                 {{ item.status_text }}
               </button>
             </template>
-            <template #rightBottom>
-              <view class="ss-flex ss-row-right ss-m-t-20">
-                <button
-                  class="ss-reset-button apply-btn"
-                  v-if="[10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0"
-                  @tap.stop="
-                    sheep.$router.go('/pages/order/aftersale/apply', {
-                      orderId: state.orderInfo.id,
-                      itemId: item.id,
-                    })
-                  "
-                >
-                  申请售后
-                </button>
-                <button
-                  class="ss-reset-button apply-btn"
-                  v-if="item.afterSaleStatus === 10"
-                  @tap.stop="
-                    sheep.$router.go('/pages/order/aftersale/detail', {
-                      id: item.afterSaleId,
-                    })
-                  "
-                >
-                  退款中
-                </button>
-                <button
-                  class="ss-reset-button apply-btn"
-                  v-if="item.afterSaleStatus === 20"
-                  @tap.stop="
-                    sheep.$router.go('/pages/order/aftersale/detail', {
-                      id: item.afterSaleId,
-                    })
-                  "
-                >
-                  退款成功
-                </button>
-              </view>
-            </template>
+
           </s-goods-item>
         </view>
       </view>
@@ -249,8 +212,57 @@
 
     <!-- 底部按钮 -->
     <!-- TODO: 查看物流、等待成团、评价完后返回页面没刷新页面 -->
-    <su-fixed bottom placeholder bg="bg-white" v-if="state.orderInfo.buttons?.length">
+    <su-fixed
+      bottom
+      placeholder
+      bg="bg-white"
+      v-if="
+        state.orderInfo.buttons?.length ||
+        state.orderInfo.items?.some(
+          (item) =>
+            ([10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0) ||
+            [10, 20].includes(item.afterSaleStatus)
+        )
+      "
+    >
       <view class="footer-box ss-flex ss-col-center ss-row-right">
+        <!-- 售后相关按钮 -->
+        <template v-for="item in state.orderInfo.items" :key="item.id">
+          <button
+            class="ss-reset-button apply-btn"
+            v-if="[10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0"
+            @tap.stop="
+              sheep.$router.go('/pages/order/aftersale/apply', {
+                orderId: state.orderInfo.id,
+                itemId: item.id,
+              })
+            "
+          >
+            {{ state.orderInfo.status === 10 ? '申请退款' : '申请售后' }}
+          </button>
+          <button
+            class="ss-reset-button apply-btn"
+            v-if="item.afterSaleStatus === 10"
+            @tap.stop="
+              sheep.$router.go('/pages/order/aftersale/detail', {
+                id: item.afterSaleId,
+              })
+            "
+          >
+            退款中
+          </button>
+          <button
+            class="ss-reset-button apply-btn"
+            v-if="item.afterSaleStatus === 20"
+            @tap.stop="
+              sheep.$router.go('/pages/order/aftersale/detail', {
+                id: item.afterSaleId,
+              })
+            "
+          >
+            退款成功
+          </button>
+        </template>
         <button
           class="ss-reset-button cancel-btn"
           v-if="state.orderInfo.buttons?.includes('cancel')"
@@ -874,6 +886,19 @@
     box-sizing: border-box;
     border-radius: 10rpx;
     padding-right: 20rpx;
+
+    .apply-btn {
+      width: 160rpx;
+      height: 60rpx;
+      background: rgba(255, 255, 250, 1);
+      border-radius: 30rpx;
+      border: 2rpx solid rgba(30, 63, 28, 1);
+      margin-right: 20rpx;
+      font-size: 28rpx;
+      font-weight: 500;
+      color: rgba(30, 63, 28, 1);
+      line-height: 56rpx;
+    }
 
     .cancel-btn {
       width: 160rpx;
