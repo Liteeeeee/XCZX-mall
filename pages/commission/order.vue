@@ -56,7 +56,7 @@
         </view>
       </view>
       <!-- 数据为空 -->
-      <s-empty v-if="state.pagination.total === 0" icon="/static/order-empty.webp" text="暂无订单" />
+      <s-empty v-if="state.pagination.total === 0" :icon="sheep.$url.static('/static/order-empty.webp')" text="暂无订单" />
       <!-- 加载更多 -->
       <uni-load-more
         v-if="state.pagination.total > 0"

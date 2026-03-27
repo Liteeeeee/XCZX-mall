@@ -11,7 +11,7 @@
         state.goodsInfo === null || state.goodsInfo.activity_type !== 'seckill' || endTime.ms <= 0
       "
       text="活动不存在或已结束"
-      icon="/static/soldout-empty.webp"
+      :icon="sheep.$url.static('/static/soldout-empty.webp')"
       showAction
       actionText="再逛逛"
       actionUrl="/pages/goods/list"

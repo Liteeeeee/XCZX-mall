@@ -195,7 +195,7 @@
       </view>
     </view>
 
-    <s-empty v-if="!state.data && !state.loading" icon="/static/goods-empty.webp" />
+    <s-empty v-if="!state.data && !state.loading" :icon="sheep.$url.static('/static/goods-empty.webp')" />
   </s-layout>
 </template>
 

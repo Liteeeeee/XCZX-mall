@@ -8,7 +8,7 @@
   >
     <s-empty
       v-if="state.list.length === 0"
-      icon="/static/cart-empty.webp"
+      :icon="sheep.$url.static('/static/cart-empty.webp')"
       text="购物车空空如也,快去逛逛吧~"
     />
 

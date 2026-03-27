@@ -1,7 +1,7 @@
 <!-- 签到界面  -->
 <template>
   <s-layout title="签到有礼">
-    <s-empty v-if="state.loading" icon="/static/data-empty.webp" text="签到活动还未开始" />
+    <s-empty v-if="state.loading" :icon="sheep.$url.static('/static/data-empty.webp')" text="签到活动还未开始" />
     <view v-if="state.loading" />
     <view class="sign-wrap" v-else-if="!state.loading">
       <!-- 签到日历 -->

@@ -137,7 +137,7 @@
       <s-empty
         v-if="state.coupon.productScope === 3 && state.pagination.total === 0"
         paddingTop="0"
-        icon="/static/soldout-empty.webp"
+        :icon="sheep.$url.static('/static/soldout-empty.webp')"
         text="暂无商品"
       />
     </view>

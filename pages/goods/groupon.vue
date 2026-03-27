@@ -13,7 +13,7 @@
         state.activity.endTime < new Date().getTime()
       "
       text="活动不存在或已结束"
-      icon="/static/soldout-empty.webp"
+      :icon="sheep.$url.static('/static/soldout-empty.webp')"
       showAction
       actionText="返回上一页"
       @clickAction="sheep.$router.back()"

@@ -24,7 +24,7 @@
       <s-empty
         v-if="state.commentList.length === 0"
         paddingTop="0"
-        icon="/static/comment-empty.webp"
+        :icon="sheep.$url.static('/static/comment-empty.webp')"
         text="期待您的第一个评价"
       />
     </view>

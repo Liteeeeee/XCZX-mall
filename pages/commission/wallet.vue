@@ -78,7 +78,7 @@
     </su-sticky>
     <s-empty
       v-if="state.pagination.total === 0"
-      icon="/static/data-empty.webp"
+      :icon="sheep.$url.static('/static/data-empty.webp')"
       text="暂无数据"
     ></s-empty>
 

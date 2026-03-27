@@ -10,7 +10,7 @@
       <s-empty
         v-else-if="state.goodsInfo === null"
         text="商品不存在或已下架"
-        icon="/static/soldout-empty.webp"
+        :icon="sheep.$url.static('/static/soldout-empty.webp')"
         showAction
         actionText="再逛逛"
         actionUrl="/pages/goods/list"

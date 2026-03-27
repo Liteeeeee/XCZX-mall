@@ -14,7 +14,7 @@
         <view class="navbar-left-box ss-flex ss-row-left ss-col-center">
           <image
             class="logo"
-            src="/static/log.webp"
+            :src="sheep.$url.static('/static/log.webp')"
             mode="aspectFit"
           ></image>
           <text class="title">仙草甄选</text>
@@ -34,7 +34,7 @@
     <image
       v-show="showDownGuide"
       class="down-guide"
-      src="/static/down.gif"
+      :src="sheep.$url.static('/static/down.gif')"
       mode="aspectFit"
     ></image>
   </view>

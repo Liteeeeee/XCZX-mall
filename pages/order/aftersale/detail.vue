@@ -104,7 +104,7 @@
     <!-- 操作区 -->
     <s-empty
       v-if="isEmpty(state.info) && state.loading"
-      icon="/static/order-empty.webp"
+      :icon="sheep.$url.static('/static/order-empty.webp')"
       text="暂无该订单售后详情"
     />
     <su-fixed bottom placeholder bg="bg-white" v-if="!isEmpty(state.info)">

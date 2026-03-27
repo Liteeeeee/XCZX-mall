@@ -10,8 +10,8 @@
             {{ item.description }}
           </view>
         </view>
-        <image class="activity-left-image" src="/static/activity-left.webp" />
-        <image class="activity-right-image" src="/static/activity-right.webp" />
+        <image class="activity-left-image" :src="sheep.$url.static('/static/activity-left.webp')" />
+        <image class="activity-right-image" :src="sheep.$url.static('/static/activity-right.webp')" />
       </view>
     </su-sticky>
 

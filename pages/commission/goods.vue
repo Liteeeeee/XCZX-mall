@@ -39,7 +39,7 @@
     </view>
     <s-empty
       v-if="state.pagination.total === 0"
-      icon="/static/goods-empty.webp"
+      :icon="sheep.$url.static('/static/goods-empty.webp')"
       text="暂无推广商品"
     />
     <!-- 加载更多 -->

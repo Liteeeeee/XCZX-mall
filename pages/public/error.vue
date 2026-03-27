@@ -3,7 +3,7 @@
   <view class="error-page">
     <s-empty
       v-if="errCode === 'NetworkError'"
-      icon="/static/internet-empty.webp"
+      :icon="sheep.$url.static('/static/internet-empty.webp')"
       text="网络连接失败"
       showAction
       actionText="重新连接"
@@ -12,7 +12,7 @@
     />
     <s-empty
       v-else-if="errCode === 'TemplateError'"
-      icon="/static/internet-empty.webp"
+      :icon="sheep.$url.static('/static/internet-empty.webp')"
       text="未找到模板,请前往后台启用对应模板"
       showAction
       actionText="重新加载"
@@ -21,7 +21,7 @@
     />
     <s-empty
       v-else-if="errCode !== ''"
-      icon="/static/internet-empty.webp"
+      :icon="sheep.$url.static('/static/internet-empty.webp')"
       :text="errMsg"
       showAction
       actionText="重新加载"
@@ -32,6 +32,7 @@
 </template>
 
 <script setup>
+  import sheep from '@/sheep';
   import { onLoad } from '@dcloudio/uni-app';
   import { ref } from 'vue';
   import { ShoproInit } from '@/sheep';

@@ -248,7 +248,7 @@
 				</uni-list-chat>
 			</uni-list>
 		</view>
-		<s-empty v-if="state.pagination.total === 0" icon="/static/data-empty.webp" text="暂无团队信息">
+		<s-empty v-if="state.pagination.total === 0" :icon="sheep.$url.static('/static/data-empty.webp')" text="暂无团队信息">
 		</s-empty> -->
   </s-layout>
 </template>

@@ -23,7 +23,7 @@
     </view>
     <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 44 + 'px' }"></view>
 
-    <s-empty v-if="state.pagination.total === 0" icon="/static/order-empty.webp" text="暂无订单" />
+    <s-empty v-if="state.pagination.total === 0" :icon="sheep.$url.static('/static/order-empty.webp')" text="暂无订单" />
     <view v-if="state.pagination.total > 0" class="page-list-container">
       <view
         class="bg-white order-list-card-box ss-r-10 ss-m-t-14 ss-m-x-20"

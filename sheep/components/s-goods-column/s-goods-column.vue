@@ -245,7 +245,7 @@
 
       <slot name="cart">
         <view class="cart-box ss-flex ss-col-center ss-row-center">
-          <image class="cart-icon" src="/static/img/shop/tabbar/category2.webp" mode="" />
+          <image class="cart-icon" :src="sheep.$url.static('/static/img/shop/tabbar/category2.webp')" mode="" />
         </view>
       </slot>
     </view>

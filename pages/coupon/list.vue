@@ -46,7 +46,7 @@
     </su-sticky>
     <s-empty
       v-if="state.pagination.total === 0"
-      icon="/static/coupon-empty.webp"
+      :icon="sheep.$url.static('/static/coupon-empty.webp')"
       text="暂无优惠券"
     />
     

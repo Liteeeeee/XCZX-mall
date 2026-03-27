@@ -11,7 +11,7 @@
       <s-point-card ref="sPointCardRef" class="ss-p-x-20 ss-m-t-20" />
       <s-empty
         v-if="activityTotal === 0"
-        icon="/static/goods-empty.webp"
+        :icon="sheep.$url.static('/static/goods-empty.webp')"
         text="暂无积分商品"
       ></s-empty>
       <uni-load-more
