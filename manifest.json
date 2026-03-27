@@ -1,6 +1,6 @@
 {
   "name": "仙草甄选商城",
-  "appid": "__UNI__460BC4C",
+  "appid": "wxfe718def7b02b185",
   "description": "基于 uni-app + Vue3 技术驱动的在线商城系统，内含诸多功能与丰富的活动，期待您的使用和反馈。",
   "versionName": "2026.01",
   "versionCode": "183",
@@ -95,7 +95,7 @@
         "oauth": {
           "apple": {},
           "weixin": {
-            "appid": "wxae7a0c156da9383b",
+            "appid": "wxfe718def7b02b185",
             "UniversalLinks": "https://shopro.sheepjs.com/uni-universallinks/__UNI__082C0BA/"
           }
         },
@@ -105,7 +105,7 @@
               "ios",
               "android"
             ],
-            "appid": "wxae7a0c156da9383b",
+            "appid": "wxfe718def7b02b185",
             "UniversalLinks": "https://shopro.sheepjs.com/uni-universallinks/__UNI__082C0BA/"
           },
           "alipay": {
@@ -117,7 +117,7 @@
         },
         "share": {
           "weixin": {
-            "appid": "wxae7a0c156da9383b",
+            "appid": "wxfe718def7b02b185",
             "UniversalLinks": "https://shopro.sheepjs.com/uni-universallinks/__UNI__082C0BA/"
           }
         }

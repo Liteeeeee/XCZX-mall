@@ -10,6 +10,15 @@
 
     // 加载Shopro底层依赖
     ShoproInit();
+
+    // 动态加载字体（避免主包含入字体文件）
+    uni.loadFontFace({
+      family: 'OPPOSANS',
+      source: `url("https://xiancao.oss-cn-beijing.aliyuncs.com/fonts/default_fonts.ttf")`,
+      scopes: ['native'],
+      success: () => console.log('OPPOSANS font loaded'),
+      fail: (err) => console.log('OPPOSANS font load failed', err),
+    });
   });
 
   onShow(() => {
