@@ -284,7 +284,12 @@
     if (code !== 0) {
       return;
     }
-    state.payMethods = getPayMethods(data || []).filter((item) => ['wechat', 'wallet'].includes(item.value));
+    let channels = data || [];
+    // 兼容会员升级等可能没有返回正确 appId 导致渠道为空的情况
+    if (channels.length === 0 && state.orderType === 'vip_upgrade') {
+      channels = ['wx_lite', 'wx_pub', 'wx_app', 'alipay_wap', 'alipay_app', 'wallet'];
+    }
+    state.payMethods = getPayMethods(channels).filter((item) => ['wechat', 'wallet'].includes(item.value));
     state.payMethods.find((item) => {
       if (item.value && !item.disabled) {
         state.payment = item.value;

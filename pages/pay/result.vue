@@ -18,13 +18,13 @@
           <image
             class="pay-img"
             v-if="payResult === 'success'"
-            :src="sheep.$url.static('/static/zhifuchenggong.webp')"
+            src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/zhifuchenggong.webp"
             mode="aspectFit"
           />
           <image
             class="pay-img"
             v-if="['failed', 'closed'].includes(payResult)"
-            :src="sheep.$url.static('/static/pay_fail_icon.webp')"
+            src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/pay_fail_icon.webp"
             mode="aspectFit"
           />
         </view>

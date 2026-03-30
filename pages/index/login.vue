@@ -57,7 +57,7 @@
             class="input-control"
             v-model="state.code"
             type="number"
-            placeholder="请输入6位验证码"
+            placeholder="请输4位验证码"
             placeholder-class="placeholder"
             maxlength="6"
           />

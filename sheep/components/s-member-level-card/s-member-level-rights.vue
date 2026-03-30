@@ -17,8 +17,8 @@
 
       <text class="text_8">{{ isUnlocked ? '已解锁' : '待解锁' }}{{ level.rights.length }}项权益</text>
       <view class="section_5 flex-row" v-if="level.rights && level.rights.length > 0">
-        <view class="rights-item flex-col align-center" v-for="(item, index) in level.rights" :key="index">
-          <image class="rights-icon" :src="sheep.$url.static(item.icon, 'local')" mode="aspectFit"></image>
+        <view class="rights-item" v-for="(item, index) in level.rights" :key="index">
+          <image class="rights-icon" :src="sheep.$url.static(item.icon)" mode="aspectFit"></image>
           <text class="rights-title">{{ item.title }}</text>
           <text class="rights-desc">{{ item.desc }}</text>
         </view>

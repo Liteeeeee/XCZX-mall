@@ -10,6 +10,18 @@ const MemberLevelApi = {
       },
     });
   },
+  
+  // 创建会员开通/升级订单
+  activateCreate: (data) => {
+    return request({
+      url: '/member/level/activate-create',
+      method: 'POST',
+      data,
+      custom: {
+        showLoading: true,
+      },
+    });
+  },
 };
 
 export default MemberLevelApi;

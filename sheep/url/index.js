@@ -1,10 +1,17 @@
 import $store from '@/sheep/store';
-import { staticUrl } from '@/sheep/config';
+import { baseUrl, staticUrl } from '@/sheep/config';
 
 const cdn = (url = '', cdnurl = '') => {
   if (!url) return '';
   if (url.indexOf('http') === 0) {
-    return url.replace('http://', 'https://');
+    let out = url.replace(/^http:\/\//, 'https://');
+    if (/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(out)) {
+      const origin = typeof baseUrl === 'string' && baseUrl ? baseUrl.replace(/\/+$/, '') : '';
+      if (origin) {
+        out = out.replace(/^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?/, origin);
+      }
+    }
+    return out;
   }
   if (cdnurl === '') {
     cdnurl = $store('app').info.cdnurl;
@@ -32,7 +39,8 @@ export default {
   // 获取用户头像
   avatar: (url = '') => {
     if (!url) {
-      return '/static/user/DefaultAvatar.webp';
+      if (staticUrl === 'local') return '/static/user/DefaultAvatar.webp';
+      return cdn('/static/user/DefaultAvatar.webp', staticUrl);
     }
     return cdn(url);
   },

@@ -191,6 +191,10 @@ export default class SheepPay {
         if (err.errMsg === 'requestPayment:fail cancel') {
           sheep.$helper.toast('支付已手动取消');
         } else {
+          const msg = err?.errMsg || '未知原因';
+          sheep.$helper.toast('支付失败：' + msg);
+          console.log('========>', msg);
+          
           this.payResult('fail');
         }
       },
@@ -248,6 +252,7 @@ export default class SheepPay {
           sheep.$helper.toast('支付已手动取消');
         } else {
           that.payResult('fail');
+          console.log('========>',err.errMsg)
         }
       },
     });
@@ -290,6 +295,7 @@ export default class SheepPay {
           sheep.$helper.toast('支付已手动取消');
         } else {
           sheep.$helper.toast('支付失败：' + err.errMsg);
+          console.log('========>',err.errMsg)
           that.payResult('fail');
         }
       },
@@ -352,7 +358,10 @@ export function getPayMethods(channels) {
   if (
     (platform === 'WechatOfficialAccount' && channels.includes('wx_pub')) ||
     (platform === 'WechatMiniProgram' && channels.includes('wx_lite')) ||
-    (platform === 'App' && channels.includes('wx_app'))
+    (platform === 'App' && channels.includes('wx_app')) ||
+    (platform === 'H5' && channels.includes('wx_wap')) ||
+    channels.includes('wx_lite') || // 补充兼容部分环境取不到 platform 导致的问题
+    channels.includes('wx_pub')
   ) {
     wechatMethod.disabled = false;
   }

@@ -52,14 +52,14 @@
                 <image
                   v-else
                   class="advantage-icon"
-                  :src="sheep.$url.static(memberData.shape_1, 'local')"
+                  :src="sheep.$url.static(memberData.shape_1)"
                   mode="aspectFit"
                 ></image>
               </view>
               <view class="col-value highlight">
                 <image
                   class="advantage-icon"
-                  :src="sheep.$url.static(memberData.shape_2, 'local')"
+                  :src="sheep.$url.static(memberData.shape_2)"
                   mode="aspectFit"
                 ></image>
               </view>
@@ -195,7 +195,7 @@
     {
       id: 'golden',
       name: '黄金会员',
-      cardBg: '/static/member/goldenCard.webp',
+      cardBg: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/goldenCard.webp',
       price: 999,
       upgradeName: '永久黄金会员',
       bgGradient:
@@ -215,7 +215,7 @@
     {
       id: 'platinum',
       name: '铂金会员',
-      cardBg: '/static/member/platinum.webp',
+      cardBg: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/platinum.webp',
       price: 999,
       upgradeName: '永久黄金会员',
       bgGradient:
@@ -235,7 +235,7 @@
     {
       id: 'diamond',
       name: '钻石会员',
-      cardBg: '/static/member/Dimond.webp',
+      cardBg: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/Dimond.webp',
       price: 999,
       upgradeName: '永久黄金会员',
       bgGradient:
@@ -351,17 +351,22 @@
       sheep.$helper.toast('请先阅读并同意协议');
       return;
     }
-    // 微信开发者工具无法唤起真实支付，直接跳转到失败结果页（模拟）
-    sheep.$router.go('/pages/user/vip-result', {
-      payState: 'fail',
+    
+    // 调用后端接口创建开通/升级订单
+    const { code, data } = await MemberLevelApi.activateCreate({
+      payPrice: currentLevel.value.price * 100, // 假设 price 单位是元，接口需要分
+      validPayPriceAndPackageId: true
     });
     
-    // const price = currentLevel.value.price * 100;
-    // const { code, data } = await PayWalletApi.createWalletRecharge({
-    //   payPrice: price,
-    // });
-    // if (code !== 0) return;
-    // sheep.$platform.pay('wechat', 'vip_upgrade', data.payOrderId);
+    if (code === 0 && data?.payOrderId) {
+      // 成功获取到支付订单，跳转收银台
+      sheep.$router.redirect('/pages/pay/index', {
+        id: data.payOrderId,
+        orderType: 'vip_upgrade' // 可选，告知收银台这是会员升级订单，以便支付成功后跳回合适页面
+      });
+    } else if (code !== 0) {
+      sheep.$helper.toast(data?.msg || '创建支付订单失败');
+    }
   }
 
   const advantageRows = [

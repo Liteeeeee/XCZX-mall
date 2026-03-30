@@ -7,7 +7,7 @@
     <!-- 等级卡片区域 -->
     <view class="box_5 flex-col" style="background: none !important;">
       <image
-        :src="sheep.$url.static(level.cardBg, 'local')"
+        :src="sheep.$url.static(level.cardBg)"
         mode="scaleToFill"
         style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; z-index: 0"
       ></image>
