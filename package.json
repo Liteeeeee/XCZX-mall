@@ -5,7 +5,8 @@
   "version": "2026.01",
   "description": "仙草甄选商城，一套代码，同时发行到iOS、Android、H5、微信小程序多个平台，请使用手机扫码快速体验强大功能",
   "scripts": {
-    "prettier": "prettier --write  \"{pages,sheep}/**/*.{js,json,tsx,css,less,scss,vue,html,md}\""
+    "prettier": "prettier --write  \"{pages,sheep}/**/*.{js,json,tsx,css,less,scss,vue,html,md}\"",
+    "optimize:mp-weixin": "node scripts/optimize-mp-weixin.mjs unpackage/dist/dev/mp-weixin"
   },
   "repository": "https://github.com/sheepjs/shop.git",
   "keywords": [
@@ -97,6 +98,7 @@
     "weixin-js-sdk": "^1.6.0"
   },
   "devDependencies": {
+    "esbuild": "^0.25.2",
     "prettier": "^2.8.7",
     "vconsole": "^3.15.0"
   }
