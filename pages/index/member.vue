@@ -37,33 +37,51 @@
         <!-- 优势对比区域 -->
         <view class="block_18 flex-col">
           <text class="text_11">会员优势</text>
-          <view class="advantage-container">
-            <!-- 表头 -->
-            <view class="advantage-row header">
-              <view class="col-name"></view>
-              <view class="col-value">普通会员</view>
-              <view class="col-value highlight">升级会员</view>
-            </view>
-            <!-- 行数据 -->
-            <view class="advantage-row" v-for="(row, index) in advantageRows" :key="index">
-              <view class="col-name">{{ row.name }}</view>
-              <view class="col-value">
-                <text v-if="row.normal === 'check'" class="icon-check">✔</text>
-                <image
-                  v-else
-                  class="advantage-icon"
-                  :src="sheep.$url.static(memberData.shape_1)"
-                  mode="aspectFit"
-                ></image>
+          <view
+            class="section_13 flex-row justify-between"
+            v-for="(item, index) in advantageRows"
+            :key="index"
+            :style="{
+              backgroundImage: item.backgroundImage
+                ? `url(${sheep.$url.cdn(item.backgroundImage)})`
+                : 'none',
+            }"
+          >
+            <view class="text-wrapper_40 flex-col">
+              <text class="text_20">{{ item.title }}</text>
+              <view class="desc-row flex-row align-center">
+                <view class="desc-lines flex-row">
+                  <view
+                    class="desc-item flex-row align-center"
+                    v-for="(d, di) in (Array.isArray(item.desc) ? item.desc : [item.desc])"
+                    :key="di"
+                  >
+                    <image
+                      class="desc-side-icon left"
+                      :src="
+                        sheep.$url.cdn(
+                          'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/zuodaosui.webp',
+                        )
+                      "
+                      mode="aspectFit"
+                    />
+                    <text class="text_21">{{ d }}</text>
+                    <image
+                      class="desc-side-icon right"
+                      :src="
+                        sheep.$url.cdn(
+                          'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/youdaosui.webp',
+                        )
+                      "
+                      mode="aspectFit"
+                    />
+                  </view>
+                </view>
               </view>
-              <view class="col-value highlight">
-                <image
-                  class="advantage-icon"
-                  :src="sheep.$url.static(memberData.shape_2)"
-                  mode="aspectFit"
-                ></image>
-              </view>
             </view>
+            <!-- <view class="text-wrapper_12 flex-col" @tap="onViewPrivilege(item)">
+              <text class="text_22">查看特权</text>
+            </view> -->
           </view>
         </view>
         <!-- 升级操作区域 -->
@@ -369,13 +387,14 @@
     }
   }
 
+  const onViewPrivilege = () => {
+    sheep.$helper.toast('请在上方权益区查看');
+  };
+
   const advantageRows = [
-    { name: '最低8折专属折扣', normal: '-', upgrade: 'check' },
-    { name: '最高2倍积分返现', normal: '-', upgrade: 'check' },
-    { name: '健康咨询', normal: '-', upgrade: 'check' },
-    { name: '优先发货', normal: '-', upgrade: 'check' },
-    { name: '会员关怀', normal: '-', upgrade: 'check' },
-    { name: '节气祝福', normal: '-', upgrade: 'check' },
+    { title: '仙草会员生日礼遇', desc: ['当天赠送全场八折券'] ,backgroundImage:'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shengriBg.webp'},
+    { title: '免费试吃福利', desc: ['每月赠送试吃小食一份'],backgroundImage:'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shichiBg.webp'},
+    { title: '免费体检及问诊服务', desc: ['免费体检一次','免费问诊五次'],backgroundImage:'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/tijianBg.webp' },
   ];
 </script>
 
@@ -549,6 +568,173 @@
 
   .text-wrapper_3 {
     display: none;
+  }
+
+  .block_18 {
+    .section_13 {
+      background-color: rgba(88, 120, 104, 1);
+      border-radius: 20px;
+      position: relative;
+      width: 690rpx;
+      overflow: hidden;
+      align-self: center;
+      margin-top: 24rpx;
+      padding: 374rpx 24rpx 23rpx 24rpx;
+      box-sizing: border-box;
+      align-items: flex-end;
+      background-size: 100% 100%;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+
+    .text-wrapper_40,
+    .text-wrapper_12 {
+      position: relative;
+      z-index: 2;
+    }
+
+    .text_20 {
+      overflow-wrap: break-word;
+      color: rgba(255, 236, 183, 1);
+      font-size: 42rpx;
+      font-family: PingFangSC-Medium;
+      font-weight: 500;
+      text-align: left;
+      white-space: nowrap;
+      line-height: 42rpx;
+      margin-right: 26rpx;
+    }
+
+    .text_21 {
+      overflow-wrap: break-word;
+      color: rgba(255, 236, 183, 1);
+      font-size: 26rpx;
+      font-weight: normal;
+      text-align: left;
+      white-space: nowrap;
+      line-height: 42rpx;
+      margin: 0;
+    }
+
+    .desc-row {
+      margin-top: 19rpx;
+      padding-left: 19rpx;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .desc-side-icon {
+      width: 28rpx;
+      height: 28rpx;
+      flex: none;
+    }
+
+    .desc-side-icon.left {
+      margin-right: 10rpx;
+    }
+
+    .desc-side-icon.right {
+      margin-left: 10rpx;
+    }
+
+    .desc-item + .desc-item {
+      margin-left: 14rpx;
+    }
+
+    .desc-lines {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      flex-wrap: nowrap;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .desc-lines .text_21 {
+      flex: none;
+    }
+
+    .text-wrapper_12 {
+      background-image: linear-gradient(
+        90deg,
+        rgba(255, 254, 224, 1) 0,
+        rgba(255, 232, 165, 1) 100%
+      );
+      border-radius: 100px;
+      margin: 21rpx 0 22rpx 0;
+      padding: 10rpx 34rpx 10rpx 32rpx;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .text_22 {
+      overflow-wrap: break-word;
+      color: rgba(86, 42, 8, 1);
+      font-size: 28rpx;
+      font-family: PingFangSC-Medium;
+      font-weight: 500;
+      text-align: left;
+      white-space: nowrap;
+      line-height: 40rpx;
+    }
+
+    .group_44 {
+      height: 442rpx;
+      width: 695rpx;
+      position: absolute;
+      left: -4rpx;
+      top: -66rpx;
+      padding: 227rpx 1rpx 0 4rpx;
+      box-sizing: border-box;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .box_40 {
+      background-image: linear-gradient(
+        180deg,
+        rgba(88, 120, 104, 0) 0,
+        rgba(88, 120, 104, 1) 100%
+      );
+      width: 690rpx;
+      height: 215rpx;
+    }
+
+    .group_45 {
+      background-image: linear-gradient(
+        180deg,
+        rgba(255, 243, 224, 1) 0,
+        rgba(229, 202, 162, 1) 100%
+      );
+      position: absolute;
+      left: 24rpx;
+      top: 441rpx;
+      width: 22rpx;
+      height: 32rpx;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .group_46 {
+      background-image: linear-gradient(
+        180deg,
+        rgba(255, 243, 224, 1) 0,
+        rgba(229, 202, 162, 1) 100%
+      );
+      position: absolute;
+      left: 299rpx;
+      top: 441rpx;
+      width: 22rpx;
+      height: 32rpx;
+      pointer-events: none;
+      z-index: 2;
+    }
   }
 
   /* 升级操作区域 */
