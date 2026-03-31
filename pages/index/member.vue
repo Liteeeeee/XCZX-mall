@@ -576,6 +576,7 @@
       border-radius: 20px;
       position: relative;
       width: 690rpx;
+      height: 500rpx;
       overflow: hidden;
       align-self: center;
       margin-top: 24rpx;
@@ -618,7 +619,6 @@
 
     .desc-row {
       margin-top: 19rpx;
-      padding-left: 19rpx;
       box-sizing: border-box;
       display: flex;
       flex-direction: row;
@@ -630,14 +630,6 @@
       width: 28rpx;
       height: 28rpx;
       flex: none;
-    }
-
-    .desc-side-icon.left {
-      margin-right: 10rpx;
-    }
-
-    .desc-side-icon.right {
-      margin-left: 10rpx;
     }
 
     .desc-item + .desc-item {

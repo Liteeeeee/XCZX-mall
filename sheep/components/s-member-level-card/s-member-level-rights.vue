@@ -295,6 +295,7 @@
     align-self: center;
     margin-top: 22rpx;
     width: 690rpx;
+    height: 660rpx;
     position: relative;
     padding: 207rpx 23rpx 33rpx 23rpx;
     box-sizing: border-box;
@@ -604,6 +605,7 @@
     text-align: left;
     white-space: nowrap;
     line-height: 42rpx;
+    margin-top: 20rpx;
   }
 
   .group_113 {
