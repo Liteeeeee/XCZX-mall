@@ -118,8 +118,14 @@
       return;
     }
     // 提交数据
-    const { code } = await AuthUtil.smsLogin(state.model);
+    const inviterId = Number(uni.getStorageSync('inviterId') || 0);
+    const { code } = inviterId
+      ? await AuthUtil.smsInviteLogin({ ...state.model, inviterId })
+      : await AuthUtil.smsLogin(state.model);
     if (code === 0) {
+      if (inviterId) {
+        uni.removeStorageSync('inviterId');
+      }
       closeAuthModal();
     }
   }

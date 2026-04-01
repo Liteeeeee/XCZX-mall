@@ -109,11 +109,6 @@
 
           <!-- 功能卡片 -->
           <view class="detail-cell-card detail-card ss-flex-col">
-            <detail-cell-sku
-              v-model="state.selectedSku.goods_sku_text"
-              :sku="state.selectedSku"
-              @tap="state.showSelectSku = true"
-            />
             <!-- 积分 -->
             <view class="info-cell ss-flex ss-col-center ss-p-20">
               <view class="label">积分</view>
@@ -134,25 +129,6 @@
                 </view>
                 <view class="service-item ss-flex ss-col-center">
                   <text class="cicon-check-round ss-m-r-5"></text>假一赔十
-                </view>
-              </view>
-              <text class="cicon-forward"></text>
-            </view>
-            <!-- 规格预览 -->
-            <view class="info-cell ss-flex ss-col-center ss-p-20">
-              <view class="label">规格</view>
-              <view class="value ss-flex-1 ss-flex ss-col-center ss-row-around">
-                <view class="spec-preview-item ss-flex-col ss-col-center">
-                  <view class="spec-val">人参萃取液</view>
-                  <view class="spec-label">品名</view>
-                </view>
-                <view class="spec-preview-item ss-flex-col ss-col-center">
-                  <view class="spec-val">180天</view>
-                  <view class="spec-label">保质期</view>
-                </view>
-                <view class="spec-preview-item ss-flex-col ss-col-center">
-                  <view class="spec-val">吉林省长春...</view>
-                  <view class="spec-label">原产地</view>
                 </view>
               </view>
               <text class="cicon-forward"></text>
@@ -192,38 +168,8 @@
               </view>
             </view>
           </view>
-
-          <!-- 规格信息表格 -->
-          <view class="detail-card ss-p-20">
-            <view class="card-header ss-m-b-20 ss-font-30 ss-bold">规格信息</view>
-            <view class="spec-table" :class="{ collapsed: !state.showAllSpec }">
-              <view class="spec-row ss-flex" v-for="(item, index) in specList" :key="index">
-                <view class="spec-key">{{ item.label }}</view>
-                <view class="spec-val">{{ item.value }}</view>
-              </view>
-            </view>
-            <view
-              class="collapse-btn ss-flex ss-row-center ss-col-center ss-m-t-20"
-              @tap="toggleSpec"
-            >
-              <text>{{ state.showAllSpec ? '收起' : '展开' }}</text>
-              <text class="cicon-forward" :class="{ 'rotate-up': state.showAllSpec }"></text>
-            </view>
-          </view>
-
-          <!-- 规格与数量弹框 -->
-          <s-select-sku
-            :goodsInfo="state.goodsInfo"
-            :show="state.showSelectSku"
-            @addCart="onAddCart"
-            @buy="onBuy"
-            @change="onSkuChange"
-            @close="state.showSelectSku = false"
-          />
         </view>
 
-        <!-- 评价 -->
-        <detail-comment-card class="detail-comment-selector" :goodsId="state.goodsId" />
         <!-- 详情 -->
         <detail-content-card
           class="detail-content-selector"
@@ -239,18 +185,8 @@
         <!-- 详情 tabbar -->
         <detail-tabbar v-model="state.goodsInfo">
           <view class="buy-box ss-flex ss-col-center ss-p-r-20" v-if="state.goodsInfo.stock > 0">
-            <button
-              class="ss-reset-button add-btn "
-              @tap="state.showSelectSku = true"
-            >
-              加入购物车
-            </button>
-            <button
-              class="ss-reset-button buy-btn "
-              @tap="state.showSelectSku = true"
-            >
-              立即购买
-            </button>
+            <button class="ss-reset-button add-btn" @tap="onAddCart"> 加入购物车 </button>
+            <button class="ss-reset-button buy-btn" @tap="onBuy"> 立即购买 </button>
           </view>
           <view class="buy-box ss-flex ss-col-center ss-p-r-20" v-else>
             <button class="ss-reset-button disabled-btn" disabled> 已售罄 </button>
@@ -282,19 +218,10 @@
   import ActivityApi from '@/sheep/api/promotion/activity';
   import FavoriteApi from '@/sheep/api/product/favorite';
   import RewardActivityApi from '@/sheep/api/promotion/rewardActivity';
-  import {
-    formatSales,
-    formatGoodsSwiper,
-    fen2yuan,
-    fen2yuanSimple,
-    formatDiscountPercent,
-    getRewardActivityRuleItemDescriptions,
-  } from '@/sheep/hooks/useGoods';
+  import { formatSales, formatGoodsSwiper, fen2yuan } from '@/sheep/hooks/useGoods';
   import detailNavbar from './components/detail/detail-navbar.vue';
-  import detailCellSku from './components/detail/detail-cell-sku.vue';
   import detailTabbar from './components/detail/detail-tabbar.vue';
   import detailSkeleton from './components/detail/detail-skeleton.vue';
-  import detailCommentCard from './components/detail/detail-comment-card.vue';
   import detailContentCard from './components/detail/detail-content-card.vue';
   import detailActivityTip from './components/detail/detail-activity-tip.vue';
   import { isEmpty } from 'lodash-es';
@@ -314,19 +241,11 @@
   import OrderApi from '@/sheep/api/trade/order';
   import { SharePageEnum } from '@/sheep/helper/const';
 
-  const bgColor = {
-    bgColor: '#E93323',
-    Color: '#fff',
-    width: '44rpx',
-    timeTxtwidth: '16rpx',
-    isDay: true,
-  };
   const isLogin = computed(() => sheep.$store('user').isLogin);
   let state = reactive({
     goodsId: 0,
     skeletonLoading: true, // SPU 加载中
     goodsInfo: {}, // SPU 信息
-    showSelectSku: false, // 是否展示 SKU 选择弹窗
     selectedSku: {}, // 选中的 SKU
     settlementSku: {}, // 结算的 SKU：由于 selectedSku 不进行默认选中，所以初始使用结算价格最低的 SKU 作为基础展示
     showModel: false, // 是否展示 Coupon 优惠劵的弹窗
@@ -334,67 +253,42 @@
     showActivityModel: false, // 【满减送/限时折扣】是否展示 Activity 营销活动的弹窗
     rewardActivity: {}, // 【满减送】活动
     activityList: [], // 【秒杀/拼团/砍价】可参与的 Activity 营销活动的列表
-    showAllSpec: false,
     showBackTop: false,
   });
 
-  const specList = [
-    { label: '包装', value: '盒装、瓶装' },
-    { label: '保质期', value: '180天' },
-    { label: '产品剂型', value: '人参萃取液' },
-    { label: '种类', value: '人参' },
-    { label: '品名', value: '每日人参补液' },
-    { label: '商品产地', value: '吉林省长春市' },
-    { label: '配料表', value: '人参、红枣、黄芪、枸杞、铁皮石斛、菊花、白术、覆盆子' },
-    { label: '净含量', value: '7日装: 25克*7瓶\n30日装: 25克*30瓶' },
-    { label: '适宜人群', value: '人参膏适合人群' },
-    {
-      label: '温馨提示',
-      value: '1、人参性质温补热药食品，阴虚火旺者\n有问题不可随意进补\n2、开瓶后请尽快食用',
-    },
-  ];
-
-  function toggleSpec() {
-    state.showAllSpec = !state.showAllSpec;
-  }
-
-  // 规格变更
-  function onSkuChange(e) {
-    state.selectedSku = e;
-    state.settlementSku = e;
-  }
-
   // 添加购物车
-  function onAddCart(e) {
-    if (!e.id) {
-      sheep.$helper.toast('请选择商品规格');
+  function onAddCart() {
+    const sku =
+      state.goodsInfo?.skus?.find((item) => item.stock > 0) || state.goodsInfo?.skus?.[0] || {};
+    if (!sku.id) {
+      sheep.$helper.toast('商品暂不可购买');
       return;
     }
-    sheep.$store('cart').add(e);
+    sheep.$store('cart').add({
+      id: sku.id,
+      goods_num: 1,
+    });
   }
 
   // 立即购买
-  function onBuy(e) {
-    if (!e.id) {
-      sheep.$helper.toast('请选择商品规格');
+  function onBuy() {
+    const sku =
+      state.goodsInfo?.skus?.find((item) => item.stock > 0) || state.goodsInfo?.skus?.[0] || {};
+    if (!sku.id) {
+      sheep.$helper.toast('商品暂不可购买');
       return;
     }
     sheep.$router.go('/pages/order/confirm', {
       data: JSON.stringify({
         items: [
           {
-            skuId: e.id,
-            count: e.goods_num,
+            skuId: sku.id,
+            count: 1,
             categoryId: state.goodsInfo.categoryId,
           },
         ],
       }),
     });
-  }
-
-  // 打开营销弹窗
-  function onOpenActivity() {
-    state.showActivityModel = true;
   }
 
   // 立即领取优惠劵
@@ -534,7 +428,7 @@
     z-index: 99;
     width: 72rpx;
     height: 72rpx;
-    
+
     image {
       width: 100%;
       height: 100%;
@@ -744,9 +638,6 @@
     background-repeat: no-repeat;
     border-radius: 20rpx;
     overflow: hidden;
-    .check-box {
-      // background: linear-gradient(135deg, #f0f9f7 0%, #e6f5f1 100%);
-    }
     .check-title {
       margin-bottom: 12rpx;
       .check-name {
@@ -765,7 +656,7 @@
     }
     .check-desc {
       font-size: 20rpx;
-      color: #99A9A5;
+      color: #99a9a5;
       line-height: 1.4;
       margin-bottom: 16rpx;
     }
@@ -788,47 +679,6 @@
         height: 140rpx;
         margin-right: -20rpx;
         margin-bottom: -30rpx;
-      }
-    }
-  }
-
-  // 规格表格
-  .spec-table {
-    border: 1rpx solid #eee;
-    border-radius: 8rpx;
-    overflow: hidden;
-    &.collapsed {
-      max-height: 400rpx;
-    }
-    .spec-row {
-      border-bottom: 1rpx solid #eee;
-      &:last-child {
-        border-bottom: none;
-      }
-      .spec-key {
-        width: 160rpx;
-        padding: 20rpx;
-        font-size: 24rpx;
-        color: #9D9C96;
-      }
-      .spec-val {
-        flex: 1;
-        padding: 20rpx;
-        font-size: 24rpx;
-        color: #333;
-        white-space: pre-line;
-        text-align: right;
-      }
-    }
-  }
-  .collapse-btn {
-    color: #333;
-    font-size: 24rpx;
-    .cicon-forward {
-      margin-left: 8rpx;
-      transform: rotate(90deg);
-      &.rotate-up {
-        transform: rotate(-90deg);
       }
     }
   }

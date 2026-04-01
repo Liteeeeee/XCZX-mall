@@ -95,6 +95,12 @@
       $share.decryptSpm(options.spm);
     }
 
+    // 邀请注册：兼容二维码/链接直接携带 inviterId
+    if (options.inviterId) {
+      uni.setStorageSync('inviterId', options.inviterId);
+      uni.setStorageSync('shareId', options.inviterId);
+    }
+
     // 进入指定页面(完整页面路径)
     if (options.page) {
       sheep.$router.go(decodeURIComponent(options.page));

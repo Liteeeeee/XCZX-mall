@@ -45,7 +45,7 @@
                 </view>
               </view>
             </view>
-            <text class="text_57">邀请{{ platinumItem.needInvite }}人成功开通黄金会员</text>
+            <text class="text_57">邀请{{ platinumItem.needInvite }}人开通到铂金会员</text>
           </view>
           <view class="text-wrapper_35 flex-col" v-if="platinumItem.achieved">
             <text class="text_58">已达成</text>
@@ -73,7 +73,7 @@
                 </view>
               </view>
             </view>
-            <text class="text_60">邀请{{ diamondItem.needInvite }}人成功开通黄金会员</text>
+            <text class="text_60">再邀请{{ diamondItem.needInvite }}人成功升级到钻石会员</text>
             <view class="group_110 flex-col" v-if="!diamondItem.achieved">
               <view class="box_100 flex-col" :style="{ width: diamondItem.progressPercent + '%' }"></view>
             </view>
@@ -374,9 +374,14 @@
     white-space: nowrap;
     line-height: 45rpx;
   }
-
+.group_107{
+    background-color: rgba(255, 254, 250, 0.3);
+    margin: 12rpx 0 9rpx 0;
+  border-radius: 50%;
+}
   .group_107,
   .section_69 {
+    border-radius: 50%;
     background-color: rgba(255, 254, 250, 0.3);
     margin: 12rpx 0 9rpx 0;
   }
@@ -394,6 +399,7 @@
     width: 2rpx;
     height: 11rpx;
     background-color: rgba(255, 254, 250, 1);
+    border-radius: 999rpx;
   }
 
   .box_93,
@@ -402,6 +408,7 @@
     height: 2rpx;
     margin-top: 2rpx;
     background-color: rgba(255, 254, 250, 1);
+    border-radius: 50%;
   }
 
   .text_57,
@@ -467,6 +474,7 @@
   }
 
   .group_109 {
+    border-radius: 50%;
     padding: 2rpx 1rpx 1rpx 2rpx;
   }
 

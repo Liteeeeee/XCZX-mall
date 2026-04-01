@@ -128,8 +128,12 @@ http.interceptors.request.use(
  */
 http.interceptors.response.use(
   (response) => {
-    // 约定：如果是 /auth/ 下的 URL 地址，并且返回了 accessToken 说明是登录相关的接口，则自动设置登陆令牌
-    if (response.config.url.indexOf('/member/auth/') >= 0 && response.data?.data?.accessToken) {
+    // 约定：如果是登录相关的接口，并且返回了 accessToken，则自动设置登陆令牌
+    if (
+      (response.config.url.indexOf('/member/auth/') >= 0 ||
+        response.config.url.indexOf('/member-invite/') >= 0) &&
+      response.data?.data?.accessToken
+    ) {
       $store('user').setToken(response.data.data.accessToken, response.data.data.refreshToken);
     }
 

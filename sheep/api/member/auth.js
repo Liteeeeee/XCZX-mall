@@ -27,6 +27,19 @@ const AuthUtil = {
       },
     });
   },
+  // 使用手机 + 验证码邀请注册
+  smsInviteLogin: (data) => {
+    return request({
+      url: '/member-invite/sms-login',
+      method: 'POST',
+      data,
+      custom: {
+        showSuccess: true,
+        loadingMsg: '登录中',
+        successMsg: '登录成功',
+      },
+    });
+  },
   // 发送手机验证码
   sendSmsCode: (mobile, scene) => {
     return request({
@@ -101,6 +114,24 @@ const AuthUtil = {
       url: '/member/auth/weixin-mini-app-login',
       method: 'POST',
       data: {
+        phoneCode,
+        loginCode,
+        state,
+      },
+      custom: {
+        showSuccess: true,
+        loadingMsg: '登录中',
+        successMsg: '登录成功',
+      },
+    });
+  },
+  // 微信小程序的一键邀请注册
+  weixinMiniAppInviteLogin: (inviterId, phoneCode, loginCode, state) => {
+    return request({
+      url: '/member-invite/weixin-mini-app-login',
+      method: 'POST',
+      data: {
+        inviterId,
         phoneCode,
         loginCode,
         state,

@@ -166,6 +166,10 @@ const decryptSpm = (spm) => {
   if (shareParams.shareId !== 0) {
     // 记录分享者编号
     uni.setStorageSync('shareId', shareParams.shareId);
+    // 记录邀请人编号（仅首页分享视为“邀请注册”入口）
+    if (shareParamsArray[1] === SharePageEnum.HOME.value) {
+      uni.setStorageSync('inviterId', shareParams.shareId);
+    }
     // 已登录 绑定推广员
     if (!!user.isLogin) {
       bindBrokerageUser(shareParams.shareId);

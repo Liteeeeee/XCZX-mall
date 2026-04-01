@@ -53,7 +53,7 @@
                 <view class="desc-lines flex-row">
                   <view
                     class="desc-item flex-row align-center"
-                    v-for="(d, di) in (Array.isArray(item.desc) ? item.desc : [item.desc])"
+                    v-for="(d, di) in Array.isArray(item.desc) ? item.desc : [item.desc]"
                     :key="di"
                   >
                     <image
@@ -144,7 +144,6 @@
   import memberData from '@/sheep/data/member';
   import sMemberLevelCard from '@/sheep/components/s-member-level-card/s-member-level-card.vue';
   import sMemberLevelRights from '@/sheep/components/s-member-level-card/s-member-level-rights.vue';
-  import PayWalletApi from '@/sheep/api/pay/wallet';
   import MemberLevelApi from '@/sheep/api/member/level';
 
   async function loadMemberLevelList() {
@@ -159,6 +158,8 @@
     uni.hideTabBar({
       fail: () => {},
     });
+    state.hasAutoLocated = false;
+    state.hasUserInteracted = false;
     await loadMemberLevelList();
   });
 
@@ -184,6 +185,8 @@
     isAgreement: true,
     currentLevelIndex: 0,
     levelList: [],
+    hasAutoLocated: false,
+    hasUserInteracted: false,
   });
 
   // 获取装修模板，用于导航栏样式
@@ -291,7 +294,11 @@
     };
 
     const mapped = apiList
-      .filter((item) => item && (Number(item.level) === 1 || Number(item.level) === 2 || Number(item.level) === 3))
+      .filter(
+        (item) =>
+          item &&
+          (Number(item.level) === 1 || Number(item.level) === 2 || Number(item.level) === 3),
+      )
       .sort((a, b) => Number(a.level) - Number(b.level))
       .map((item) => {
         const normalizedLevel = Number(item.level);
@@ -301,7 +308,8 @@
         const name = rawName ? (rawName.endsWith('会员') ? rawName : `${rawName}会员`) : base.name;
         const cardBg = item.backgroundUrl || base.cardBg;
         const price = typeof item.price === 'number' ? item.price : base.price;
-        const upgradeName = typeof item.upgradeName === 'string' ? item.upgradeName : base.upgradeName;
+        const upgradeName =
+          typeof item.upgradeName === 'string' ? item.upgradeName : base.upgradeName;
         const rights = Array.isArray(item.rights) && item.rights.length ? item.rights : base.rights;
         return {
           ...base,
@@ -321,6 +329,32 @@
     return result.filter((v, idx, arr) => arr.findIndex((x) => x.id === v.id) === idx);
   });
 
+  const currentUserLevelId = computed(() => {
+    const idByLevel = {
+      0: 'normal',
+      1: 'golden',
+      2: 'platinum',
+      3: 'diamond',
+    };
+
+    const rawLevel = userInfo.value?.level;
+    const level =
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3)
+      return idByLevel[normalizedLevel];
+    if (normalizedLevel === 0) return 'normal';
+
+    const rawLevelName = userInfo.value?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (!levelName) return 'normal';
+    if (levelName.includes('钻石')) return 'diamond';
+    if (levelName.includes('铂金')) return 'platinum';
+    if (levelName.includes('黄金')) return 'golden';
+    return 'normal';
+  });
+
   watch(
     memberLevels,
     (list) => {
@@ -333,7 +367,25 @@
     { immediate: true },
   );
 
-  const currentLevel = computed(() => memberLevels.value[state.currentLevelIndex] || memberLevels.value[0]);
+  watch(
+    [memberLevels, currentUserLevelId, isLogin],
+    ([list, levelId, login]) => {
+      if (!login) return;
+      if (!Array.isArray(list) || list.length === 0) return;
+      if (!levelId || levelId === 'normal') return;
+      if (state.hasAutoLocated || state.hasUserInteracted) return;
+      const idx = list.findIndex((v) => v?.id === levelId);
+      if (idx >= 0) {
+        state.currentLevelIndex = idx;
+        state.hasAutoLocated = true;
+      }
+    },
+    { immediate: true },
+  );
+
+  const currentLevel = computed(
+    () => memberLevels.value[state.currentLevelIndex] || memberLevels.value[0],
+  );
 
   const navTitle = computed(() => currentLevel.value?.name || '会员中心');
 
@@ -362,6 +414,7 @@
 
   const onSwiperChange = (e) => {
     state.currentLevelIndex = e.detail.current;
+    state.hasUserInteracted = true;
   };
 
   async function onUpgrade() {
@@ -369,32 +422,41 @@
       sheep.$helper.toast('请先阅读并同意协议');
       return;
     }
-    
+
     // 调用后端接口创建开通/升级订单
     const { code, data } = await MemberLevelApi.activateCreate({
       payPrice: currentLevel.value.price * 100, // 假设 price 单位是元，接口需要分
-      validPayPriceAndPackageId: true
+      validPayPriceAndPackageId: true,
     });
-    
+
     if (code === 0 && data?.payOrderId) {
       // 成功获取到支付订单，跳转收银台
       sheep.$router.redirect('/pages/pay/index', {
         id: data.payOrderId,
-        orderType: 'vip_upgrade' // 可选，告知收银台这是会员升级订单，以便支付成功后跳回合适页面
+        orderType: 'vip_upgrade', // 可选，告知收银台这是会员升级订单，以便支付成功后跳回合适页面
       });
     } else if (code !== 0) {
       sheep.$helper.toast(data?.msg || '创建支付订单失败');
     }
   }
 
-  const onViewPrivilege = () => {
-    sheep.$helper.toast('请在上方权益区查看');
-  };
-
   const advantageRows = [
-    { title: '仙草会员生日礼遇', desc: ['当天赠送全场八折券'] ,backgroundImage:'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shengriBg.webp'},
-    { title: '免费试吃福利', desc: ['每月赠送试吃小食一份'],backgroundImage:'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shichiBg.webp'},
-    { title: '免费体检及问诊服务', desc: ['免费体检一次','免费问诊五次'],backgroundImage:'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/tijianBg.webp' },
+    {
+      title: '仙草会员生日礼遇',
+      desc: ['当天赠送全场八折券'],
+      backgroundImage:
+        'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shengriBg.webp',
+    },
+    {
+      title: '免费试吃福利',
+      desc: ['每月赠送试吃小食一份'],
+      backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shichiBg.webp',
+    },
+    {
+      title: '免费体检及问诊服务',
+      desc: ['免费体检一次', '免费问诊五次'],
+      backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/tijianBg.webp',
+    },
   ];
 </script>
 

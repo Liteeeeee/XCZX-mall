@@ -47,8 +47,14 @@ const mobileLogin = async (e) => {
     }
 
     // 2. 一键登录
-    const loginResult = await AuthUtil.weixinMiniAppLogin(e.code, codeResult.code, 'default');
+    const inviterId = Number(uni.getStorageSync('inviterId') || 0);
+    const loginResult = inviterId
+      ? await AuthUtil.weixinMiniAppInviteLogin(inviterId, e.code, codeResult.code, 'default')
+      : await AuthUtil.weixinMiniAppLogin(e.code, codeResult.code, 'default');
     if (loginResult.code === 0) {
+      if (inviterId) {
+        uni.removeStorageSync('inviterId');
+      }
       setOpenid(loginResult.data.openid);
       return resolve(true);
     } else {

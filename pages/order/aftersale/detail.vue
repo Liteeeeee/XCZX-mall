@@ -1,17 +1,29 @@
 <!-- 售后详情 -->
 <template>
-  <s-layout title="售后详情" :navbar="!isEmpty(state.info) && state.loading ? 'inner' : 'normal'">
+  <s-layout navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
+    <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
+      <su-status-bar />
+      <view
+        class="nav-bar-container"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
+        <view class="nav-bar-inner">
+          <view class="nav-left ss-flex ss-col-center">
+            <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="onBack">
+              <text class="sicon-back"></text>
+            </view>
+            <text class="nav-title ss-m-l-10">售后详情</text>
+          </view>
+          <view v-if="isMiniProgram" class="nav-right">
+            <view class="capsule-placeholder" :style="capsuleStyle"></view>
+          </view>
+        </view>
+      </view>
+    </view>
+    <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
     <view class="content_box" v-if="!isEmpty(state.info) && state.loading">
       <!-- 步骤条 -->
-      <view
-        class="steps-box ss-flex"
-        :style="[
-          {
-            marginTop: '-' + Number(statusBarHeight + 88) + 'rpx',
-            paddingTop: Number(statusBarHeight + 88) + 'rpx',
-          },
-        ]"
-      >
+      <view class="steps-box ss-flex">
         <view class="ss-flex">
           <view class="steps-item" v-for="(item, index) in state.list" :key="index">
             <view class="ss-flex">
@@ -137,7 +149,7 @@
 <script setup>
   import sheep from '@/sheep';
   import { onLoad } from '@dcloudio/uni-app';
-  import { reactive } from 'vue';
+  import { computed, reactive } from 'vue';
   import { isEmpty } from 'lodash-es';
   import {
     fen2yuan,
@@ -146,8 +158,18 @@
   } from '@/sheep/hooks/useGoods';
   import AfterSaleApi from '@/sheep/api/trade/afterSale';
 
-  const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
-  const headerBg = sheep.$url.css('/static/img/shop/order/order_bg.webp');
+  const isMiniProgram = sheep.$platform.platform === 'miniProgram';
+  const capsuleStyle = computed(() => {
+    if (!isMiniProgram) {
+      return {};
+    }
+    const rightMargin = sheep.$platform.device.windowWidth - sheep.$platform.capsule.right;
+    return {
+      width: sheep.$platform.capsule.width + rightMargin + 'px',
+      height: sheep.$platform.capsule.height + 'px',
+    };
+  });
+
   const state = reactive({
     id: 0, // 售后编号
     info: {}, // 收货信息
@@ -165,6 +187,14 @@
       },
     ], // 时间轴
   });
+
+  function onBack() {
+    if (sheep.$router.hasHistory()) {
+      sheep.$router.back();
+      return;
+    }
+    sheep.$router.go('/pages/index/index', {}, { redirect: true });
+  }
 
   function onApply(id) {
     uni.showModal({
@@ -220,19 +250,63 @@
 </script>
 
 <style lang="scss" scoped>
+  .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background: #f8f9f3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* #ifdef H5 */
+    max-width: 750rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    /* #endif */
+  }
+  .nav-bar-container {
+    background: #f8f9f3;
+    display: flex;
+    align-items: center;
+  }
+  .back-btn {
+    width: 60rpx;
+    color: rgba(30, 63, 28, 0.9);
+    height: 60rpx;
+  }
+  .nav-title {
+    color: rgba(30, 63, 28, 0.9);
+    font-size: 36rpx;
+    font-weight: 600;
+  }
+  .nav-bar-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    padding: 0 20rpx;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .nav-left,
+  .nav-right {
+    display: flex;
+    align-items: center;
+  }
+
   // 步骤条
   .steps-box {
     width: 100%;
     height: 190rpx;
-    background: v-bind(headerBg) no-repeat,
-      linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
-    background-size: 750rpx 100%;
+    background: #f8f9f3;
     padding-left: 72rpx;
 
     .steps-item {
       .sicon-circleclose {
         font-size: 24rpx;
-        color: #fff;
+        color: rgba(30, 63, 28, 0.9);
       }
 
       .sicon-circlecheck {
@@ -251,19 +325,19 @@
   }
 
   .activity-color {
-    color: #fff;
+    color: rgba(30, 63, 28, 0.9);
   }
 
   .info-color {
-    color: rgba(#fff, 0.4);
+    color: #9d9c96;
   }
 
   .activity-bg {
-    background: #fff;
+    background: rgba(30, 63, 28, 0.9);
   }
 
   .info-bg {
-    background: rgba(#fff, 0.4);
+    background: rgba(157, 156, 150, 0.6);
   }
 
   .line {
@@ -276,9 +350,9 @@
     position: relative;
     z-index: 3;
     background-color: #fff;
-    border-radius: 20rpx 20rpx 0px 0px;
+    border-radius: 10rpx;
     padding: 20rpx;
-    margin-top: -20rpx;
+    margin-top: 20rpx;
 
     .status-text {
       font-size: 28rpx;
@@ -314,7 +388,7 @@
       font-size: 28rpx;
       font-family: OPPOSANS;
       font-weight: 500;
-      color: #ff3000;
+      color: #f53f3f;
     }
   }
 
