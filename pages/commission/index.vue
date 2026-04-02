@@ -1,57 +1,676 @@
-<!-- 分销中心  -->
 <template>
-  <s-layout
-    navbar="inner"
-    class="index-wrap"
-    title="分销中心"
-    :bgStyle="bgStyle"
-    :onShareAppMessage="shareInfo"
-  >
-    <!-- 分销商信息 -->
-    <commission-info />
-    <!-- 账户信息 -->
-    <account-info />
-    <!-- 菜单栏 -->
-    <commission-menu />
-    <!-- 分销记录 -->
-    <commission-log />
+  <s-layout navbar="clear" :bgStyle="{ color: 'rgba(248, 249, 243, 1.0)' }" :onShareAppMessage="state.shareInfo">
+    <view class="page flex-col">
+      <view class="fixed-header">
+        <su-status-bar />
+        <view
+          class="nav-bar-container"
+          :style="{
+            position: 'relative',
+            height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px',
+          }"
+        >
+          <view
+            class="nav-bar-inner flex-row align-center"
+            :style="{
+              position: 'absolute',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              height: '100%',
+              left: '0',
+              width: '100%',
+            }"
+          >
+            <uni-icons type="left" size="22" color="#000" @tap="sheep.$router.back()" class="nav-back" />
+            <text class="nav-title">推广分销</text>
+            
+          </view>
+        </view>
+      </view>
+      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
 
-    <!-- 权限弹窗 -->
-    <commission-auth />
+      <view class="box_13 flex-col">
+        <view class="box_28 flex-row">
+          <image class="group_5 flex-col" :src="avatarUrl" mode="aspectFill" />
+          <view class="text-group_2 flex-col">
+            <text class="text_2">{{ userInfo?.nickname || '' }}</text>
+            <text class="text_3">{{ maskedMobile }}</text>
+          </view>
+          <view class="text-wrapper_1 flex-col" @tap="onInviteMember">
+            <text class="text_4">邀请会员</text>
+          </view>
+        </view>
+
+        <view class="box_15 flex-col">
+          <view class="text-wrapper_5 flex-row">
+            <text class="text_5 count-font">{{ totalBrokerageYuan }}</text>
+            <text class="text_6 count-font">+{{ yesterdayBrokerageYuan }}</text>
+            <text class="text_7 count-font">{{ fansCount }}</text>
+            <text class="text_8 count-font">+0</text>
+            <text class="text_9 count-font">{{ orderCount }}</text>
+            <text class="text_10 count-font">+0</text>
+          </view>
+          <view class="text-wrapper_6 flex-row justify-between">
+            <text class="text_11">推广收益</text>
+            <text class="text_12">粉丝</text>
+            <text class="text_13">推广订单</text>
+          </view>
+        </view>
+      </view>
+
+      <view class="block_13 flex-col">
+        <view class="list_2 flex-col">
+          <view class="list-items_1 flex-row justify-between" v-for="item in state.pagination.list" :key="item.id">
+            <image
+              class="box_17 flex-col"
+              :src="sheep.$url.cdn(item.picUrl)"
+              mode="aspectFill"
+              @tap="onGoGoods(item)"
+            />
+            <view class="section_13 flex-col">
+              <text class="text_14">{{ item.name }}</text>
+              <view class="text-wrapper_7 flex-row">
+                <text class="text_15">{{ item.introduction }}</text>
+                <text class="text_16">¥</text>
+                <text class="text_17 count-font">{{ fen2yuan(item.price) }}</text>
+              </view>
+              <view class="group_6 flex-row justify-between">
+                <text class="text_18">{{ formatBrokerage(item) }}</text>
+                <button class="ss-reset-button block_5 flex-row justify-between" @tap.stop="onShareGoods(item)">
+                  <text class="text_19">立即推广</text>
+                  <view class="box_19 flex-col">
+                    <view class="box_20 flex-col"></view>
+                  </view>
+                </button>
+              </view>
+            </view>
+          </view>
+        </view>
+
+        <s-empty
+          v-if="state.pagination.total === 0 && state.loadStatus !== 'loading'"
+          :icon="sheep.$url.static('/static/goods-empty.webp')"
+          text="暂无推广商品"
+        />
+        <uni-load-more
+          v-if="state.pagination.total > 0"
+          :status="state.loadStatus"
+          :content-text="{ contentdown: '上拉加载更多' }"
+          @tap="loadMore"
+        />
+      </view>
+
+      <commission-auth />
+    </view>
   </s-layout>
 </template>
 
 <script setup>
-  import { computed } from 'vue';
-  import commissionInfo from './components/commission-info.vue';
-  import accountInfo from './components/account-info.vue';
-  import commissionLog from './components/commission-log.vue';
-  import commissionMenu from './components/commission-menu.vue';
-  import commissionAuth from './components/commission-auth.vue';
   import sheep from '@/sheep';
+  import $share from '@/sheep/platform/share';
+  import { computed, reactive } from 'vue';
+  import { onLoad, onReachBottom } from '@dcloudio/uni-app';
+  import { concat } from 'lodash-es';
+  import { showShareModal } from '@/sheep/hooks/useModal';
+  import SpuApi from '@/sheep/api/product/spu';
+  import BrokerageApi from '@/sheep/api/trade/brokerage';
+  import commissionAuth from './components/commission-auth.vue';
+  import { fen2yuan } from '@/sheep/hooks/useGoods';
   import { SharePageEnum } from '@/sheep/helper/const';
 
-  /** 分销邀请 */
-  const shareInfo = computed(() => {
-    return sheep.$platform.share.getShareInfo(
+  const userInfo = computed(() => sheep.$store('user').userInfo);
+  const avatarUrl = computed(() => sheep.$url.avatar(userInfo.value?.avatar));
+
+  const state = reactive({
+    summary: {},
+    pagination: {
+      list: [],
+      total: 0,
+      pageNo: 1,
+      pageSize: 8,
+    },
+    loadStatus: '',
+    shareInfo: {},
+  });
+
+  const maskedMobile = computed(() => {
+    const mobile = userInfo.value?.mobile || userInfo.value?.phone || '';
+    if (!mobile) {
+      return '';
+    }
+    return mobile.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
+  });
+
+  const fansCount = computed(() => {
+    const first = Number(state.summary?.firstBrokerageUserCount || 0);
+    const second = Number(state.summary?.secondBrokerageUserCount || 0);
+    return first + second;
+  });
+
+  const orderCount = computed(() => {
+    return Number(state.summary?.orderCount || 0);
+  });
+
+  const totalBrokerageYuan = computed(() => {
+    const totalFen =
+      Number(state.summary?.brokeragePrice || 0) +
+      Number(state.summary?.withdrawPrice || 0) +
+      Number(state.summary?.frozenPrice || 0);
+    return fen2yuan(totalFen);
+  });
+
+  const yesterdayBrokerageYuan = computed(() => {
+    return fen2yuan(Number(state.summary?.yesterdayPrice || 0));
+  });
+
+  function onInviteMember() {
+    state.shareInfo = sheep.$platform.share.getShareInfo(
       {
         params: {
-          page: SharePageEnum.HOME.value, // 用户通邀请进入到首页
+          page: SharePageEnum.HOME.value,
         },
       },
       {
         type: 'user',
       },
     );
+    showShareModal();
+  }
+
+  function onGoGoods(item) {
+    sheep.$router.go('/pages/goods/index', { id: item.id });
+  }
+
+  function formatBrokerage(item) {
+    if (item?.brokerageMinPrice === undefined) {
+      return '可赚计算中';
+    }
+    const toYuanInt = (fen) => {
+      const n = Number(fen || 0);
+      if (!Number.isFinite(n)) {
+        return '0';
+      }
+      return String(Math.floor(n / 100));
+    };
+    if (item.brokerageMinPrice === item.brokerageMaxPrice) {
+      return `推广可赚${toYuanInt(item.brokerageMinPrice)}元`;
+    }
+    return `推广可赚${toYuanInt(item.brokerageMinPrice)}~${toYuanInt(item.brokerageMaxPrice)}元`;
+  }
+
+  function onShareGoods(goodsInfo) {
+    state.shareInfo = $share.getShareInfo(
+      {
+        title: goodsInfo.name,
+        image: sheep.$url.cdn(goodsInfo.picUrl),
+        desc: goodsInfo.introduction,
+        params: {
+          page: SharePageEnum.GOODS.value,
+          query: goodsInfo.id,
+        },
+      },
+      {
+        type: 'goods',
+        title: goodsInfo.name,
+        image: sheep.$url.cdn(goodsInfo.picUrl),
+        price: fen2yuan(goodsInfo.price),
+        original_price: fen2yuan(goodsInfo.marketPrice),
+      },
+    );
+    showShareModal();
+  }
+
+  async function getSummary() {
+    const { code, data } = await BrokerageApi.getBrokerageUserSummary();
+    if (code !== 0) {
+      return;
+    }
+    state.summary = data || {};
+  }
+
+  async function getGoodsList() {
+    state.loadStatus = 'loading';
+    const { code, data } = await SpuApi.getSpuPage({
+      pageSize: state.pagination.pageSize,
+      pageNo: state.pagination.pageNo,
+    });
+    if (code !== 0) {
+      state.loadStatus = 'error';
+      return;
+    }
+
+    await Promise.all(
+      (data.list || []).map(async (item) => {
+        try {
+          const res = await BrokerageApi.getProductBrokeragePrice(item.id);
+          item.brokerageMinPrice = res.data.brokerageMinPrice;
+          item.brokerageMaxPrice = res.data.brokerageMaxPrice;
+        } catch (e) {}
+      }),
+    );
+
+    state.pagination.list = concat(state.pagination.list, data.list || []);
+    state.pagination.total = data.total || 0;
+    state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
+  }
+
+  function loadMore() {
+    if (state.loadStatus === 'noMore' || state.loadStatus === 'loading') {
+      return;
+    }
+    state.pagination.pageNo++;
+    getGoodsList();
+  }
+
+  onLoad(() => {
+    state.shareInfo = sheep.$platform.share.getShareInfo();
+    getSummary();
+    getGoodsList();
   });
 
-  const bgStyle = {
-    color: '#F7D598',
-  };
+  onReachBottom(() => {
+    loadMore();
+  });
 </script>
 
 <style lang="scss" scoped>
-  :deep(.page-main) {
-    background-size: 100% 100% !important;
+  .page {
+    background-color: rgba(248, 249, 243, 1);
+    width: 750rpx;
+    min-height: 100vh;
+  }
+
+  .fixed-header {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    z-index: 10;
+    background-color: rgba(248, 249, 243, 1);
+  }
+
+  .header-placeholder {
+    width: 100%;
+  }
+
+  .nav-back {
+    margin-left: 34rpx;
+  }
+
+  .nav-title {
+    overflow-wrap: break-word;
+    color: rgba(0, 0, 0, 0.9);
+    font-size: 36rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 50rpx;
+    margin-left: 14rpx;
+  }
+
+  .block_9 {
+    background-color: rgba(255, 255, 255, 0.594);
+    border-radius: 50rpx;
+    width: 174rpx;
+    border: 1rpx solid rgba(151, 151, 151, 0.198);
+    padding: 12rpx 26rpx 13rpx 26rpx;
+    margin-left: auto;
+    margin-right: 16rpx;
+  }
+
+  .section_10 {
+    background-color: rgba(0, 0, 0, 1);
+    width: 37rpx;
+    margin: 13rpx 0 11rpx 0;
+  }
+
+  .block_10 {
+    width: 8rpx;
+    height: 8rpx;
+    margin: 3rpx 0 2rpx 0;
+  }
+
+  .block_11 {
+    background-color: rgba(0, 0, 0, 1);
+    border-radius: 50%;
+    width: 13rpx;
+    height: 13rpx;
+  }
+
+  .block_12 {
+    width: 8rpx;
+    height: 8rpx;
+    margin: 3rpx 0 2rpx 0;
+  }
+
+  .section_11 {
+    background-color: rgba(0, 0, 0, 0.2);
+    width: 1rpx;
+    height: 37rpx;
+    margin-left: 23rpx;
+  }
+
+  .section_12 {
+    background-color: rgba(0, 0, 0, 1);
+    border-radius: 50%;
+    margin: 2rpx 0 1rpx 25rpx;
+    padding: 4rpx 4rpx 4rpx 4rpx;
+  }
+
+  .box_26 {
+    background-color: rgba(0, 0, 0, 1);
+    border-radius: 50%;
+    padding: 7rpx 7rpx 7rpx 7rpx;
+  }
+
+  .box_27 {
+    width: 12rpx;
+    height: 12rpx;
+  }
+
+  .box_13 {
+    background-color: rgba(248, 249, 243, 1);
+    padding: 30rpx 32rpx 40rpx 32rpx;
+    margin-top: -1rpx;
+  }
+
+  .group_5 {
+    width: 128rpx;
+    height: 128rpx;
+    border: 4rpx solid rgba(255, 255, 255, 1);
+    border-radius: 50%;
+  }
+
+  .text-group_2 {
+    margin: 18rpx 0 18rpx 32rpx;
+  }
+
+  .text_2 {
+    overflow-wrap: break-word;
+    color: rgba(0, 0, 0, 1);
+    font-size: 36rpx;
+    font-family: PingFangSC-Semibold;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 48rpx;
+  }
+
+  .text_3 {
+    overflow-wrap: break-word;
+    color: rgba(0, 0, 0, 0.8);
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 28rpx;
+    margin: 16rpx 21rpx 0 0;
+  }
+
+  .text-wrapper_1 {
+    background-color: rgba(248, 249, 243, 1);
+    border-radius: 34rpx;
+    border: 1rpx solid rgba(30, 63, 28, 1);
+    margin: 35rpx 0 35rpx auto;
+    padding: 8rpx 28rpx 8rpx 28rpx;
+  }
+
+  .text_4 {
+    overflow-wrap: break-word;
+    color: rgba(30, 63, 28, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 40rpx;
+  }
+
+  .box_15 {
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 20rpx;
+    padding: 14rpx 38rpx 25rpx 41rpx;
+    margin: 38rpx 0 0 0;
+  }
+
+  .text-wrapper_5 {
+    margin: 0 0 0 7rpx;
+  }
+
+  .text_5 {
+    overflow-wrap: break-word;
+    color: rgba(30, 63, 28, 1);
+    font-size: 46rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 53rpx;
+    margin: 1rpx 0 0 0;
+  }
+
+  .text_6 {
+    overflow-wrap: break-word;
+    color: rgba(245, 63, 63, 1);
+    font-size: 22rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 26rpx;
+    margin: 0 0 0 -1rpx;
+  }
+
+  .text_7 {
+    overflow-wrap: break-word;
+    color: rgba(30, 63, 28, 1);
+    font-size: 46rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 53rpx;
+    margin: 1rpx 0 0 128rpx;
+  }
+
+  .text_8 {
+    overflow-wrap: break-word;
+    color: rgba(245, 63, 63, 1);
+    font-size: 22rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 26rpx;
+    margin: 0 0 0 -3rpx;
+  }
+
+  .text_9 {
+    overflow-wrap: break-word;
+    color: rgba(30, 63, 28, 1);
+    font-size: 46rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 53rpx;
+    margin: 1rpx 0 0 151rpx;
+  }
+
+  .text_10 {
+    overflow-wrap: break-word;
+    color: rgba(245, 63, 63, 1);
+    font-size: 22rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 26rpx;
+    margin: 0 0 0 -3rpx;
+  }
+
+  .text-wrapper_6 {
+    width: 604rpx;
+    margin: 10rpx 3rpx 0 0;
+  }
+
+  .text_11,
+  .text_12,
+  .text_13 {
+    overflow-wrap: break-word;
+    color: rgba(51, 51, 51, 1);
+    font-size: 26rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 37rpx;
+  }
+
+  .block_13 {
+    padding: 26rpx 32rpx 226rpx 32rpx;
+  }
+
+  .list-items_1 {
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 20rpx;
+    width: 686rpx;
+    padding: 24rpx 24rpx 24rpx 24rpx;
+    margin: 0 0 24rpx 0;
+  }
+
+  .box_17 {
+    border-radius: 20rpx;
+    width: 210rpx;
+    height: 210rpx;
+  }
+
+  .text_14 {
+    width: 404rpx;
+    height: 80rpx;
+    overflow-wrap: break-word;
+    color: rgba(29, 33, 41, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: left;
+    line-height: 40rpx;
+  }
+
+  .text-wrapper_7 {
+    margin: 10rpx 0 0 0;
+  }
+
+  .text_15 {
+    overflow-wrap: break-word;
+    color: rgba(135, 145, 157, 1);
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 33rpx;
+    margin: 10rpx 0 0 0;
+    max-width: 250rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .text_16 {
+    height: 30rpx;
+    overflow-wrap: break-word;
+    color: rgba(245, 63, 63, 1);
+    font-size: 28rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 28rpx;
+    margin: 13rpx 0 0 119rpx;
+  }
+
+  .text_17 {
+    overflow-wrap: break-word;
+    color: rgba(245, 63, 63, 1);
+    font-size: 38rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 48rpx;
+  }
+
+  .group_6 {
+    background-color: rgba(255, 247, 245, 1);
+    border-radius: 10rpx;
+    width: 404rpx;
+    border: 1rpx solid rgba(252, 231, 224, 1);
+    padding-left: 25rpx;
+    margin: 18rpx 0 0 0;
+  }
+
+  .text_18 {
+    overflow-wrap: break-word;
+    color: rgba(248, 99, 6, 1);
+    font-size: 24rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 33rpx;
+    margin: 11rpx 0 0 0;
+  }
+
+  .block_5 {
+    background-color: rgba(30, 63, 28, 1);
+    border-radius: 10rpx;
+    width: 210rpx;
+    padding: 9rpx 36rpx 8rpx 36rpx;
+  }
+
+  .text_19 {
+    overflow-wrap: break-word;
+    color: rgba(255, 254, 250, 1);
+    font-size: 26rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 37rpx;
+  }
+
+  .box_19 {
+    background-color: rgba(255, 254, 224, 1);
+    border-radius: 9rpx;
+    margin: 10rpx 0 8rpx 0;
+    padding: 6rpx 8rpx 7rpx 9rpx;
+  }
+
+  .box_20 {
+    width: 11rpx;
+    height: 6rpx;
+    border: 1rpx solid rgba(56, 27, 5, 0.65);
+  }
+
+  .flex-col {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .flex-row {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .justify-between {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .align-center {
+    display: flex;
+    align-items: center;
   }
 </style>
