@@ -60,6 +60,15 @@ const _go = (
       }
     };
   }
+  if (!nextRoute && page === '/pages/user/wallet/vip-recharge') {
+    nextRoute = {
+      path: '/pages/user/wallet/vip-recharge',
+      meta: {
+        auth: true,
+        title: '会员卡充值'
+      }
+    };
+  }
 
   // 未找到指定跳转页面
   // mark: 跳转404页

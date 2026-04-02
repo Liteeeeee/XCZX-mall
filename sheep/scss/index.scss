@@ -9,6 +9,13 @@
 .font-OPPOSANS {
   font-family: OPPOSANS;
 }
+@font-face {
+  font-family: CountFont;
+  src: url('https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/count_font.ttf');
+}
+.count-font {
+  font-family: CountFont, OPPOSANS, PingFangSC-Medium;
+}
 page {
   -webkit-overflow-scrolling: touch; // 解决ios滑动不流畅
   height: 100%;

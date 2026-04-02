@@ -19,6 +19,26 @@
       success: () => console.log('OPPOSANS font loaded'),
       fail: (err) => console.log('OPPOSANS font load failed', err),
     });
+
+    // #ifdef MP-WEIXIN
+    if (typeof wx !== 'undefined' && wx.loadFontFace) {
+      wx.loadFontFace({
+        family: 'CountFont',
+        source: `url("https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/count_font.ttf")`,
+        success: () => console.log('CountFont font loaded'),
+        fail: (err) => console.log('CountFont font load failed', err),
+      });
+    }
+    // #endif
+
+    // #ifndef MP-WEIXIN
+    uni.loadFontFace({
+      family: 'CountFont',
+      source: `url("https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/count_font.ttf")`,
+      success: () => console.log('CountFont font loaded'),
+      fail: (err) => console.log('CountFont font load failed', err),
+    });
+    // #endif
   });
 
   onShow(() => {

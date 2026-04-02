@@ -93,7 +93,7 @@ const app = defineStore({
           copyright: '全部开源，个人与企业可 100% 免费使用',
           copytime: 'Copyright© 2018-2025',
 
-          cdnurl: 'https://file.sheepjs.com', // 云存储域名
+          cdnurl: 'https://xiancao.oss-cn-beijing.aliyuncs.com', // 云存储域名
           filesystem: 'qcloud', // 云存储平台
         };
         this.platform = {

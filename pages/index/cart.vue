@@ -130,21 +130,33 @@
                 </view>
               </view>
               <view class="popup-content">
-                <view class="detail-item ss-flex ss-row-between">
+                <view class="detail-item ss-flex ss-row-between" v-if="detailTotalPriceFen > 0">
                   <text class="item-label">商品总额</text>
-                  <text class="item-value">¥199.50</text>
+                  <text class="item-value">￥{{ fen2yuan(detailTotalPriceFen) }}</text>
                 </view>
-                <view class="detail-item ss-flex ss-row-between">
+                <view class="detail-item ss-flex ss-row-between" v-if="detailCouponPriceFen > 0">
                   <text class="item-label">优惠券</text>
-                  <text class="item-value">-¥16.20</text>
+                  <text class="item-value">-￥{{ fen2yuan(detailCouponPriceFen) }}</text>
                 </view>
-                <view class="detail-item ss-flex ss-row-between">
-                  <text class="item-label">铂金会员9折</text>
-                  <text class="item-value">-¥10</text>
+                <view class="detail-item ss-flex ss-row-between" v-if="detailVipPriceFen > 0">
+                  <text class="item-label">会员优惠</text>
+                  <text class="item-value">-￥{{ fen2yuan(detailVipPriceFen) }}</text>
                 </view>
-                <view class="detail-item ss-flex ss-row-between">
-                  <text class="item-label">铂金会员立减</text>
-                  <text class="item-value">-¥10</text>
+                <view class="detail-item ss-flex ss-row-between" v-if="detailDiscountPriceFen > 0">
+                  <text class="item-label">活动优惠</text>
+                  <text class="item-value">-￥{{ fen2yuan(detailDiscountPriceFen) }}</text>
+                </view>
+                <view class="detail-item ss-flex ss-row-between" v-if="detailPointPriceFen > 0">
+                  <text class="item-label">积分抵扣</text>
+                  <text class="item-value">-￥{{ fen2yuan(detailPointPriceFen) }}</text>
+                </view>
+                <view class="detail-item ss-flex ss-row-between" v-if="detailDeliveryPriceFen > 0">
+                  <text class="item-label">运费</text>
+                  <text class="item-value">￥{{ fen2yuan(detailDeliveryPriceFen) }}</text>
+                </view>
+                <view class="detail-item ss-flex ss-row-between" v-if="detailPayPriceFen > 0">
+                  <text class="item-label">应付金额</text>
+                  <text class="item-value">￥{{ fen2yuan(detailPayPriceFen) }}</text>
                 </view>
                 <!-- 底部留白 -->
                 <view class="ss-p-b-20"></view>
@@ -174,8 +186,8 @@
                 {{ fen2yuan(state.totalPriceSelected) }}
               </view>
             </view>
-            <view class="promo-pill ss-flex ss-col-center" v-if="state.totalPriceSelected > 0" @tap="state.showDetailPopup = true">
-              <text class="promo-text">共减¥36.2</text>
+            <view class="promo-pill ss-flex ss-col-center" v-if="state.totalPriceSelected > 0" @tap="openDetailPopup">
+              <text class="promo-text">{{ promoText }}</text>
               <text class="cicon-forward ss-m-l-4" style="transform: rotate(90deg); display: inline-block; font-size: 20rpx;"></text>
             </view>
           </view>
@@ -199,9 +211,10 @@
   import sheep from '@/sheep';
   import { onShow } from '@dcloudio/uni-app';
   import SpuApi from '@/sheep/api/product/spu';
-  import { computed, reactive } from 'vue';
+  import { computed, reactive, watch } from 'vue';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import { isEmpty } from '@/sheep/helper/utils';
+  import OrderApi from '@/sheep/api/trade/order';
 
   // 隐藏原生tabBar
   uni.hideTabBar({
@@ -249,7 +262,141 @@
     activeId: 0,
     startX: 0,
     showDetailPopup: false,
+    settleInfo: null,
+    settleKey: '',
+    settleLoading: false,
   });
+
+  const selectedItemsKey = computed(() => {
+    const ids = Array.isArray(state.selectedIds) ? state.selectedIds : [];
+    if (ids.length === 0) return '';
+    const selected = Array.isArray(state.list) ? state.list.filter((it) => ids.includes(it.id)) : [];
+    const parts = selected
+      .map((it) => {
+        const cartId = it?.id ?? '';
+        const skuId = it?.sku?.id ?? '';
+        const count = it?.count ?? '';
+        return `${cartId}:${skuId}:${count}`;
+      })
+      .sort();
+    return parts.join('|');
+  });
+
+  const settlePrice = computed(() => state.settleInfo?.price || {});
+  const detailTotalPriceFen = computed(() => Number(settlePrice.value?.totalPrice) || state.totalPriceSelected || 0);
+  const detailCouponPriceFen = computed(() => Number(settlePrice.value?.couponPrice) || 0);
+  const detailDiscountPriceFen = computed(() => Number(settlePrice.value?.discountPrice) || 0);
+  const detailVipPriceFen = computed(() => Number(settlePrice.value?.vipPrice) || 0);
+  const detailPointPriceFen = computed(() => Number(settlePrice.value?.pointPrice) || 0);
+  const detailDeliveryPriceFen = computed(() => Number(settlePrice.value?.deliveryPrice) || 0);
+  const detailPayPriceFen = computed(() => Number(settlePrice.value?.payPrice) || 0);
+
+  const promoDiscountFen = computed(() => {
+    return (
+      detailCouponPriceFen.value +
+      detailDiscountPriceFen.value +
+      detailVipPriceFen.value +
+      detailPointPriceFen.value
+    );
+  });
+
+  const promoText = computed(() => {
+    if (state.settleLoading) return '优惠计算中';
+    if (promoDiscountFen.value > 0) return `共减￥${fen2yuan(promoDiscountFen.value)}`;
+    return '暂无优惠';
+  });
+
+  function openDetailPopup() {
+    state.showDetailPopup = true;
+    scheduleSettle(true);
+  }
+
+  function buildSettleItems() {
+    const ids = Array.isArray(state.selectedIds) ? state.selectedIds : [];
+    const selected = Array.isArray(state.list) ? state.list.filter((it) => ids.includes(it.id)) : [];
+    return selected
+      .map((item) => ({
+        skuId: item.sku?.id,
+        count: item.count,
+        cartId: item.id,
+      }))
+      .filter((it) => !!it.skuId && Number(it.count) > 0);
+  }
+
+  async function refreshSettle() {
+    if (!userStore.isLogin) {
+      state.settleInfo = null;
+      state.settleKey = '';
+      state.settleLoading = false;
+      return;
+    }
+    const key = selectedItemsKey.value;
+    if (!key) {
+      state.settleInfo = null;
+      state.settleKey = '';
+      state.settleLoading = false;
+      return;
+    }
+    if (state.settleKey === key && state.settleInfo) return;
+    const items = buildSettleItems();
+    if (items.length === 0) {
+      state.settleInfo = null;
+      state.settleKey = '';
+      state.settleLoading = false;
+      return;
+    }
+    state.settleLoading = true;
+    const { code, data } = await OrderApi.settlementOrder(
+      {
+        items,
+        deliveryType: 1,
+        pointStatus: false,
+      },
+      {
+        showLoading: false,
+        showError: false,
+      },
+    );
+    if (code === 0) {
+      state.settleInfo = data;
+      state.settleKey = key;
+    } else {
+      state.settleInfo = null;
+      state.settleKey = key;
+    }
+    state.settleLoading = false;
+  }
+
+  let settleTimer = null;
+  function scheduleSettle(immediate = false) {
+    if (settleTimer) clearTimeout(settleTimer);
+    if (immediate) {
+      refreshSettle();
+      return;
+    }
+    settleTimer = setTimeout(() => {
+      refreshSettle();
+    }, 400);
+  }
+
+  watch(
+    selectedItemsKey,
+    () => {
+      if (!state.showDetailPopup) {
+        scheduleSettle(false);
+        return;
+      }
+      scheduleSettle(false);
+    },
+    { immediate: true },
+  );
+
+  watch(
+    () => state.showDetailPopup,
+    (v) => {
+      if (v) scheduleSettle(true);
+    },
+  );
 
   // 滑动开始
   function onTouchStart(e, id) {

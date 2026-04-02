@@ -3,7 +3,7 @@ import { isEmpty } from '@/sheep/helper/utils';
 
 const OrderApi = {
   // 计算订单信息
-  settlementOrder: (data) => {
+  settlementOrder: (data, custom = {}) => {
     const data2 = {
       ...data,
     };
@@ -56,6 +56,7 @@ const OrderApi = {
       custom: {
         showError: true,
         showLoading: true,
+        ...custom,
       },
     });
   },

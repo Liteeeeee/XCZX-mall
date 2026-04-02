@@ -26,8 +26,13 @@
         </view>
         <!-- 昵称与登录引导 -->
         <view class="info-content" @tap="onUserClick">
-          <view class="nickname ss-m-b-8" :class="{ 'unlogin-nickname': !isLogin }">
-            {{ isLogin ? (userInfo.nickname || '未设置昵称') : '登录/注册' }}
+          <view class="nickname-row ss-flex ss-col-center ss-m-b-8">
+            <view class="nickname" :class="{ 'unlogin-nickname': !isLogin }">
+              {{ isLogin ? (userInfo.nickname || '未设置昵称') : '登录/注册' }}
+            </view>
+            <view v-if="isLogin" class="invite-qrcode-btn ss-m-l-10" @tap.stop="onOpenInviteQrcode">
+              <text class="sicon-qrcode invite-qrcode-icon"></text>
+            </view>
           </view>
           <view v-if="!isLogin" class="unlogin-prompt" style="color: #666; font-size: 26rpx;">
             登录体验更多功能哦~
@@ -58,7 +63,7 @@
         class="stats-item ss-flex-col ss-col-center"
         @tap="onStatsClick(item.type)"
       >
-        <view class="stats-value" style="font-family: MicrosoftYaHei, MicrosoftYaHei;font-size:35rpx; font-weight: bold; color: rgba(30, 63, 28, 1);">{{ item.value }}</view>
+        <view class="stats-value count-font" style="font-size:35rpx; font-weight: bold; color: rgba(30, 63, 28, 1);">{{ item.value }}</view>
         <view class="stats-label" style="font-size: 26rpx; color: rgba(51, 51, 51, 1);">{{ item.label }}</view>
       </view>
     </view>
@@ -67,6 +72,31 @@
     <view v-if="isLogin && showVipCard" class="ss-p-b-30 ">
       <s-vip-card />
     </view>
+
+    <su-popup
+      :show="invitePopupVisible"
+      type="center"
+      backgroundColor="none"
+      round="0"
+      :showClose="true"
+      :isMaskClick="true"
+      @close="invitePopupVisible = false"
+    >
+      <view class="invite-popup">
+        <view class="invite-popup-title">邀请好友</view>
+        <view class="invite-popup-subtitle">扫码注册小程序</view>
+        <view class="invite-popup-body">
+          <view v-if="inviteLoading" class="invite-popup-loading">生成中...</view>
+          <image
+            v-else-if="inviteQrcodeSrc"
+            class="invite-qrcode-img"
+            :src="inviteQrcodeSrc"
+            mode="aspectFit"
+          />
+          <view v-else class="invite-popup-loading">生成失败</view>
+        </view>
+      </view>
+    </su-popup>
   </view>
 </template>
 
@@ -74,10 +104,11 @@
   /**
    * 装修组件 - 用户卡片 Pro
    */
-  import { computed } from 'vue';
+  import { computed, ref } from 'vue';
   import sheep from '@/sheep';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import { showAuthModal } from '@/sheep/hooks/useModal';
+  import SocialApi from '@/sheep/api/member/social';
 
   const statusBarHeight = sheep.$platform.device.statusBarHeight;
   const navBarHeight = sheep.$platform.navbar - statusBarHeight;
@@ -170,6 +201,32 @@
     ];
     return list;
   });
+
+  const invitePopupVisible = ref(false);
+  const inviteQrcodeSrc = ref('');
+  const inviteLoading = ref(false);
+
+  async function onOpenInviteQrcode() {
+    if (!isLogin.value) {
+      showAuthModal();
+      return;
+    }
+    invitePopupVisible.value = true;
+    if (inviteQrcodeSrc.value || inviteLoading.value) return;
+    const inviterId = userInfo.value?.id ?? userInfo.value?.userId ?? userInfo.value?.uid;
+    if (!inviterId) {
+      sheep.$helper.toast('用户信息异常');
+      return;
+    }
+    inviteLoading.value = true;
+    const { code, data } = await SocialApi.getWxaQrcode('pages/index/index', `inviterId=${inviterId}`);
+    inviteLoading.value = false;
+    if (code !== 0 || !data) {
+      sheep.$helper.toast('生成二维码失败');
+      return;
+    }
+    inviteQrcodeSrc.value = `data:image/png;base64,${data}`;
+  }
 
   // 手机号脱敏
   const formatMobile = (mobile) => {
@@ -305,6 +362,9 @@
     .info-content {
       position: relative;
       z-index: 1;
+      .nickname-row {
+        min-width: 0;
+      }
       .nickname {
         font-size: 36rpx;
         font-weight: bold;
@@ -314,6 +374,21 @@
           font-size: 42rpx;
           color: #111;
         }
+      }
+      .invite-qrcode-btn {
+        width: 40rpx;
+        height: 40rpx;
+        border-radius: 20rpx;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(30, 63, 28, 0.08);
+        flex: none;
+      }
+      .invite-qrcode-icon {
+        font-size: 32rpx;
+        color: rgba(30, 63, 28, 1);
+        line-height: 1;
       }
       .mobile {
         font-size: 28rpx;
@@ -406,5 +481,46 @@
     &.unlogin-card {
       background: rgba(82, 196, 26, 0.05) !important;
     }
+  }
+
+  .invite-popup {
+    width: 610rpx;
+    background: #fff;
+    border-radius: 20rpx;
+    padding: 32rpx 32rpx 24rpx 32rpx;
+    box-sizing: border-box;
+  }
+
+  .invite-popup-title {
+    font-size: 32rpx;
+    color: #000;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .invite-popup-subtitle {
+    margin-top: 10rpx;
+    font-size: 24rpx;
+    color: #9D9C96;
+    text-align: center;
+  }
+
+  .invite-popup-body {
+    margin-top: 24rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 420rpx;
+  }
+
+  .invite-qrcode-img {
+    width: 420rpx;
+    height: 420rpx;
+  }
+
+  .invite-popup-loading {
+    font-size: 26rpx;
+    color: #9D9C96;
+    text-align: center;
   }
 </style>

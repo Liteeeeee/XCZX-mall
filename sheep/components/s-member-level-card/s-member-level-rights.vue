@@ -3,7 +3,11 @@
     <!-- 权益区域 -->
     <view class="block_14 flex-col">
       <!-- 会员统计数据 -->
-      <view class="member-stats-card flex-row align-center" v-if="isCurrent">
+      <view
+        class="member-stats-card flex-row align-center"
+        v-if="isCurrent"
+        :style="memberStatsCardStyle"
+      >
         <view class="stats-item flex-col align-center">
           <text class="stats-title">累计已省金额</text>
           <text class="stats-value">{{ userInfo.totalSavings || '1000.00' }}</text>
@@ -15,18 +19,29 @@
         </view>
       </view>
 
-      <text class="text_8">{{ isUnlocked ? '已解锁' : '待解锁' }}{{ level.rights.length }}项权益</text>
-      <view class="section_5 flex-row" v-if="level.rights && level.rights.length > 0">
-        <view class="rights-item" v-for="(item, index) in level.rights" :key="index">
-          <image class="rights-icon" :src="sheep.$url.static(item.icon)" mode="aspectFit"></image>
-          <text class="rights-title">{{ item.title }}</text>
-          <text class="rights-desc">{{ item.desc }}</text>
+      <text class="text_8">已解锁{{ unlockedCount }}项权益</text>
+      <view class="section_5 flex-row" v-if="rightsToRender.length > 0">
+        <view class="rights-item" v-for="(item, index) in rightsToRender" :key="item?.id ?? index">
+          <view class="rights-icon-wrap">
+            <image class="rights-icon" :src="getRightIcon(item)" mode="aspectFit"></image>
+            <image
+              v-if="rightsUnlockLoaded && isRightLocked(item)"
+              class="rights-lock-icon"
+              :src="lockIconSrc"
+              mode="aspectFit"
+            ></image>
+          </view>
+          <text class="rights-title">{{ item?.title ?? item?.name ?? '' }}</text>
+          <text class="rights-desc">{{ item?.desc ?? item?.description ?? item?.remark ?? '' }}</text>
         </view>
       </view>
 
       <view class="box_89 flex-col" v-if="isUnlocked" :style="upgradeGuideCardStyle">
         <text class="text_64">会员升级攻略{{ '>' }}</text>
         <view class="upgrade-guide-tipbar flex-row align-center">
+          <view class="upgrade-guide-tipbar-icon">
+            <text class="upgrade-guide-tipbar-icon-text">!</text>
+          </view>
           <text class="upgrade-guide-tipbar-text">保留原有会员成长值</text>
         </view>
         <view class="box_90 flex-row" v-if="platinumItem">
@@ -47,11 +62,11 @@
             </view>
             <text class="text_57">邀请{{ platinumItem.needInvite }}人开通到铂金会员</text>
           </view>
-          <view class="text-wrapper_35 flex-col" v-if="platinumItem.achieved">
-            <text class="text_58">已达成</text>
+          <view class="achieve-check" v-if="platinumItem.achieved">
+            <text class="achieve-check-icon">✓</text>
           </view>
-          <view class="text-wrapper_37 flex-col" v-else>
-            <text class="text_61">未达条件</text>
+          <view class="achieve-check is-dim" v-else>
+            <text class="achieve-check-icon">✓</text>
           </view>
         </view>
         <view class="box_94 flex-row">
@@ -78,11 +93,11 @@
               <view class="box_100 flex-col" :style="{ width: diamondItem.progressPercent + '%' }"></view>
             </view>
           </view>
-          <view class="text-wrapper_35 flex-col" v-if="diamondItem.achieved">
-            <text class="text_58">已达成</text>
+          <view class="achieve-check" v-if="diamondItem.achieved">
+            <text class="achieve-check-icon">✓</text>
           </view>
-          <view class="text-wrapper_37 flex-col" v-else>
-            <text class="text_61">未达条件</text>
+          <view class="achieve-check is-dim" v-else>
+            <text class="achieve-check-icon">✓</text>
           </view>
         </view>
         
@@ -105,8 +120,62 @@
     userInfo: {
       type: Object,
       default: () => ({})
+    },
+    rightsAll: {
+      type: Array,
+      default: () => []
+    },
+    rightsUnlockedMap: {
+      type: Object,
+      default: () => ({})
+    },
+    rightsUnlockLoaded: {
+      type: Boolean,
+      default: false
     }
   });
+
+  const rightsUnlockLoaded = computed(() => !!props.rightsUnlockLoaded);
+
+  const rightsToRender = computed(() => {
+    if (Array.isArray(props.rightsAll) && props.rightsAll.length > 0) return props.rightsAll;
+    if (Array.isArray(props.level?.rights)) return props.level.rights;
+    return [];
+  });
+
+  const lockIconSrc = computed(() =>
+    sheep.$url.cdn('https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/lock.webp'),
+  );
+
+  const getRightId = (item) => {
+    const raw = item?.id ?? item?.rightsId ?? item?.rightId ?? item?.rights_id;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const isRightLocked = (item) => {
+    const id = getRightId(item);
+    if (id === null) return false;
+    if (!rightsUnlockLoaded.value) return false;
+    if (!props.rightsUnlockedMap) return false;
+    return props.rightsUnlockedMap[id] !== true;
+  };
+
+  const unlockedCount = computed(() => {
+    const list = rightsToRender.value;
+    if (!rightsUnlockLoaded.value) return list.length;
+    let n = 0;
+    for (const it of list) {
+      if (!isRightLocked(it)) n += 1;
+    }
+    return n;
+  });
+
+  const getRightIcon = (item) => {
+    const raw = item?.icon ?? item?.iconUrl ?? item?.picUrl ?? item?.image;
+    if (!raw) return '';
+    return sheep.$url.cdn(raw);
+  };
 
   const isCurrent = computed(() => {
     const idByLevel = {
@@ -166,6 +235,29 @@
     if (!raw) return '';
     if (/^https?:\/\//.test(raw)) return raw;
     return raw.startsWith('/') ? raw : `/${raw}`;
+  });
+
+  const memberStatsBgUrl = computed(() => {
+    const raw = 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/countBg.webp';
+    if (!raw) return '';
+    if (/^https?:\/\//.test(raw)) return raw;
+    return raw.startsWith('/') ? raw : `/${raw}`;
+  });
+
+  const memberStatsCardStyle = computed(() => {
+    const rawBg = memberStatsBgUrl.value;
+    if (!rawBg) {
+      return {
+        backgroundImage: 'none',
+      };
+    }
+    const bgLayer = /^https?:\/\//.test(rawBg) ? `url(${sheep.$url.cdn(rawBg)})` : `url(${rawBg})`;
+    return {
+      backgroundImage: bgLayer,
+      backgroundRepeat: 'no-repeat',
+      backgroundSize: '100% auto',
+      backgroundPosition: 'center top',
+    };
   });
 
   const upgradeGuideCardStyle = computed(() => {
@@ -234,7 +326,7 @@
   /* 会员统计卡片 */
   .member-stats-card {
     width: 100%;
-    height: 160rpx;
+    height: 152rpx;
     background: #FFFFFF;
     border: 1rpx solid #F0F0F0;
     border-radius: 16rpx;
@@ -255,7 +347,7 @@
 
   .stats-title {
     font-size: 24rpx;
-    color: #999999;
+    color: #B67F09;
     margin-bottom: 12rpx;
   }
 
@@ -267,9 +359,9 @@
   }
 
   .stats-line {
-    width: 1rpx;
+    width: 2rpx;
     height: 60rpx;
-    background: #EEEEEE;
+    background: #FFFEFA;
   }
 
   .text_8 {
@@ -310,6 +402,25 @@
     box-sizing: border-box;
     margin: 16rpx 0 16rpx 0;
     padding: 0 18rpx;
+  }
+
+  .upgrade-guide-tipbar-icon {
+    width: 28rpx;
+    height: 28rpx;
+    border-radius: 50%;
+    border: 2rpx solid rgba(255, 254, 250, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    margin-right: 10rpx;
+  }
+
+  .upgrade-guide-tipbar-icon-text {
+    font-size: 20rpx;
+    line-height: 1;
+    color: rgba(255, 254, 250, 0.85);
+    font-weight: 700;
   }
 
   .upgrade-guide-tipbar-text {
@@ -428,6 +539,29 @@
     border-radius: 100px;
     margin: 21rpx 0 20rpx 38rpx;
     padding: 10rpx 33rpx;
+  }
+
+  .achieve-check {
+    width: 40rpx;
+    height: 40rpx;
+    border-radius: 50%;
+    background-image: linear-gradient(90deg, rgba(255, 254, 224, 1) 0, rgba(255, 232, 165, 1) 100%);
+    margin: 21rpx 21rpx 20rpx 38rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+
+  .achieve-check.is-dim {
+    opacity: 0.45;
+  }
+
+  .achieve-check-icon {
+    color: #000;
+    font-size: 26rpx;
+    line-height: 1;
+    font-weight: 700;
   }
 
   .text_58,
@@ -632,10 +766,28 @@
     box-sizing: border-box;
   }
 
-  .rights-icon {
+  .rights-icon-wrap {
+    position: relative;
     width: 80rpx;
     height: 80rpx;
     margin-bottom: 16rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rights-icon {
+    width: 80rpx;
+    height: 80rpx;
+    margin-bottom: 0;
+  }
+
+  .rights-lock-icon {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    width: 18rpx;
+    height: 18rpx;
   }
 
   .rights-title {

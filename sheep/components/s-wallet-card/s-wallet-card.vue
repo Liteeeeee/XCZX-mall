@@ -4,7 +4,7 @@
 		<view class="menu-item ss-flex-1 ss-flex-col ss-row-center ss-col-center"
 			@tap="sheep.$router.go('/pages/user/wallet/money')">
 			<view class="value-box ss-flex ss-col-bottom">
-				<view class="value-text ss-line-1">{{ fen2yuan(userWallet.balance) || '0.00' }}</view>
+				<view class="value-text count-font ss-line-1">{{ fen2yuan(userWallet.balance) || '0.00' }}</view>
 				<view class="unit-text ss-m-l-6">元</view>
 			</view>
 			<view class="menu-title ss-m-t-28">账户余额</view>
@@ -12,7 +12,7 @@
 		<view class="menu-item ss-flex-1 ss-flex-col ss-row-center ss-col-center"
 			@tap="sheep.$router.go('/pages/user/wallet/score')">
 			<view class="value-box ss-flex ss-col-bottom">
-				<view class="value-text">{{ userInfo.point || 0 }}</view>
+				<view class="value-text count-font">{{ userInfo.point || 0 }}</view>
 				<view class="unit-text ss-m-l-6">个</view>
 			</view>
 			<view class="menu-title ss-m-t-28">积分</view>
@@ -23,7 +23,7 @@
         })
       ">
 			<view class="value-box ss-flex ss-col-bottom">
-				<view class="value-text">{{ numData.unusedCouponCount }}</view>
+				<view class="value-text count-font">{{ numData.unusedCouponCount }}</view>
 				<view class="unit-text ss-m-l-6">张</view>
 			</view>
 			<view class="menu-title ss-m-t-28">优惠券</view>
@@ -104,7 +104,7 @@
 					color: #000000;
 					line-height: 28rpx;
 					vertical-align: text-bottom;
-					font-family: OPPOSANS;
+					font-family: CountFont, OPPOSANS;
 				}
 
 				.unit-text {
@@ -116,4 +116,3 @@
 		}
 	}
 </style>
-

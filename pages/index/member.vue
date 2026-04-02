@@ -31,7 +31,13 @@
           </swiper>
 
           <!-- 静态权益展示区域 -->
-          <s-member-level-rights :level="currentLevel" :userInfo="userInfo" />
+          <s-member-level-rights
+            :level="currentLevel"
+            :userInfo="userInfo"
+            :rightsAll="state.rightsAll"
+            :rightsUnlockedMap="state.rightsUnlockedMap"
+            :rightsUnlockLoaded="state.rightsUnlockLoaded"
+          />
         </view>
 
         <!-- 优势对比区域 -->
@@ -101,7 +107,7 @@
                 <text class="text_23">/{{ currentLevel.upgradeName }}</text>
               </view>
               <view class="text-wrapper_4 flex-col" @tap="onUpgrade">
-                <text class="text_24">升级会员</text>
+                <text class="text_24">{{ isVipOpened ? '会员卡充值' : '升级会员' }}</text>
               </view>
             </view>
             <view class="box_23 flex-row">
@@ -145,12 +151,90 @@
   import sMemberLevelCard from '@/sheep/components/s-member-level-card/s-member-level-card.vue';
   import sMemberLevelRights from '@/sheep/components/s-member-level-card/s-member-level-rights.vue';
   import MemberLevelApi from '@/sheep/api/member/level';
+  import MemberRightsApi from '@/sheep/api/member/rights';
 
   async function loadMemberLevelList() {
     const { code, data } = await MemberLevelApi.getMemberLevelList();
     if (code !== 0) return;
     if (!Array.isArray(data)) return;
     state.levelList = data;
+  }
+
+  async function loadAllRights() {
+    if (!isLogin.value) {
+      state.rightsAll = [];
+      return;
+    }
+    const pageSize = 200;
+    let pageNo = 1;
+    const all = [];
+    for (;;) {
+      const { code, data } = await MemberRightsApi.getRightsPage({
+        pageNo,
+        pageSize,
+        status: 0,
+      });
+      if (code !== 0) break;
+      const list = Array.isArray(data?.list)
+        ? data.list
+        : Array.isArray(data?.records)
+          ? data.records
+          : Array.isArray(data?.items)
+            ? data.items
+            : [];
+      all.push(...list);
+      const totalRaw = data?.total ?? data?.count;
+      const total = Number(totalRaw);
+      if (Number.isFinite(total) && total > 0) {
+        if (all.length >= total) break;
+      } else if (list.length < pageSize) {
+        break;
+      }
+      pageNo += 1;
+      if (pageNo > 50) break;
+    }
+    state.rightsAll = all;
+  }
+
+  let rightsUnlocking = false;
+  async function loadUnlockedRightsByLevel(memberLevelId) {
+    if (rightsUnlocking) return;
+    if (!isLogin.value) {
+      state.rightsUnlockedMap = {};
+      state.rightsUnlockLoaded = false;
+      state.rightsUnlockedLevelId = null;
+      return;
+    }
+    const id = Number(memberLevelId);
+    if (!Number.isFinite(id)) {
+      state.rightsUnlockedMap = {};
+      state.rightsUnlockLoaded = false;
+      state.rightsUnlockedLevelId = null;
+      return;
+    }
+    if (state.rightsUnlockLoaded && state.rightsUnlockedLevelId === id) return;
+    rightsUnlocking = true;
+    state.rightsUnlockLoaded = false;
+    try {
+      const { code, data } = await MemberRightsApi.getRightsByLevel(id);
+      if (code !== 0) {
+        state.rightsUnlockedMap = {};
+        state.rightsUnlockLoaded = true;
+        state.rightsUnlockedLevelId = id;
+        return;
+      }
+      const list = Array.isArray(data) ? data : Array.isArray(data?.list) ? data.list : [];
+      const unlockedMap = {};
+      for (const it of list) {
+        const rid = Number(it?.id ?? it?.rightsId ?? it?.rightId ?? it?.rights_id);
+        if (Number.isFinite(rid)) unlockedMap[rid] = true;
+      }
+      state.rightsUnlockedMap = unlockedMap;
+      state.rightsUnlockLoaded = true;
+      state.rightsUnlockedLevelId = id;
+    } finally {
+      rightsUnlocking = false;
+    }
   }
 
   onShow(async () => {
@@ -161,6 +245,7 @@
     state.hasAutoLocated = false;
     state.hasUserInteracted = false;
     await loadMemberLevelList();
+    await loadAllRights();
   });
 
   onBeforeMount(() => {
@@ -185,6 +270,10 @@
     isAgreement: true,
     currentLevelIndex: 0,
     levelList: [],
+    rightsAll: [],
+    rightsUnlockedMap: {},
+    rightsUnlockLoaded: false,
+    rightsUnlockedLevelId: null,
     hasAutoLocated: false,
     hasUserInteracted: false,
   });
@@ -277,7 +366,88 @@
       ],
     },
   ];
-
+  const allRights = [
+    {
+      id: 8,
+      name: '推荐有礼',
+      icon: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260331/编组@2x(3)_1774950818328.png',
+      info: '推荐好物享专礼',
+      imgs: '',
+      sort: 7,
+      status: 0,
+      createTime: 1773902614000,
+    },
+    {
+      id: 7,
+      name: '专属客服',
+      icon: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260331/编组@2x(1)_1774950849643.png',
+      info: '售后优先答疑',
+      imgs: '',
+      sort: 6,
+      status: 0,
+      createTime: 1773902563000,
+    },
+    {
+      id: 6,
+      name: '生日特权',
+      icon: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260331/编组@2x(7)_1774950866542.png',
+      info: '当天赠8折劵',
+      imgs: '',
+      sort: 2,
+      status: 0,
+      createTime: 1773902527000,
+    },
+    {
+      id: 5,
+      name: '免费试用',
+      icon: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260331/编组@2x(4)_1774950892141.png',
+      info: '新品免费试用',
+      imgs: '',
+      sort: 5,
+      status: 0,
+      createTime: 1773902489000,
+    },
+    {
+      id: 4,
+      name: '全场包邮',
+      icon: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260331/编组@2x(5)_1774950908827.png',
+      info: '全场商品包邮',
+      imgs: '',
+      sort: 4,
+      status: 0,
+      createTime: 1773902458000,
+    },
+    {
+      id: 3,
+      name: '会员费抵扣',
+      icon: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260331/编组@2x(6)_1774950934325.png',
+      info: '可抵余额消费',
+      imgs: '',
+      sort: 3,
+      status: 0,
+      createTime: 1773902428000,
+    },
+    {
+      id: 2,
+      name: '会员专享价',
+      icon: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260331/编组@2x(2)_1774950963924.png',
+      info: '最高85折',
+      imgs: '',
+      sort: 0,
+      status: 0,
+      createTime: 1773710338000,
+    },
+    {
+      id: 1,
+      name: '积分特权',
+      icon: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260331/编组@2x_1774950981226.png',
+      info: '最高享1.5倍积分',
+      imgs: '',
+      sort: 1,
+      status: 0,
+      createTime: 1773657216000,
+    },
+  ];
   const memberLevels = computed(() => {
     const baseById = defaultMemberLevels.reduce((acc, item) => {
       if (item?.id) acc[item.id] = item;
@@ -288,6 +458,7 @@
     if (!Array.isArray(apiList) || apiList.length === 0) return defaultMemberLevels;
 
     const idByLevel = {
+      0: 'normal',
       1: 'golden',
       2: 'platinum',
       3: 'diamond',
@@ -297,7 +468,10 @@
       .filter(
         (item) =>
           item &&
-          (Number(item.level) === 1 || Number(item.level) === 2 || Number(item.level) === 3),
+          (Number(item.level) === 0 ||
+            Number(item.level) === 1 ||
+            Number(item.level) === 2 ||
+            Number(item.level) === 3),
       )
       .sort((a, b) => Number(a.level) - Number(b.level))
       .map((item) => {
@@ -314,6 +488,7 @@
         return {
           ...base,
           id,
+          memberLevelId: item.id ?? null,
           name,
           cardBg,
           price,
@@ -325,8 +500,10 @@
         };
       });
 
-    const result = [baseById.normal, ...mapped].filter(Boolean);
-    return result.filter((v, idx, arr) => arr.findIndex((x) => x.id === v.id) === idx);
+    const result = mapped.filter(Boolean);
+    const hasNormal = result.some((v) => v?.id === 'normal');
+    const merged = hasNormal ? result : [baseById.normal, ...result].filter(Boolean);
+    return merged.filter((v, idx, arr) => arr.findIndex((x) => x.id === v.id) === idx);
   });
 
   const currentUserLevelId = computed(() => {
@@ -383,8 +560,61 @@
     { immediate: true },
   );
 
+
   const currentLevel = computed(
     () => memberLevels.value[state.currentLevelIndex] || memberLevels.value[0],
+  );
+
+  const userMemberLevelId = computed(() => {
+    const rawLevel = userInfo.value?.level;
+    const levelValue =
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      levelValue === null || levelValue === undefined || levelValue === '' ? null : Number(levelValue);
+    if (normalizedLevel === 0) return 0;
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
+      const hit = Array.isArray(state.levelList)
+        ? state.levelList.find((it) => Number(it?.level) === normalizedLevel)
+        : null;
+      const id = Number(hit?.id);
+      if (Number.isFinite(id)) return id;
+      return null;
+    }
+    const rawLevelName = userInfo.value?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (levelName) {
+      if (levelName.includes('普通')) return 0;
+      let derivedLevel = null;
+      if (levelName.includes('黄金')) derivedLevel = 1;
+      if (levelName.includes('铂金')) derivedLevel = 2;
+      if (levelName.includes('钻石')) derivedLevel = 3;
+      if (derivedLevel !== null) {
+        const hit = Array.isArray(state.levelList)
+          ? state.levelList.find((it) => Number(it?.level) === derivedLevel)
+          : null;
+        const id = Number(hit?.id);
+        return Number.isFinite(id) ? id : null;
+      }
+    }
+    const direct =
+      userInfo.value?.memberLevelId ??
+      userInfo.value?.levelId ??
+      userInfo.value?.memberLevelID ??
+      (typeof rawLevel === 'object' && rawLevel ? rawLevel.memberLevelId ?? rawLevel.levelId : null);
+    const directId = Number(direct);
+    if (Number.isFinite(directId)) return directId;
+    return null;
+  });
+
+  watch(
+    [userMemberLevelId, () => state.rightsAll, isLogin],
+    async ([memberLevelId, all, login]) => {
+      if (!login) return;
+      if (!Array.isArray(all) || all.length === 0) return;
+      if (memberLevelId === null || memberLevelId === undefined) return;
+      await loadUnlockedRightsByLevel(memberLevelId);
+    },
+    { immediate: true },
   );
 
   const navTitle = computed(() => currentLevel.value?.name || '会员中心');
@@ -417,7 +647,13 @@
     state.hasUserInteracted = true;
   };
 
+  const isVipOpened = computed(() => currentUserLevelId.value !== 'normal');
+
   async function onUpgrade() {
+    if (isVipOpened.value) {
+      sheep.$router.go('/pages/user/wallet/vip-recharge');
+      return;
+    }
     if (!state.isAgreement) {
       sheep.$helper.toast('请先阅读并同意协议');
       return;
@@ -656,16 +892,21 @@
       z-index: 2;
     }
 
+    .text-wrapper_40 {
+      width: 100%;
+      align-items: center;
+    }
+
     .text_20 {
       overflow-wrap: break-word;
       color: rgba(255, 236, 183, 1);
       font-size: 42rpx;
       font-family: PingFangSC-Medium;
       font-weight: 500;
-      text-align: left;
+      text-align: center;
       white-space: nowrap;
       line-height: 42rpx;
-      margin-right: 26rpx;
+      margin-right: 0;
     }
 
     .text_21 {
@@ -685,6 +926,8 @@
       display: flex;
       flex-direction: row;
       align-items: center;
+      justify-content: center;
+      width: 100%;
       overflow: hidden;
     }
 
@@ -699,13 +942,15 @@
     }
 
     .desc-lines {
-      flex: 1;
+      flex: 0 1 auto;
       min-width: 0;
       display: flex;
       flex-direction: row;
       align-items: center;
+      justify-content: center;
       flex-wrap: nowrap;
       white-space: nowrap;
+      max-width: 100%;
       overflow: hidden;
     }
 

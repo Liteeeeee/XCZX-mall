@@ -175,10 +175,19 @@
     }
 
     state.loading = true;
-    const { code } = await AuthUtil.smsLogin({ mobile: state.mobile, code: state.code });
+    const inviterIdRaw = uni.getStorageSync('inviterId');
+    const inviterId = inviterIdRaw ? Number(inviterIdRaw) : 0;
+    const res =
+      Number.isFinite(inviterId) && inviterId > 0
+        ? await AuthUtil.smsInviteLogin({ mobile: state.mobile, code: state.code, inviterId })
+        : await AuthUtil.smsLogin({ mobile: state.mobile, code: state.code });
     state.loading = false;
-    if (code !== 0) {
+    if (res?.code !== 0) {
       return;
+    }
+    if (Number.isFinite(inviterId) && inviterId > 0) {
+      uni.removeStorageSync('inviterId');
+      uni.removeStorageSync('shareId');
     }
 
     const returnUrl = uni.getStorageSync('returnUrl');

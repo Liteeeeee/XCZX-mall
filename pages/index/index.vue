@@ -79,9 +79,16 @@
     // #ifdef MP
     // 小程序识别二维码
     if (options.scene) {
-      const sceneParams = decodeURIComponent(options.scene).split('=');
-      console.log('sceneParams=>', sceneParams);
-      options[sceneParams[0]] = sceneParams[1];
+      const scene = decodeURIComponent(options.scene);
+      scene.split('&').forEach((pair) => {
+        if (!pair) return;
+        const idx = pair.indexOf('=');
+        if (idx < 0) return;
+        const k = pair.slice(0, idx);
+        const v = pair.slice(idx + 1);
+        if (!k) return;
+        options[k] = v;
+      });
     }
     // #endif
 
@@ -99,6 +106,10 @@
     if (options.inviterId) {
       uni.setStorageSync('inviterId', options.inviterId);
       uni.setStorageSync('shareId', options.inviterId);
+      if (!sheep.$store('user').isLogin) {
+        sheep.$router.go('/pages/index/login');
+        return;
+      }
     }
 
     // 进入指定页面(完整页面路径)

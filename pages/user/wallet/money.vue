@@ -75,7 +75,7 @@
             </view>
           </view>
           <text class="time">
-            {{ sheep.$helper.timeFormat(state.createTime, 'yyyy-mm-dd hh:MM:ss') }}
+            {{ sheep.$helper.timeFormat(item.createTime, 'yyyy-mm-dd hh:MM:ss') }}
           </text>
         </view>
       </view>
@@ -260,24 +260,21 @@
         line-height: 70rpx;
         font-weight: 500;
         color: $white;
+        position: relative;
+        z-index: 9;
         font-family: OPPOSANS;
       }
 
-      .reduce-num {
-        font-size: 26rpx;
-        font-weight: 400;
-        color: $white;
-      }
-
       .topup-btn {
-        width: 120rpx;
         height: 60rpx;
         line-height: 60rpx;
-        border-radius: 30px;
+        background: $white;
+        border-radius: 30rpx;
+        padding: 0 40rpx;
         font-size: 26rpx;
         font-weight: 500;
-        background-color: $white;
-        color: var(--ui-BG-Main);
+        position: relative;
+        z-index: 9;
       }
     }
   }

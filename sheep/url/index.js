@@ -1,6 +1,8 @@
 import $store from '@/sheep/store';
 import { baseUrl, staticUrl } from '@/sheep/config';
 
+const DEFAULT_CDN_URL = 'https://xiancao.oss-cn-beijing.aliyuncs.com';
+
 const cdn = (url = '', cdnurl = '') => {
   if (!url) return '';
   if (url.indexOf('http') === 0) {
@@ -14,8 +16,10 @@ const cdn = (url = '', cdnurl = '') => {
     return out;
   }
   if (cdnurl === '') {
-    cdnurl = $store('app').info.cdnurl;
+    cdnurl = $store('app').info.cdnurl || DEFAULT_CDN_URL;
   }
+  if (!cdnurl) cdnurl = DEFAULT_CDN_URL;
+  cdnurl = String(cdnurl).replace(/\/+$/, '');
   return cdnurl + url;
 };
 export default {

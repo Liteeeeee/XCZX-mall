@@ -181,7 +181,7 @@
     .price-text {
       font-size: 24rpx;
       font-weight: 500;
-      font-family: OPPOSANS;
+      font-family: CountFont, OPPOSANS;
     }
 
     .total-text {

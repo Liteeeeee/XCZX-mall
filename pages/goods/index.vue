@@ -39,7 +39,7 @@
           >
             <view class="banner-left ss-flex ss-col-center">
               <view class="price-unit">￥</view>
-              <view class="price-value">{{ fen2yuan(state.settlementSku.promotionPrice) }}</view>
+              <view class="price-value count-font">{{ fen2yuan(state.settlementSku.promotionPrice) }}</view>
               <view class="price-tag-box ss-flex ss-col-center">
                 <view class="price-tag-unit">/盒</view>
                 <view class="price-tag-label"
@@ -68,11 +68,11 @@
               v-if="!state.settlementSku.promotionPrice"
             >
               <view class="price-box ss-flex ss-col-bottom">
-                <view class="price-text ss-m-r-16">
+                <view class="price-text count-font ss-m-r-16">
                   {{ fen2yuan(state.selectedSku.price || state.goodsInfo.price) }}
                 </view>
                 <view
-                  class="origin-price-text"
+                  class="origin-price-text count-font"
                   v-if="state.goodsInfo.marketPrice > state.goodsInfo.price"
                 >
                   {{ fen2yuan(state.selectedSku.marketPrice || state.goodsInfo.marketPrice) }}

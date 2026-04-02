@@ -305,7 +305,7 @@
               {{ item }}
             </view>
           </view>
-          <view v-if="goodsFields.price?.show" class="ss-flex ss-col-bottom font-OPPOSANS">
+          <view v-if="goodsFields.price?.show" class="ss-flex ss-col-bottom count-font">
             <view class="sl-goods-price ss-m-r-12" :style="[{ color: goodsFields.price.color }]">
               <!-- 活动价格 -->
               <view
@@ -340,7 +340,7 @@
                 (goodsFields.original_price?.show || goodsFields.marketPrice?.show) &&
                 (data.original_price > 0 || data.marketPrice > 0)
               "
-              class="goods-origin-price ss-m-t-16 font-OPPOSANS ss-flex"
+              class="goods-origin-price ss-m-t-16 count-font ss-flex"
               :style="[{ color: originPriceColor }]"
             >
               <text class="price-unit ss-font-20">{{ priceUnit }}</text>
