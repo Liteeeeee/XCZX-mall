@@ -72,7 +72,9 @@ export const get_file_info = (filepath) => {
         resolve(res);
       },
       fail(err) {
-        reject(err);
+        // 忽略获取图片信息失败，避免中断上传流程
+        console.warn('获取图片信息失败', err);
+        resolve({ width: 0, height: 0, path: filepath });
       },
     });
   });

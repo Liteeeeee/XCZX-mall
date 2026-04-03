@@ -150,4 +150,9 @@ export const SharePageEnum = {
     page: '/pages/goods/point',
     value: '6',
   },
+  MEMBER: {
+    name: '会员页',
+    page: '/pages/index/member',
+    value: '7',
+  },
 };

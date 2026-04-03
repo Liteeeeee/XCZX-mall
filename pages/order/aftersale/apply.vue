@@ -99,7 +99,7 @@
     <!-- 底部按钮 -->
     <su-fixed bottom placeholder bg="bg-white">
       <view class="footer-box ss-flex ss-col-center ss-row-right">
-        <button class="ss-reset-button cancel-btn" @tap="sheep.$router.go('/pages/chat/index')">
+        <button class="ss-reset-button cancel-btn" open-type="contact">
           联系客服
         </button>
         <button class="ss-reset-button pay-btn" @tap="submit">提交</button>

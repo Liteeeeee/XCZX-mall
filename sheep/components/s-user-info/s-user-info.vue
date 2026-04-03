@@ -29,6 +29,7 @@
    */
   import { computed } from 'vue';
   import sheep from '@/sheep';
+  import BrokerageApi from '@/sheep/api/trade/brokerage';
 
   const props = defineProps({
     data: {
@@ -62,6 +63,7 @@
       '我的设置': '/static/user/setting.webp',
       '地址管理': '/static/user/address.webp',
       '平台合伙人': '/static/user/friend.webp',
+      '申请合伙人': '/static/user/friend.webp',
     };
     if (iconMap[item.name]) {
       return sheep.$url.static(iconMap[item.name]);
@@ -69,7 +71,7 @@
     return item.icon ? sheep.$url.cdn(item.icon) : '';
   };
 
-  const onItemClick = (item) => {
+  const onItemClick = async (item) => {
     if (item.name === '我的设置') {
       sheep.$router.go('/pages/user/info');
       return;
@@ -79,7 +81,11 @@
       return;
     }
     if (item.name === '平台合伙人') {
-      sheep.$router.go('/pages/commission/index');
+      sheep.$router.go('/pages/commission/apply');
+      return;
+    }
+    if (item.name === '申请合伙人') {
+      sheep.$router.go('/pages/commission/apply');
       return;
     }
     if (item.url) {

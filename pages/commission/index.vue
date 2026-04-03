@@ -42,18 +42,30 @@
         </view>
 
         <view class="box_15 flex-col">
-          <view class="text-wrapper_5 flex-row">
-            <text class="text_5 count-font">{{ totalBrokerageYuan }}</text>
-            <text class="text_6 count-font">+{{ yesterdayBrokerageYuan }}</text>
-            <text class="text_7 count-font">{{ fansCount }}</text>
-            <text class="text_8 count-font">+0</text>
-            <text class="text_9 count-font">{{ orderCount }}</text>
-            <text class="text_10 count-font">+0</text>
-          </view>
-          <view class="text-wrapper_6 flex-row justify-between">
-            <text class="text_11">推广收益</text>
-            <text class="text_12">粉丝</text>
-            <text class="text_13">推广订单</text>
+          <view class="stats-row flex-row justify-around">
+            <view class="stat-col flex-col" @tap="sheep.$router.go('/pages/commission/index.lanhu.backup')">
+              <view class="stat-value-row flex-row align-center justify-center">
+                <text class="text_5 count-font">{{ totalBrokerageYuan }}</text>
+                <text class="text_6 count-font stat-plus">+{{ yesterdayBrokerageYuan }}</text>
+              </view>
+              <text class="text_11" 
+                >推广收益</text
+              >
+            </view>
+            <view class="stat-col flex-col" @tap="sheep.$router.go('/pages/commission/fans')">
+              <view class="stat-value-row flex-row align-center justify-center">
+                <text class="text_7 count-font">{{ fansCount }}</text>
+                <text class="text_8 count-font stat-plus">+0</text>
+              </view>
+              <text class="text_12">粉丝</text>
+            </view>
+            <view class="stat-col flex-col" @tap="sheep.$router.go('/pages/commission/order')">
+              <view class="stat-value-row flex-row align-center justify-center">
+                <text class="text_9 count-font">{{ orderCount }}</text>
+                <text class="text_10 count-font stat-plus">+0</text>
+              </view>
+              <text class="text_13">推广订单</text>
+            </view>
           </view>
         </view>
       </view>
@@ -69,13 +81,15 @@
             />
             <view class="section_13 flex-col">
               <text class="text_14">{{ item.name }}</text>
-              <view class="text-wrapper_7 flex-row">
+              <view class="text-wrapper_7 justify-between">
                 <text class="text_15">{{ item.introduction }}</text>
-                <text class="text_16">¥</text>
+                <view :style="{marginRight:'40rpx'}"><text class="text_16">¥</text>
                 <text class="text_17 count-font">{{ fen2yuan(item.price) }}</text>
-              </view>
+             </view> </view>
               <view class="group_6 flex-row justify-between">
-                <text class="text_18">{{ formatBrokerage(item) }}</text>
+                <view class="profit-tag flex-row align-center">
+                  <text class="text_18">{{ formatBrokerage(item) }}</text>
+                </view>
                 <button class="ss-reset-button block_5 flex-row justify-between" @tap.stop="onShareGoods(item)">
                   <text class="text_19">立即推广</text>
                   <view class="box_19 flex-col">
@@ -151,16 +165,24 @@
     return Number(state.summary?.orderCount || 0);
   });
 
+  const fen2yuanInt = (fen) => {
+    const n = Number(fen || 0);
+    if (!Number.isFinite(n)) {
+      return '0';
+    }
+    return String(Math.floor(n / 100));
+  };
+
   const totalBrokerageYuan = computed(() => {
     const totalFen =
       Number(state.summary?.brokeragePrice || 0) +
       Number(state.summary?.withdrawPrice || 0) +
       Number(state.summary?.frozenPrice || 0);
-    return fen2yuan(totalFen);
+    return fen2yuanInt(totalFen);
   });
 
   const yesterdayBrokerageYuan = computed(() => {
-    return fen2yuan(Number(state.summary?.yesterdayPrice || 0));
+    return fen2yuanInt(Number(state.summary?.yesterdayPrice || 0));
   });
 
   function onInviteMember() {
@@ -414,7 +436,7 @@
     border-radius: 34rpx;
     border: 1rpx solid rgba(30, 63, 28, 1);
     margin: 35rpx 0 35rpx auto;
-    padding: 8rpx 28rpx 8rpx 28rpx;
+    padding: 4rpx 28rpx 4rpx 28rpx;
   }
 
   .text_4 {
@@ -425,7 +447,7 @@
     font-weight: normal;
     text-align: center;
     white-space: nowrap;
-    line-height: 40rpx;
+    line-height: 54rpx;
   }
 
   .box_15 {
@@ -433,6 +455,28 @@
     border-radius: 20rpx;
     padding: 14rpx 38rpx 25rpx 41rpx;
     margin: 38rpx 0 0 0;
+  }
+
+  .stats-row {
+    width: 100%;
+  }
+
+  .stat-col {
+    flex: 1;
+    align-items: center;
+  }
+
+  .stat-value-row {
+    display: inline-flex;
+    position: relative;
+    align-items: baseline;
+    padding-right: 30rpx;
+  }
+
+  .stat-plus {
+    position: absolute;
+    right: 0;
+    top: 0;
   }
 
   .text-wrapper_5 {
@@ -472,7 +516,7 @@
     text-align: center;
     white-space: nowrap;
     line-height: 53rpx;
-    margin: 1rpx 0 0 128rpx;
+    margin: 1rpx 0 0 0;
   }
 
   .text_8 {
@@ -484,7 +528,7 @@
     text-align: left;
     white-space: nowrap;
     line-height: 26rpx;
-    margin: 0 0 0 -3rpx;
+    margin: 0 0 0 0;
   }
 
   .text_9 {
@@ -496,7 +540,7 @@
     text-align: center;
     white-space: nowrap;
     line-height: 53rpx;
-    margin: 1rpx 0 0 151rpx;
+    margin: 1rpx 0 0 0;
   }
 
   .text_10 {
@@ -508,7 +552,7 @@
     text-align: left;
     white-space: nowrap;
     line-height: 26rpx;
-    margin: 0 0 0 -3rpx;
+    margin: 0 0 0 0;
   }
 
   .text-wrapper_6 {
@@ -603,12 +647,15 @@
   }
 
   .group_6 {
+    margin: 18rpx 0 0 0;
+  }
+
+  .profit-tag {
     background-color: rgba(255, 247, 245, 1);
     border-radius: 10rpx;
-    width: 404rpx;
     border: 1rpx solid rgba(252, 231, 224, 1);
     padding-left: 25rpx;
-    margin: 18rpx 0 0 0;
+    padding-right: 25rpx;
   }
 
   .text_18 {
@@ -620,7 +667,7 @@
     text-align: left;
     white-space: nowrap;
     line-height: 33rpx;
-    margin: 11rpx 0 0 0;
+    margin: 11rpx 0 11rpx 0;
   }
 
   .block_5 {

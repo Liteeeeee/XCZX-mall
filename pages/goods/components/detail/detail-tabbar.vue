@@ -27,14 +27,14 @@
           </view>
           <view class="item-title">购物车</view>
         </view>
-        <view
+        <button
           v-if="serviceIcon"
-          class="detail-tabbar-item ss-flex ss-flex-col ss-row-center ss-col-center"
-          @tap="onChat"
+          class="ss-reset-button detail-tabbar-item ss-flex ss-flex-col ss-row-center ss-col-center"
+          open-type="contact"
         >
           <uni-icons type="headphones" size="22" color="#666"></uni-icons>
           <view class="item-title">客服</view>
-        </view>
+        </button>
         <slot></slot>
       </view>
     </view>
@@ -146,6 +146,16 @@
       width: 120rpx;
       height: 100%;
       position: relative;
+      background: transparent;
+      padding: 0;
+      margin: 0;
+      border: none;
+      border-radius: 0;
+      line-height: normal;
+
+      &::after {
+        border: none;
+      }
 
       .icon-box {
         position: relative;

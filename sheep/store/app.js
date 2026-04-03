@@ -299,7 +299,7 @@ const adaptTemplate = async (appTemplate, templateId) => {
         "id": "UserInfo", 
         "property": { 
           "title": "我的信息", 
-          "items": [{ "icon": "ep:setting", "name": "我的设置", "url": "" }, { "icon": "ep:location", "name": "地址管理", "url": "" }, { "icon": "ep:user-filled", "name": "平台合伙人", "url": "" }], 
+          "items": [{ "icon": "ep:setting", "name": "我的设置", "url": "" }, { "icon": "ep:location", "name": "地址管理", "url": "" }, { "icon": "ep:user-filled", "name": "申请合伙人", "url": "" }], 
           "style": { "bgType": "color", "bgColor": "#fff", "marginLeft": 8, "marginRight": 8, "marginBottom": 8, "paddingTop": 0, "paddingRight": 0, "paddingBottom": 0, "paddingLeft": 0, "borderRadius": 8 } 
         } 
       }

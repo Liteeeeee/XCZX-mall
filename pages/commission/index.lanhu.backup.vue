@@ -13,7 +13,7 @@
           class="nav-bar-inner ss-flex ss-col-center"
           :style="{
             position: 'absolute',
-            top: 126 + 'rpx',
+            top: 48 + 'rpx',
             transform: 'translateY(-50%)',
             height: '100%',
             left: '0',

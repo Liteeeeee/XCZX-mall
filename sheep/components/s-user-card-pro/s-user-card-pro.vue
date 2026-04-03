@@ -49,7 +49,7 @@
 
       <!-- 登录按钮/会员等级图标 -->
       <view class="right-action">
-        <view v-if="isLogin" class="member-icon-box" @tap="sheep.$router.go('/pages/index/member')">
+        <view v-if="isLogin && memberIcon" class="member-icon-box" @tap="sheep.$router.go('/pages/index/member')">
           <image class="member-icon" :src="sheep.$url.static(memberIcon)" mode="aspectFit" />
         </view>
       </view>
@@ -169,7 +169,7 @@
         : rawLevel;
     const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
-      return iconsByLevel[normalizedLevel] || '/static/user/normal.webp';
+      return iconsByLevel[normalizedLevel] || iconsByLevel[1];
     }
 
     const rawLevelName = userInfo.value?.levelName;
@@ -177,7 +177,7 @@
     if (levelName.includes('钻石')) return iconsByLevel[3];
     if (levelName.includes('铂金')) return iconsByLevel[2];
     if (levelName.includes('黄金')) return iconsByLevel[1];
-    return '/static/user/normal.webp';
+    return '';
   });
 
   // 统计数据列表

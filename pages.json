@@ -417,6 +417,54 @@
 					}
 				},
 				{
+					"path": "index.lanhu.backup",
+					"style": {
+						"navigationBarTitleText": "推广收益"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "推广收益",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "fans",
+					"style": {
+						"navigationBarTitleText": "粉丝"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "粉丝",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "apply",
+					"style": {
+						"navigationBarTitleText": "分销"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "分销申请",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "career",
+					"style": {
+						"navigationBarTitleText": "选择职业"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "选择职业",
+						"group": "分销中心"
+					}
+				},
+				{
 					"path": "goods",
 					"style": {
 						"navigationBarTitleText": "推广商品"

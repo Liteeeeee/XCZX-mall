@@ -65,9 +65,9 @@
           <view class="achieve-check" v-if="platinumItem.achieved">
             <text class="achieve-check-icon">✓</text>
           </view>
-          <view class="achieve-check is-dim" v-else>
-            <text class="achieve-check-icon">✓</text>
-          </view>
+          <button class="achieve-check is-dim" v-else open-type="share">
+            <text class="achieve-check-icon">分享邀请</text>
+          </button>
         </view>
         <view class="box_94 flex-row">
           <view class="box_95 flex-col"></view>
@@ -96,9 +96,9 @@
           <view class="achieve-check" v-if="diamondItem.achieved">
             <text class="achieve-check-icon">✓</text>
           </view>
-          <view class="achieve-check is-dim" v-else>
-            <text class="achieve-check-icon">✓</text>
-          </view>
+         <button class="achieve-check is-dim" v-else open-type="share">
+            <text class="achieve-check-icon">分享邀请</text>
+          </button>
         </view>
         
       
@@ -193,14 +193,13 @@
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
       return idByLevel[normalizedLevel] === props.level.id;
     }
-    if (normalizedLevel === 0 || normalizedLevel === null) {
-      return props.level.id === 'normal';
-    }
-
+    
     const rawLevelName = props.userInfo?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
-    if (!levelName) return props.level.id === 'normal';
-    return levelName === props.level.name;
+    if (levelName.includes('钻石')) return props.level.id === 'diamond';
+    if (levelName.includes('铂金')) return props.level.id === 'platinum';
+    if (levelName.includes('黄金')) return props.level.id === 'golden';
+    return props.level.id === 'golden'; // Default fallback
   });
 
   const currentUserLevel = computed(() => {
@@ -211,13 +210,15 @@
         : rawLevel;
     const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return normalizedLevel;
-    if (normalizedLevel === 0 || normalizedLevel === null) return 0;
+    
     const rawLevelName = props.userInfo?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
-    if (levelName.includes('钻石')) return 3;
-    if (levelName.includes('铂金')) return 2;
-    if (levelName.includes('黄金')) return 1;
-    return 0;
+    if (levelName) {
+      if (levelName.includes('黄金')) return 1;
+      if (levelName.includes('铂金')) return 2;
+      if (levelName.includes('钻石')) return 3;
+    }
+    return 1; // Default fallback
   });
 
   const currentCardLevel = computed(() => {
@@ -542,11 +543,12 @@
   }
 
   .achieve-check {
-    width: 40rpx;
+    width: auto;
     height: 40rpx;
-    border-radius: 50%;
+    border-radius: 20rpx;
     background-image: linear-gradient(90deg, rgba(255, 254, 224, 1) 0, rgba(255, 232, 165, 1) 100%);
-    margin: 21rpx 21rpx 20rpx 38rpx;
+    margin: 21rpx 21rpx 20rpx 18rpx;
+    padding: 0 16rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -554,14 +556,14 @@
   }
 
   .achieve-check.is-dim {
-    opacity: 0.45;
+    opacity: 0.8;
   }
 
   .achieve-check-icon {
     color: #000;
-    font-size: 26rpx;
+    font-size: 22rpx;
     line-height: 1;
-    font-weight: 700;
+    font-weight: normal;
   }
 
   .text_58,

@@ -25,7 +25,7 @@
             type="left"
             size="22"
             color="rgba(30, 63, 28, 0.9)"
-            @tap="sheep.$router.back()"
+            @tap="onBack"
             class="ss-m-l-20"
           ></uni-icons>
           <text class="nav-title ss-m-l-10">收银台</text>
@@ -246,12 +246,28 @@
       clearInterval(timer.value);
       timer.value = null;
     }
-    if (state.payStatus !== 1 || !state.orderInfo?.expireTime) {
+    if (state.payStatus !== 1) {
       remainTimeText.value = '';
       return;
     }
+
+    let expireMs = 0;
+    if (state.orderInfo?.expireTime) {
+      expireMs = parseTimeMs(state.orderInfo.expireTime);
+    }
+    
+    // 如果没有获取到合法的过期时间（后端未返回或解析失败），且是 VIP 升级订单，给个默认的兜底时间（如创建时间 + 30 分钟）
+    if (expireMs <= 0 && state.orderType === 'vip_upgrade') {
+      const createMs = parseTimeMs(state.orderInfo?.createTime) || Date.now();
+      expireMs = createMs + 30 * 60 * 1000; 
+    }
+
+    if (expireMs <= 0) {
+      remainTimeText.value = '';
+      return;
+    }
+
     const tick = () => {
-      const expireMs = parseTimeMs(state.orderInfo.expireTime);
       const ms = expireMs - Date.now();
       if (ms <= 0) {
         remainTimeText.value = '';
@@ -296,6 +312,19 @@
         return true;
       }
     });
+  }
+
+  function onBack() {
+    const pages = getCurrentPages();
+    if (pages.length > 1) {
+      sheep.$router.back();
+    } else {
+      if (state.orderType === 'vip_upgrade') {
+        sheep.$router.go('/pages/index/member');
+      } else {
+        sheep.$router.go('/pages/index/index');
+      }
+    }
   }
 
   onLoad((options) => {

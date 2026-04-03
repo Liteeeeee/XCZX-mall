@@ -5,6 +5,7 @@
     :bgStyle="{ color: '#F8F9F3' }"
     :navbarStyle="navbarStyle"
     tabbar="/pages/index/member"
+    :onShareAppMessage="shareInfo"
   >
     <view class="page flex-col">
       <view class="block_1 flex-col">
@@ -91,7 +92,7 @@
           </view>
         </view>
         <!-- 升级操作区域 -->
-        <view class="block_27 flex-col" v-if="currentLevel.id !== 'normal'">
+        <view class="block_27 flex-col" v-if="currentLevel">
           <view class="box_19 flex-col">
             <view class="box_20">
               <view>
@@ -152,6 +153,7 @@
   import sMemberLevelRights from '@/sheep/components/s-member-level-card/s-member-level-rights.vue';
   import MemberLevelApi from '@/sheep/api/member/level';
   import MemberRightsApi from '@/sheep/api/member/rights';
+  import { SharePageEnum } from '@/sheep/helper/const';
 
   async function loadMemberLevelList() {
     const { code, data } = await MemberLevelApi.getMemberLevelList();
@@ -266,6 +268,21 @@
   const userInfo = computed(() => sheep.$store('user').userInfo);
   const isLogin = computed(() => sheep.$store('user').isLogin);
 
+  const shareInfo = computed(() => {
+    return sheep.$platform.share.getShareInfo(
+      {
+        title: '加入会员，开启专属权益',
+        desc: '更多优惠等你来领',
+        params: {
+          page: SharePageEnum.MEMBER.value,
+        },
+      },
+      {
+        type: 'user', // 指定分享类型
+      }
+    );
+  });
+
   const state = reactive({
     isAgreement: true,
     currentLevelIndex: 0,
@@ -284,29 +301,10 @@
   // 会员等级配置数据
   const defaultMemberLevels = [
     {
-      id: 'normal',
-      name: '普通会员',
-      cardBg: memberData.card_bg,
-      price: 0,
-      upgradeName: '普通会员',
-      bgGradient:
-        'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(199, 218, 195, 0.8) 12.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
-      decoGradient:
-        'linear-gradient(90deg, #1E3F1C 0%, rgba(30, 63, 28, 0.45) 17.81%, rgba(30, 63, 28, 0.1) 50.53%, rgba(163, 160, 191, 0) 100%)',
-      badgeBg: 'rgba(30, 63, 28, 0.1)',
-      badgeColor: 'rgba(30, 63, 28, 1)',
-      mainColor: 'rgba(30, 63, 28, 1)',
-      rights: [
-        { icon: memberData.rights_2, title: '消费积分', desc: '购物返积分' },
-        { icon: memberData.rights_1, title: '99元包邮', desc: '免费送到家' },
-        { icon: memberData.rights_3, title: '会员关怀', desc: '专属铭牌' },
-      ],
-    },
-    {
       id: 'golden',
       name: '黄金会员',
       cardBg: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/goldenCard.webp',
-      price: 999,
+      price: 1000,
       upgradeName: '永久黄金会员',
       bgGradient:
         'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(255, 204, 162, 0.8) 12.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
@@ -326,7 +324,7 @@
       id: 'platinum',
       name: '铂金会员',
       cardBg: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/platinum.webp',
-      price: 999,
+      price: 1000,
       upgradeName: '永久黄金会员',
       bgGradient:
         'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(170, 188, 226, 0.8) 12.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
@@ -346,7 +344,7 @@
       id: 'diamond',
       name: '钻石会员',
       cardBg: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/Dimond.webp',
-      price: 999,
+      price: 1000,
       upgradeName: '永久黄金会员',
       bgGradient:
         'linear-gradient(181deg, rgba(245, 245, 245, 0.8) 0.018229%, rgba(238, 187, 255, 0.8)  18.37253%, rgba(245, 245, 245, 0.8) 99.958333%)',
@@ -458,7 +456,6 @@
     if (!Array.isArray(apiList) || apiList.length === 0) return defaultMemberLevels;
 
     const idByLevel = {
-      0: 'normal',
       1: 'golden',
       2: 'platinum',
       3: 'diamond',
@@ -468,8 +465,7 @@
       .filter(
         (item) =>
           item &&
-          (Number(item.level) === 0 ||
-            Number(item.level) === 1 ||
+          (Number(item.level) === 1 ||
             Number(item.level) === 2 ||
             Number(item.level) === 3),
       )
@@ -501,14 +497,11 @@
       });
 
     const result = mapped.filter(Boolean);
-    const hasNormal = result.some((v) => v?.id === 'normal');
-    const merged = hasNormal ? result : [baseById.normal, ...result].filter(Boolean);
-    return merged.filter((v, idx, arr) => arr.findIndex((x) => x.id === v.id) === idx);
+    return result.filter((v, idx, arr) => arr.findIndex((x) => x.id === v.id) === idx);
   });
 
   const currentUserLevelId = computed(() => {
     const idByLevel = {
-      0: 'normal',
       1: 'golden',
       2: 'platinum',
       3: 'diamond',
@@ -521,15 +514,14 @@
       level === null || level === undefined || level === '' ? null : Number(level);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3)
       return idByLevel[normalizedLevel];
-    if (normalizedLevel === 0) return 'normal';
 
     const rawLevelName = userInfo.value?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
-    if (!levelName) return 'normal';
     if (levelName.includes('钻石')) return 'diamond';
     if (levelName.includes('铂金')) return 'platinum';
     if (levelName.includes('黄金')) return 'golden';
-    return 'normal';
+    
+    return 'golden';
   });
 
   watch(
@@ -549,7 +541,7 @@
     ([list, levelId, login]) => {
       if (!login) return;
       if (!Array.isArray(list) || list.length === 0) return;
-      if (!levelId || levelId === 'normal') return;
+      if (!levelId) return;
       if (state.hasAutoLocated || state.hasUserInteracted) return;
       const idx = list.findIndex((v) => v?.id === levelId);
       if (idx >= 0) {
@@ -571,7 +563,6 @@
       typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
     const normalizedLevel =
       levelValue === null || levelValue === undefined || levelValue === '' ? null : Number(levelValue);
-    if (normalizedLevel === 0) return 0;
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
       const hit = Array.isArray(state.levelList)
         ? state.levelList.find((it) => Number(it?.level) === normalizedLevel)
@@ -583,7 +574,6 @@
     const rawLevelName = userInfo.value?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
     if (levelName) {
-      if (levelName.includes('普通')) return 0;
       let derivedLevel = null;
       if (levelName.includes('黄金')) derivedLevel = 1;
       if (levelName.includes('铂金')) derivedLevel = 2;
@@ -647,7 +637,23 @@
     state.hasUserInteracted = true;
   };
 
-  const isVipOpened = computed(() => currentUserLevelId.value !== 'normal');
+  const isVipOpened = computed(() => {
+    const rawLevel = userInfo.value?.level;
+    const levelValue =
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      levelValue === null || levelValue === undefined || levelValue === '' ? null : Number(levelValue);
+    
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return true;
+    
+    const rawLevelName = userInfo.value?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (levelName && (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))) {
+      return true;
+    }
+    
+    return false;
+  });
 
   async function onUpgrade() {
     if (isVipOpened.value) {

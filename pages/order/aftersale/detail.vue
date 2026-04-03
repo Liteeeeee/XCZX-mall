@@ -137,7 +137,7 @@
         </button>
         <button
           class="ss-reset-button contcat-btn btn"
-          @tap="sheep.$router.go('/pages/chat/index')"
+          open-type="contact"
         >
           联系客服
         </button>

@@ -69,6 +69,24 @@ const _go = (
       }
     };
   }
+  if (!nextRoute && page === '/pages/commission/apply') {
+    nextRoute = {
+      path: '/pages/commission/apply',
+      meta: {
+        auth: true,
+        title: '分销申请'
+      }
+    };
+  }
+  if (!nextRoute && page === '/pages/commission/career') {
+    nextRoute = {
+      path: '/pages/commission/career',
+      meta: {
+        auth: true,
+        title: '选择职业'
+      }
+    };
+  }
 
   // 未找到指定跳转页面
   // mark: 跳转404页

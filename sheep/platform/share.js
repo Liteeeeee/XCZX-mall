@@ -160,14 +160,21 @@ const decryptSpm = (spm) => {
         id: shareParamsArray[2], // 设置活动编号
       };
       break;
+    case SharePageEnum.MEMBER.value:
+      // 会员中心
+      shareParams.page = SharePageEnum.MEMBER.page;
+      break;
   }
   shareParams.platform = platformMap[shareParamsArray[3] - 1];
   shareParams.from = fromMap[shareParamsArray[4] - 1];
   if (shareParams.shareId !== 0) {
     // 记录分享者编号
     uni.setStorageSync('shareId', shareParams.shareId);
-    // 记录邀请人编号（仅首页分享视为“邀请注册”入口）
-    if (shareParamsArray[1] === SharePageEnum.HOME.value) {
+    // 记录邀请人编号（首页或会员页分享视为“邀请注册”入口）
+    if (
+      shareParamsArray[1] === SharePageEnum.HOME.value ||
+      shareParamsArray[1] === SharePageEnum.MEMBER.value
+    ) {
       uni.setStorageSync('inviterId', shareParams.shareId);
     }
     // 已登录 绑定推广员

@@ -9,6 +9,7 @@
           <view class="ss-flex-col ss-col-center">
             <button
               class="ss-reset-button list-image ss-flex ss-row-center ss-col-center"
+              :open-type="item.url === '/pages/chat/index' ? 'contact' : ''"
               @tap="onClick(item)"
             >
               <image v-if="show" :src="sheep.$url.static(item.icon)" class="list-icon" />
@@ -30,6 +31,7 @@
 
   function onClick(item) {
     closeMenuTools();
+    if (item.url === '/pages/chat/index') return; // 如果是原生客服，取消路由跳转
     if (item.url) sheep.$router.go(item.url);
   }
 
