@@ -294,7 +294,7 @@
     background-color: rgba(255, 254, 250, 1);
     border-radius: 22rpx;
     width: 750rpx;
-    height: 63vh;
+    height: 65vh;
     margin-top: 0;
     padding: 6rpx 32rpx 40rpx 32rpx;
     box-sizing: border-box;
@@ -303,7 +303,7 @@
   .balance-card {
     background-image: linear-gradient(180deg, rgba(255, 255, 253, 1) 0, rgba(234, 243, 229, 1) 100%);
     border-radius: 22rpx 22rpx 0 0;
-    height: 309rpx;
+    height: 216rpx;
     padding: 46rpx 34rpx 21rpx 34rpx;
     box-sizing: border-box;
     position: relative;
