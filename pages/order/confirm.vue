@@ -83,32 +83,6 @@
               <text class="item-value ss-m-r-24">{{ state.orderInfo.usePoint }}</text>
             </view>
           </view>
-          <view
-            class="order-item ss-flex ss-col-center ss-row-between"
-            v-if="state.orderInfo.type === 0 || state.orderPayload.pointActivityId"
-          >
-            <view class="item-title">积分抵扣</view>
-            <view class="ss-flex ss-col-center">
-              {{ state.pointStatus || state.orderPayload.pointActivityId ? '剩余积分' : '当前积分' }}
-              <image
-                :src="sheep.$url.static('/static/img/shop/goods/score1.svg')"
-                class="score-img"
-              />
-              <text class="item-value ss-m-r-24">
-                {{
-                  state.pointStatus || state.orderPayload.pointActivityId
-                    ? state.orderInfo.totalPoint - state.orderInfo.usePoint
-                    : state.orderInfo.totalPoint || 0
-                }}
-              </text>
-              <checkbox-group @change="changeIntegral" v-if="!state.orderPayload.pointActivityId">
-                <checkbox
-                  :checked="state.pointStatus"
-                  :disabled="!state.orderInfo.totalPoint || state.orderInfo.totalPoint <= 0"
-                />
-              </checkbox-group>
-            </view>
-          </view>
           <view class="order-item ss-flex ss-col-center ss-row-between">
             <view class="item-title">运费</view>
             <view class="ss-flex ss-col-center">
@@ -224,23 +198,12 @@
     showCoupon: false, // 是否展示优惠劵
     couponInfo: [], // 优惠劵列表
     showDiscount: false, // 是否展示营销活动
-    // ========== 积分 ==========
-    pointStatus: false, //是否使用积分
   });
 
   const addressState = ref({
     addressInfo: {}, // 选择的收货地址
     deliveryType: 1, // 收货方式：1-快递配送
   });
-
-  // ========== 积分 ==========
-  /**
-   * 使用积分抵扣
-   */
-  const changeIntegral = async () => {
-    state.pointStatus = !state.pointStatus;
-    await getOrderInfo();
-  };
 
   // 选择优惠券
   async function onSelectCoupon(couponId) {
@@ -266,7 +229,7 @@
       remark: state.orderPayload.remark,
       deliveryType: 1,
       addressId: addressState.value.addressInfo.id, // 收件地址编号
-      pointStatus: state.pointStatus,
+      pointStatus: false,
       combinationActivityId: state.orderPayload.combinationActivityId,
       combinationHeadId: state.orderPayload.combinationHeadId,
       seckillActivityId: state.orderPayload.seckillActivityId,
@@ -300,7 +263,7 @@
       couponId: state.orderPayload.couponId,
       deliveryType: 1,
       addressId: addressState.value.addressInfo.id, // 收件地址编号
-      pointStatus: state.pointStatus,
+      pointStatus: false,
       combinationActivityId: state.orderPayload.combinationActivityId,
       combinationHeadId: state.orderPayload.combinationHeadId,
       seckillActivityId: state.orderPayload.seckillActivityId,

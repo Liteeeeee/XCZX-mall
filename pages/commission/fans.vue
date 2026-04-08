@@ -45,7 +45,7 @@
             <image class="avatar" :src="sheep.$url.avatar(item.avatar)" mode="aspectFill" />
             <view class="fan-text flex-col">
               <text class="text_6">{{ item.nickname }}</text>
-              <text class="text_7">{{ formatDateTime(item.brokerageTime) }}</text>
+              <text class="text_7">{{ formatDateTime(item.bindUserTime) }}</text>
             </view>
           </view>
 
@@ -70,6 +70,7 @@
 
   const state = reactive({
     loading: false,
+    todayNewFansCount: 0,
     pagination: {
       list: [],
       total: 0,
@@ -84,9 +85,7 @@
   });
 
   const todayNewFans = computed(() => {
-    const today = sheep.$helper.timeFormat(Date.now(), 'yyyy.mm.dd');
-    return state.pagination.list.filter((it) => sheep.$helper.timeFormat(it.brokerageTime, 'yyyy.mm.dd') === today)
-      .length;
+    return Number(state.todayNewFansCount || 0);
   });
 
   function formatDateTime(t) {
@@ -107,28 +106,37 @@
     if (state.loading) return;
     state.loading = true;
     state.loadStatus = 'loading';
-    const baseParams = {
+    const params = {
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
     };
-    const l1 = await BrokerageApi.getBrokerageUserChildSummaryPage({ ...baseParams, level: 1 });
+    const res = await BrokerageApi.getBrokerageUserFansPage(params);
     state.loading = false;
-    if (l1?.code !== 0) {
+    if (!res || typeof res !== 'object' || res?.code !== 0) {
       state.loadStatus = 'more';
       return;
     }
 
-    const list1 = Array.isArray(l1?.data?.list) ? l1.data.list : [];
+    const list1 = Array.isArray(res?.data?.list)
+      ? res.data.list
+      : Array.isArray(res?.data?.records)
+        ? res.data.records
+        : [];
     const merged = list1
-      .map((it) => ({ ...it, _key: `l1-${it.id}` }))
+      .map((it, index) => ({
+        ...it,
+        brokerageTime: it.brokerageTime || it.createTime || it.createTimeMillis || 0,
+        _key: `fan-${it.id || it.userId || state.pagination.pageNo + '-' + index}`,
+      }))
       .sort((a, b) => Number(b.brokerageTime || 0) - Number(a.brokerageTime || 0));
 
     state.pagination.list = concat(state.pagination.list, merged);
-    state.pagination.total = Number(l1?.data?.total || 0);
+    state.pagination.total = Number(res?.data?.total || res?.data?.totalCount || 0);
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
 
-  onLoad(() => {
+  onLoad((options) => {
+    state.todayNewFansCount = Number(options?.todayFirstFansCount || options?.todayNewFansCount || 0);
     resetPagination();
     loadList();
   });

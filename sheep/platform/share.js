@@ -38,12 +38,12 @@ const getShareInfo = (
     poster, // 海报所需数据
     forward: {}, // 转发所需参数
   };
-  shareInfo.title = scene.title;
-  shareInfo.image = $url.cdn(scene.image);
-  shareInfo.desc = scene.desc;
-
   const app = $store('app');
   const shareConfig = app.platform.share;
+  const forwardInfo = shareConfig.forwardInfo || {};
+  shareInfo.title = scene.title || forwardInfo.title || app.info?.name || '';
+  shareInfo.image = $url.cdn(scene.image || forwardInfo.image || app.info?.logo || '');
+  shareInfo.desc = scene.desc || forwardInfo.desc || '';
 
   // 自动拼接分享用户参数
   const query = buildSpmQuery(scene.params);

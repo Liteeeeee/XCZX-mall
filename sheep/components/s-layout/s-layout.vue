@@ -208,7 +208,7 @@
   onShareAppMessage(() => {
     return {
       title: shareInfo.value.title,
-      path: shareInfo.value.forward.path,
+      path: shareInfo.value.forward?.path || shareInfo.value.path || 'pages/index/index',
       imageUrl: shareInfo.value.image,
     };
   });
@@ -216,7 +216,7 @@
   onShareTimeline(() => {
     return {
       title: shareInfo.value.title,
-      query: shareInfo.value.forward.path,
+      query: shareInfo.value.query || '',
       imageUrl: shareInfo.value.image,
     };
   });

@@ -46,23 +46,26 @@
             <view class="stat-col flex-col" @tap="sheep.$router.go('/pages/commission/index.lanhu.backup')">
               <view class="stat-value-row flex-row align-center justify-center">
                 <text class="text_5 count-font">{{ totalBrokerageYuan }}</text>
-                <text class="text_6 count-font stat-plus">+{{ yesterdayBrokerageYuan }}</text>
+                <text :style="{right:'-54rpx'}" class="text_6 count-font stat-plus stat-plus-income">+{{ todayBrokerageYuan }}</text>
               </view>
               <text class="text_11" 
                 >推广收益</text
               >
             </view>
-            <view class="stat-col flex-col" @tap="sheep.$router.go('/pages/commission/fans')">
+            <view
+              class="stat-col flex-col"
+              @tap="sheep.$router.go('/pages/commission/fans', { todayFirstFansCount })"
+            >
               <view class="stat-value-row flex-row align-center justify-center">
                 <text class="text_7 count-font">{{ fansCount }}</text>
-                <text class="text_8 count-font stat-plus">+0</text>
+                <text class="text_8 count-font stat-plus">+{{ todayFirstFansCount }}</text>
               </view>
               <text class="text_12">粉丝</text>
             </view>
             <view class="stat-col flex-col" @tap="sheep.$router.go('/pages/commission/order')">
               <view class="stat-value-row flex-row align-center justify-center">
                 <text class="text_9 count-font">{{ orderCount }}</text>
-                <text class="text_10 count-font stat-plus">+0</text>
+                <text class="text_10 count-font stat-plus">+{{ todayOrderCount }}</text>
               </view>
               <text class="text_13">推广订单</text>
             </view>
@@ -93,7 +96,7 @@
                 <button class="ss-reset-button block_5 flex-row justify-between" @tap.stop="onShareGoods(item)">
                   <text class="text_19">立即推广</text>
                   <view class="box_19 flex-col">
-                    <view class="box_20 flex-col"></view>
+                    <image class="box_20" :src="sheep.$url.cdn('/mp/static/arrow.webp')" mode="aspectFit" />
                   </view>
                 </button>
               </view>
@@ -156,38 +159,46 @@
   });
 
   const fansCount = computed(() => {
-    const first = Number(state.summary?.firstBrokerageUserCount || 0);
-    const second = Number(state.summary?.secondBrokerageUserCount || 0);
-    return first + second;
+    return Number(state.summary?.totalFirstFansCount || 0);
+  });
+
+  const todayFirstFansCount = computed(() => {
+    return Number(state.summary?.todayFirstFansCount || 0);
   });
 
   const orderCount = computed(() => {
-    return Number(state.summary?.orderCount || 0);
+    return Number(state.summary?.totalOrderCount || state.summary?.orderCount || 0);
   });
 
-  const fen2yuanInt = (fen) => {
+  const todayOrderCount = computed(() => {
+    return Number(state.summary?.todayOrderCount || 0);
+  });
+
+  const fen2yuanFixed = (fen) => {
     const n = Number(fen || 0);
     if (!Number.isFinite(n)) {
-      return '0';
+      return '0.00';
     }
-    return String(Math.floor(n / 100));
+    return (n / 100).toFixed(2);
   };
 
   const totalBrokerageYuan = computed(() => {
-    const totalFen =
-      Number(state.summary?.brokeragePrice || 0) +
-      Number(state.summary?.withdrawPrice || 0) +
-      Number(state.summary?.frozenPrice || 0);
-    return fen2yuanInt(totalFen);
+    const totalBrokerageFen = Number(
+      state.summary?.totalBrokeragePrice || state.summary?.brokeragePrice || 0,
+    );
+    return fen2yuanFixed(totalBrokerageFen);
   });
 
-  const yesterdayBrokerageYuan = computed(() => {
-    return fen2yuanInt(Number(state.summary?.yesterdayPrice || 0));
+  const todayBrokerageYuan = computed(() => {
+    return fen2yuanFixed(Number(state.summary?.todayBrokeragePrice || 0));
   });
 
   function onInviteMember() {
     state.shareInfo = sheep.$platform.share.getShareInfo(
       {
+        title: `${sheep.$store('app').info.name || '仙草甄选'}邀请你成为会员`,
+        image: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260407/编组@2x_1775541461773.png',
+        desc: '注册即可享受会员权益与优惠活动',
         params: {
           page: SharePageEnum.HOME.value,
         },
@@ -234,6 +245,7 @@
       {
         type: 'goods',
         title: goodsInfo.name,
+        picUrl: sheep.$url.cdn(goodsInfo.picUrl),
         image: sheep.$url.cdn(goodsInfo.picUrl),
         price: fen2yuan(goodsInfo.price),
         original_price: fen2yuan(goodsInfo.marketPrice),
@@ -243,7 +255,18 @@
   }
 
   async function getSummary() {
-    const { code, data } = await BrokerageApi.getBrokerageUserSummary();
+    let res = null;
+    try {
+      res = await BrokerageApi.getBrokerageRecordTodayStatistics();
+    } catch (e) {
+      res = null;
+    }
+
+    if (!res || typeof res !== 'object') {
+      return;
+    }
+
+    const { code, data } = res;
     if (code !== 0) {
       return;
     }
@@ -252,10 +275,15 @@
 
   async function getGoodsList() {
     state.loadStatus = 'loading';
-    const { code, data } = await SpuApi.getSpuPage({
+    const res = await SpuApi.getSpuPage({
       pageSize: state.pagination.pageSize,
       pageNo: state.pagination.pageNo,
     });
+    if (!res || typeof res !== 'object') {
+      state.loadStatus = 'error';
+      return;
+    }
+    const { code, data } = res;
     if (code !== 0) {
       state.loadStatus = 'error';
       return;
@@ -470,13 +498,16 @@
     display: inline-flex;
     position: relative;
     align-items: baseline;
-    padding-right: 30rpx;
   }
 
   .stat-plus {
     position: absolute;
-    right: 0;
+    right: -24rpx;
     top: 0;
+  }
+
+  .stat-plus-income {
+    right: -32rpx;
   }
 
   .text-wrapper_5 {
@@ -695,16 +726,15 @@
   }
 
   .box_19 {
-    background-color: rgba(255, 254, 224, 1);
+    background-color: transparent;
     border-radius: 9rpx;
-    margin: 10rpx 0 8rpx 0;
-    padding: 6rpx 8rpx 7rpx 9rpx;
+    align-items: center;
+    justify-content: center;
   }
 
   .box_20 {
-    width: 11rpx;
-    height: 6rpx;
-    border: 1rpx solid rgba(56, 27, 5, 0.65);
+    width: 28rpx;
+    height: 19rpx;
   }
 
   .flex-col {

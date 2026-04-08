@@ -23,6 +23,13 @@ const BrokerageApi = {
       method: 'GET',
     });
   },
+  // 获取分销员今日统计（订单数、佣金）
+  getBrokerageRecordTodayStatistics: () => {
+    return request({
+      url: '/trade/brokerage-record/today-statistics',
+      method: 'GET',
+    });
+  },
   // 获得分销记录分页
   getBrokerageRecordPage: (params) => {
     if (params.status === undefined) {
@@ -115,6 +122,14 @@ const BrokerageApi = {
   getBrokerageUserChildSummaryPage: (params) => {
     return request({
       url: '/trade/brokerage-user/child-summary-page',
+      method: 'GET',
+      params,
+    });
+  },
+  // 获得粉丝分页
+  getBrokerageUserFansPage: (params) => {
+    return request({
+      url: '/trade/brokerage-user/fans-page',
       method: 'GET',
       params,
     });

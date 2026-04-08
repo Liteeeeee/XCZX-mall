@@ -1,5 +1,10 @@
 <template>
-  <s-layout navbar="clear" class="page-wrap" :bgStyle="{ color: '#F8F9F3' }" :onShareAppMessage="shareInfo">
+  <s-layout
+    navbar="clear"
+    class="page-wrap"
+    :bgStyle="{ color: '#F8F9F3' }"
+    :onShareAppMessage="shareInfo"
+  >
     <view class="fixed-header">
       <su-status-bar />
       <view
@@ -26,7 +31,8 @@
             color="rgba(30, 63, 28, 0.9)"
             @tap="sheep.$router.back()"
             class="ss-m-l-20"
-          ><text class="sicon-back"></text></uni-icons>
+            ><text class="sicon-back"></text
+          ></uni-icons>
           <text class="nav-title ss-m-l-10">推广收益</text>
         </view>
       </view>
@@ -41,30 +47,30 @@
           <text class="text_4 count-font">{{ showMoney ? fen2yuan(totalEarnedFen) : '***' }}</text>
         </view>
         <view class="text-group_11 flex-col">
-          <text class="text_5">收益余额(元)</text>
-          <text class="text_6 count-font">{{ showMoney ? fen2yuan(balanceFen) : '***' }}</text>
+          <text class="text_3">冻结中</text>
+          <text class="text_4 count-font">{{ showMoney ? fen2yuan(withdrawingFen) : '***' }}</text>
         </view>
       </view>
 
       <view class="group_7 flex-col">
         <view class="group_35 flex-row justify-between">
           <view class="text-group_12 flex-col">
-            <text class="text_7">提现中</text>
-            <text class="text_9 count-font">{{ showMoney ? fen2yuan(withdrawingFen) : '***' }}</text>
+            <text class="text_5">收益余额(元)</text>
+            <text class="text_6 count-font">{{ showMoney ? fen2yuan(balanceFen) : '***' }}</text>
           </view>
           <text class="text_8" @tap="onGoWithdrawLog">提现记录</text>
         </view>
-        <view :style="{marginTop:'16rpx'}" class="group_36 flex-row justify-between">
+        <view :style="{ marginTop: '16rpx' }" class="group_36 flex-row justify-between">
           <view class="text-group_13 flex-col">
-            <text class="text_10">今日预估收益(元)</text>
+            <text class="text_10">今日推广收益(元)</text>
             <text class="text_11 count-font">{{ todayExpectedIncome }}</text>
           </view>
           <view class="text-group_14 flex-col">
-            <text class="text_12">今日付款订单(次)</text>
+            <text class="text_12">累计推广订单(次)</text>
             <text class="text_13 count-font">{{ todayPaidOrderCount }}</text>
           </view>
           <view class="text-group_15 flex-col">
-            <text class="text_14">今日推广次数(次)</text>
+            <text class="text_14">今日增长订单(次)</text>
             <text class="text_15 count-font">{{ todayPromoteCount }}</text>
           </view>
         </view>
@@ -91,14 +97,21 @@
           </view>
         </view>
 
-        <view v-if="state.pagination.total === 0 && !state.loading" class="empty-text">暂无数据</view>
-        <view v-for="item in state.pagination.list" :key="item._key" class="box_21 flex-row">
+        <view v-if="state.pagination.total === 0 && !state.loading" class="empty-text"
+          >暂无数据</view
+        >
+        <view v-for="item in state.pagination.list" :key="item._key" class="box_21 justify-between flex-row">
           <view class="text-group_16 flex-col">
             <text class="text_17">{{ rowTitle(item) }}</text>
-            <text class="text_18">{{ formatDate2(item.createTime) }}&nbsp;&nbsp;&nbsp;{{ formatClock(item.createTime) }}</text>
+            <text class="text_18"
+              >{{ formatDate2(item.createTime) }}&nbsp;&nbsp;&nbsp;{{
+                formatClock(item.createTime)
+              }}</text
+            >
           </view>
-          <view class="box_13 flex-col"></view>
-          <text class="count-font" :class="rowAmountTextClass(item)">{{ rowAmountText(item) }}</text>
+          <text class="count-font" :class="rowAmountTextClass(item)">{{
+            rowAmountText(item)
+          }}</text>
         </view>
 
         <uni-load-more
@@ -150,6 +163,7 @@
     loading: false,
     showMoney: true,
     summary: {},
+    todayStatistics: {},
     currentTab: 0, // 0 明细 1 收入 2 支出
     pagination: {
       list: [],
@@ -170,9 +184,15 @@
       (Number(state.summary?.frozenPrice) || 0),
   );
 
-  const todayExpectedIncome = computed(() => '--');
-  const todayPaidOrderCount = computed(() => '--');
-  const todayPromoteCount = computed(() => '--');
+  const todayExpectedIncome = computed(() => {
+    return fen2yuan(Number(state.todayStatistics?.todayBrokeragePrice || 0));
+  });
+  const todayPaidOrderCount = computed(() => {
+    return Number(state.todayStatistics?.totalOrderCount || 0);
+  });
+  const todayPromoteCount = computed(() => {
+    return Number(state.todayStatistics?.todayOrderCount || 0);
+  });
 
   const tabLineOffset = computed(() => 55 + 174 * state.currentTab);
 
@@ -204,6 +224,13 @@
     state.summary = data || {};
   }
 
+  async function loadTodayStatistics() {
+    const res = await BrokerageApi.getBrokerageRecordTodayStatistics();
+    if (!res || typeof res !== 'object') return;
+    if (res.code !== 0) return;
+    state.todayStatistics = res.data || {};
+  }
+
   async function loadList() {
     state.loading = true;
     state.loadStatus = 'loading';
@@ -218,15 +245,17 @@
             BrokerageApi.getBrokerageWithdrawPage(baseParams),
           ])
         : state.currentTab === 1
-          ? await BrokerageApi.getBrokerageRecordPage(baseParams)
-          : await BrokerageApi.getBrokerageWithdrawPage(baseParams);
+        ? await BrokerageApi.getBrokerageRecordPage(baseParams)
+        : await BrokerageApi.getBrokerageWithdrawPage(baseParams);
     state.loading = false;
     if (Array.isArray(res)) {
       const [recordRes, withdrawRes] = res;
       const recordList =
         recordRes?.code === 0 && Array.isArray(recordRes?.data?.list) ? recordRes.data.list : [];
       const withdrawList =
-        withdrawRes?.code === 0 && Array.isArray(withdrawRes?.data?.list) ? withdrawRes.data.list : [];
+        withdrawRes?.code === 0 && Array.isArray(withdrawRes?.data?.list)
+          ? withdrawRes.data.list
+          : [];
       const merged = [
         ...recordList.map((it) => ({ ...it, _kind: 'income', _key: `r-${it.id}` })),
         ...withdrawList.map((it) => ({ ...it, _kind: 'expense', _key: `w-${it.id}` })),
@@ -315,7 +344,7 @@
   }
 
   onLoad(async () => {
-    await loadSummary();
+    await Promise.all([loadSummary(), loadTodayStatistics()]);
     await loadList();
   });
 
@@ -367,10 +396,10 @@
     left: 0;
     width: 100%;
     z-index: 999;
-    background: #F8F9F3;
+    background: #f8f9f3;
   }
   .nav-bar-container {
-    background: #F8F9F3;
+    background: #f8f9f3;
   }
 
   .nav-title {
@@ -662,7 +691,6 @@
     text-align: right;
     white-space: nowrap;
     line-height: 32rpx;
-    margin: 44rpx 0 0 187rpx;
   }
 
   .text_22 {
