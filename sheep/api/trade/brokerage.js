@@ -36,6 +36,19 @@ const BrokerageApi = {
       method: 'GET',
     });
   },
+  // 获得分销订单分页（分销员查看自己粉丝下的分销订单）
+  getBrokerageRecordOrderPage: (params) => {
+    if (params.status === undefined) {
+      delete params.status;
+    }
+    const queryString = Object.keys(params)
+      .map((key) => encodeURIComponent(key) + '=' + params[key])
+      .join('&');
+    return request({
+      url: `/trade/brokerage-record/order-page?${queryString}`,
+      method: 'GET',
+    });
+  },
   // 创建分销提现
   createBrokerageWithdraw: (data) => {
     return request({

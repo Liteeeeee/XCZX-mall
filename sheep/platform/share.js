@@ -119,7 +119,8 @@ const decryptSpm = (spm) => {
     from: '',
   };
   let query;
-  shareParams.shareId = shareParamsArray[0];
+  const shareId = Number(shareParamsArray[0] || 0);
+  shareParams.shareId = shareId;
   switch (shareParamsArray[1]) {
     case SharePageEnum.HOME.value:
       // 默认首页不跳转
@@ -167,19 +168,19 @@ const decryptSpm = (spm) => {
   }
   shareParams.platform = platformMap[shareParamsArray[3] - 1];
   shareParams.from = fromMap[shareParamsArray[4] - 1];
-  if (shareParams.shareId !== 0) {
+  if (shareId > 0) {
     // 记录分享者编号
-    uni.setStorageSync('shareId', shareParams.shareId);
+    uni.setStorageSync('shareId', String(shareId));
     // 记录邀请人编号（首页或会员页分享视为“邀请注册”入口）
     if (
       shareParamsArray[1] === SharePageEnum.HOME.value ||
       shareParamsArray[1] === SharePageEnum.MEMBER.value
     ) {
-      uni.setStorageSync('inviterId', shareParams.shareId);
+      uni.setStorageSync('inviterId', String(shareId));
     }
     // 已登录 绑定推广员
     if (!!user.isLogin) {
-      bindBrokerageUser(shareParams.shareId);
+      bindBrokerageUser(shareId);
     }
   }
 
@@ -192,7 +193,7 @@ const decryptSpm = (spm) => {
 // 绑定推广员
 const bindBrokerageUser = async (val = undefined) => {
   try {
-    const shareId = val || uni.getStorageSync('shareId');
+    const shareId = Number(val || uni.getStorageSync('shareId') || 0);
     if (!shareId) {
       return;
     }

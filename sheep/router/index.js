@@ -78,6 +78,15 @@ const _go = (
       }
     };
   }
+  if (!nextRoute && page === '/pages/commission/apply-success') {
+    nextRoute = {
+      path: '/pages/commission/apply-success',
+      meta: {
+        auth: true,
+        title: '分销申请成功'
+      }
+    };
+  }
   if (!nextRoute && page === '/pages/commission/career') {
     nextRoute = {
       path: '/pages/commission/career',

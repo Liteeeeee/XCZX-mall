@@ -5,6 +5,12 @@
     <detailNavbar />
     <!-- 骨架屏 -->
     <detailSkeleton v-if="state.skeletonLoading" />
+    <!-- 审核未通过 -->
+    <audit-reject
+      v-else-if="state.activity && state.activity.status === 2"
+      @contact="onContact"
+      @reapply="onReapply"
+    />
     <!-- 下架/售罄提醒 -->
     <s-empty
       v-else-if="
@@ -156,6 +162,7 @@
   import detailCommentCard from './components/detail/detail-comment-card.vue';
   import detailContentCard from './components/detail/detail-content-card.vue';
   import grouponCardList from './components/groupon/groupon-card-list.vue';
+  import auditReject from '@/sheep/components/s-audit-reject/s-audit-reject.vue';
   import { useDurationTime, formatGoodsSwiper, fen2yuan } from '@/sheep/hooks/useGoods';
   import CombinationApi from '@/sheep/api/promotion/combination';
   import SpuApi from '@/sheep/api/product/spu';
@@ -230,6 +237,14 @@
         ],
       }),
     });
+  }
+
+  // 审核未通过页操作
+  function onContact() {
+    sheep.$router.go('/pages/chat/index');
+  }
+  function onReapply() {
+    sheep.$router.go('/pages/commission/apply');
   }
 
   // 分享信息

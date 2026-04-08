@@ -453,6 +453,18 @@
 					}
 				},
 				{
+					"path": "apply-success",
+					"style": {
+						"navigationBarTitleText": "审核中"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "分销申请审核中",
+						"group": "分销中心"
+					}
+				},
+				{
 					"path": "career",
 					"style": {
 						"navigationBarTitleText": "选择职业"

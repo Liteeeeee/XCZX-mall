@@ -111,25 +111,20 @@
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
     };
-    const [l1, l2] = await Promise.all([
-      BrokerageApi.getBrokerageUserChildSummaryPage({ ...baseParams, level: 1 }),
-      BrokerageApi.getBrokerageUserChildSummaryPage({ ...baseParams, level: 2 }),
-    ]);
+    const l1 = await BrokerageApi.getBrokerageUserChildSummaryPage({ ...baseParams, level: 1 });
     state.loading = false;
-    if (l1?.code !== 0 || l2?.code !== 0) {
+    if (l1?.code !== 0) {
       state.loadStatus = 'more';
       return;
     }
 
     const list1 = Array.isArray(l1?.data?.list) ? l1.data.list : [];
-    const list2 = Array.isArray(l2?.data?.list) ? l2.data.list : [];
-    const merged = [
-      ...list1.map((it) => ({ ...it, _key: `l1-${it.id}` })),
-      ...list2.map((it) => ({ ...it, _key: `l2-${it.id}` })),
-    ].sort((a, b) => Number(b.brokerageTime || 0) - Number(a.brokerageTime || 0));
+    const merged = list1
+      .map((it) => ({ ...it, _key: `l1-${it.id}` }))
+      .sort((a, b) => Number(b.brokerageTime || 0) - Number(a.brokerageTime || 0));
 
     state.pagination.list = concat(state.pagination.list, merged);
-    state.pagination.total = Number(l1?.data?.total || 0) + Number(l2?.data?.total || 0);
+    state.pagination.total = Number(l1?.data?.total || 0);
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
 
@@ -302,4 +297,3 @@
     align-items: center;
   }
 </style>
-

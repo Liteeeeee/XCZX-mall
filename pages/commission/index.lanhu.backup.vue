@@ -54,7 +54,7 @@
           </view>
           <text class="text_8" @tap="onGoWithdrawLog">提现记录</text>
         </view>
-        <view class="group_36 flex-row justify-between">
+        <view :style="{marginTop:'16rpx'}" class="group_36 flex-row justify-between">
           <view class="text-group_13 flex-col">
             <text class="text_10">今日预估收益(元)</text>
             <text class="text_11 count-font">{{ todayExpectedIncome }}</text>
@@ -436,7 +436,7 @@
     width: 686rpx;
     align-self: center;
     padding: 34rpx 32rpx 47rpx 32rpx;
-    margin: -1rpx auto 0 auto;
+    margin: 20rpx auto 0 auto;
     box-sizing: border-box;
   }
 

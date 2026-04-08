@@ -447,7 +447,7 @@
     background: rgba(0, 0, 0, 0.4);
     border-radius: 20rpx;
     padding: 4rpx 16rpx;
-    bottom: 90rpx;
+    bottom: 20rpx;
     right: 30rpx;
     color: #fff;
     font-size: 24rpx;

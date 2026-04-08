@@ -119,6 +119,8 @@ const user = defineStore({
     resetUserData() {
       // 清空 token
       this.setToken();
+      uni.removeStorageSync('shareId');
+      uni.removeStorageSync('inviterId');
       // 清空用户相关的缓存
       this.userInfo = clone(defaultUserInfo);
       this.userWallet = clone(defaultUserWallet);

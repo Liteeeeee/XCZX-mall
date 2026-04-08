@@ -298,7 +298,7 @@
 <style lang="scss" scoped>
   .page {
     background-color: rgba(248, 249, 243, 1);
-    width: 750rpx;
+    width: 100%;
     min-height: 100vh;
   }
 
@@ -574,15 +574,16 @@
   }
 
   .block_13 {
-    padding: 26rpx 32rpx 226rpx 32rpx;
+    padding: 0rpx 32rpx 226rpx 32rpx;
   }
 
   .list-items_1 {
     background-color: rgba(255, 255, 250, 1);
     border-radius: 20rpx;
-    width: 686rpx;
+    width: 100%;
     padding: 24rpx 24rpx 24rpx 24rpx;
     margin: 0 0 24rpx 0;
+    box-sizing: border-box;
   }
 
   .box_17 {
@@ -591,8 +592,13 @@
     height: 210rpx;
   }
 
+  .section_13 {
+    flex: 1;
+    min-width: 0;
+    margin-left: 24rpx;
+  }
+
   .text_14 {
-    width: 404rpx;
     height: 80rpx;
     overflow-wrap: break-word;
     color: rgba(29, 33, 41, 1);

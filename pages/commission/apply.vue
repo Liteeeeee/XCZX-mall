@@ -29,7 +29,13 @@
       </view>
       <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
 
-      <view class="card flex-col">
+      <audit-reject
+        v-if="state.showReject"
+        @contact="onRejectContact"
+        @reapply="onRejectReapply"
+      />
+
+      <view v-else class="card flex-col">
         <view class="row flex-row">
           <text class="row-label">昵称</text>
           <text class="row-value">{{ userInfo?.nickname || '' }}</text>
@@ -139,7 +145,7 @@
         </view>
       </view>
 
-      <view class="footer">
+      <view v-if="!state.showReject" class="footer">
         <view class="submit-btn" @tap="onSubmit">
           <text class="submit-text">提交审核</text>
         </view>
@@ -154,6 +160,7 @@
   import { onLoad, onShow } from '@dcloudio/uni-app';
   import BrokerageApplyApi from '@/sheep/api/trade/brokerageApply';
   import SUploader from '@/sheep/components/s-uploader/s-uploader.vue';
+  import auditReject from '@/sheep/components/s-audit-reject/s-audit-reject.vue';
 
   const userInfo = computed(() => sheep.$store('user').userInfo || {});
 
@@ -165,10 +172,53 @@
     careerName: '',
     gender: 1,
     reason: '',
+    showReject: false,
+    rejectApplyData: null,
   });
 
   function onChooseCareer() {
     sheep.$router.go('/pages/commission/career', { current: state.careerName });
+  }
+
+  function onRejectContact() {
+    sheep.$router.go('/pages/chat/index');
+  }
+
+  function onRejectReapply() {
+    hydrateForm(state.rejectApplyData);
+    state.showReject = false;
+  }
+
+  function normalizeUploadUrl(url) {
+    if (!url) return '';
+    const value = String(url);
+    if (/^https?:\/\//.test(value)) return value;
+    return sheep.$url.cdn(value.startsWith('/') ? value : `/${value}`);
+  }
+
+  function parseAdditionalInfo(value) {
+    if (!value) return {};
+    if (typeof value === 'object') return value;
+    if (typeof value !== 'string') return {};
+    try {
+      const obj = JSON.parse(value);
+      if (obj && typeof obj === 'object') return obj;
+      return {};
+    } catch {
+      return {};
+    }
+  }
+
+  function hydrateForm(data) {
+    if (!data) return;
+    const additionalInfo = parseAdditionalInfo(data.additionalInfo);
+    state.mobile = data.mobile || state.mobile || '';
+    state.idCardNo = data.idCardNo || '';
+    state.idCardFrontUrl = normalizeUploadUrl(data.idCardFrontUrl);
+    state.idCardBackUrl = normalizeUploadUrl(data.idCardBackUrl);
+    state.careerName = data.occupation || '';
+    state.gender = Number(data.gender) === 2 ? 2 : 1;
+    state.reason = data.reason || additionalInfo.reason || additionalInfo.applyReason || '';
   }
 
   function normalizeMobile(v) {
@@ -177,12 +227,19 @@
 
   function submitApply(payload) {
     uni.showLoading({ title: '提交中' });
-    BrokerageApplyApi.createApply(payload)
+    const applyData = state.rejectApplyData;
+    const isResubmit = Boolean(applyData && Number(applyData.status) === 2);
+    const submitFn = isResubmit ? BrokerageApplyApi.resubmitApply : BrokerageApplyApi.createApply;
+    const submitPayload = { ...payload };
+    if (isResubmit && applyData?.id) {
+      submitPayload.applyId = applyData.id;
+    }
+    submitFn(submitPayload)
       .then((res) => {
         uni.hideLoading();
         if (res.code === 0) {
           uni.showToast({ title: '已提交', icon: 'none' });
-          sheep.$router.back();
+          sheep.$router.redirect('/pages/commission/apply-success');
         }
       })
       .catch(() => {
@@ -234,29 +291,47 @@
       idCardBackUrl: extractKey(state.idCardBackUrl),
       occupation: state.careerName,
       gender: state.gender,
-      reason: state.reason,
     };
 
     // 获取当前位置并拼装到 additionalInfo
+    const additionalInfo = {
+      reason: state.reason,
+    };
     uni.getLocation({
       type: 'gcj02',
       success: (res) => {
-        payload.additionalInfo = JSON.stringify({
-          longitude: res.longitude,
-          latitude: res.latitude,
-        });
+        additionalInfo.longitude = res.longitude;
+        additionalInfo.latitude = res.latitude;
+        payload.additionalInfo = JSON.stringify(additionalInfo);
         submitApply(payload);
       },
       fail: (err) => {
         console.error('获取定位失败：', err);
         // 如果获取定位失败，为了不阻塞用户申请，仍然允许提交
+        payload.additionalInfo = JSON.stringify(additionalInfo);
         submitApply(payload);
       },
     });
   }
 
-  onLoad(() => {
+  onLoad(async () => {
     state.mobile = userInfo.value?.mobile || '';
+
+    // 检查是否有审核中的申请
+    const { code, data } = await BrokerageApplyApi.getApply();
+    if (code === 0 && data) {
+      state.rejectApplyData = data;
+      const status = Number(data.status);
+      // status: 0 审核中, 1 审核通过, 2 审核拒绝
+      if (status === 0) {
+        uni.redirectTo({ url: '/pages/commission/apply-success' });
+      } else if (status === 1) {
+        // 如果已经通过审核，跳转到分销中心首页
+        uni.redirectTo({ url: '/pages/commission/index' });
+      } else if (status === 2) {
+        state.showReject = true;
+      }
+    }
   });
 
   onShow(() => {

@@ -32,21 +32,9 @@
       <view class="group_23 flex-col">
         <view class="box_6 flex-col">
           <view class="text-wrapper_7 flex-row">
-            <view class="tab" @tap="onTabChange(0)">
-              <text class="text_2" v-if="state.currentTab === 0">全部</text>
-              <text class="text_3" v-else>全部</text>
-            </view>
-            <view class="tab" @tap="onTabChange(1)">
-              <text class="text_2" v-if="state.currentTab === 1">待结算</text>
-              <text class="text_4" v-else>待结算</text>
-            </view>
-            <view class="tab" @tap="onTabChange(2)">
-              <text class="text_2" v-if="state.currentTab === 2">已结算</text>
-              <text class="text_4" v-else>已结算</text>
-            </view>
-            <view class="tab" @tap="onTabChange(3)">
-              <text class="text_2" v-if="state.currentTab === 3">已取消</text>
-              <text class="text_5" v-else>已取消</text>
+            <view class="tab" v-for="(tab, index) in tabMaps" :key="index" @tap="onTabChange(index)">
+              <text class="text_2" v-if="state.currentTab === index">{{ tab.name }}</text>
+              <text class="text_3" v-else>{{ tab.name }}</text>
             </view>
           </view>
           <view class="group_24 flex-row">
@@ -55,18 +43,23 @@
         </view>
 
         <view class="block_7 flex-col">
-          <view class="order-card flex-row justify-between" v-for="item in state.pagination.list" :key="item.id">
-            <image class="box_12 flex-col" :src="sheep.$url.cdn(item._picUrl || '')" mode="aspectFill" />
-            <view class="group_26 flex-col">
-              <view class="text-group_2 flex-col">
-                <text class="text_7 ss-ellipsis-1">{{ item._spuName || item.title || '' }}</text>
-                <text class="text_8">下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text>
-                <text class="text_9">付款金额：¥{{ fen2yuan(item._payPrice) }}</text>
-              </view>
-              <view class="box_26 flex-row justify-between">
-                <text class="text_10">预估可赚{{ toYuanInt(item.price) }}元</text>
-                <view class="status-tag" :class="statusTagClass(item)">
-                  <text class="status-text" :class="statusTextClass(item)">{{ statusText(item) }}</text>
+          <view class="order-card flex-col" v-for="item in state.pagination.list" :key="item.id || item.bizId || item.orderId || item._orderNo">
+            <view class="order-head flex-row justify-between">
+              <text class="order-no">订单编号：{{ item._orderNo || item.bizId || '' }}</text>
+              <text class="order-status">{{ statusText(item) }}</text>
+            </view>
+            <view class="order-divider"></view>
+            <view class="order-body flex-row justify-between">
+              <image class="box_12 flex-col" :src="sheep.$url.cdn(item._picUrl || '')" mode="aspectFill" />
+              <view class="group_26 flex-col">
+                <view class="text-group_2 flex-col">
+                  <text class="text_7 ss-ellipsis-1">{{ item._spuName || item.title || '' }}</text>
+                  <text class="text_8">下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text>
+                  <text class="text_9">付款金额：¥{{ fen2yuan(item._payPrice) }}</text>
+                </view>
+                <view class="order-meta flex-row justify-between">
+                  <text class="order-qty">数量*{{ item._count || 1 }}</text>
+                  <text class="order-earn">预估可赚{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text>
                 </view>
               </view>
             </view>
@@ -93,7 +86,6 @@
   import { onLoad, onReachBottom } from '@dcloudio/uni-app';
   import { concat } from 'lodash-es';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
-  import OrderApi from '@/sheep/api/trade/order';
   import commissionAuth from './components/commission-auth.vue';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
 
@@ -114,21 +106,31 @@
       value: undefined,
     },
     {
-      name: '待结算',
+      name: '待支付',
       value: 0,
     },
     {
-      name: '已结算',
-      value: 1,
+      name: '待发货',
+      value: 10,
+    },
+    {
+      name: '已发货',
+      value: 20,
+    },
+    {
+      name: '已完成',
+      value: 30,
     },
     {
       name: '已取消',
-      value: 2,
+      value: 40,
     },
   ];
 
   const tabLineOffset = computed(() => {
-    return 24 + 170 * state.currentTab;
+    const tabWidth = 686 / tabMaps.length;
+    const indicatorWidth = 32;
+    return (tabWidth - indicatorWidth) / 2 + tabWidth * state.currentTab;
   });
 
   function resetPagination() {
@@ -161,42 +163,47 @@
   }
 
   function statusText(item) {
-    if (item?.status === 0) return '待结算';
-    if (item?.status === 1) return '已结算';
-    if (item?.status === 2) return '已取消';
-    return '待结算';
+    if (item?.status === 0) return '待支付';
+    if (item?.status === 10) return '待发货';
+    if (item?.status === 20) return '已发货';
+    if (item?.status === 30) return '已完成';
+    if (item?.status === 40) return '已取消';
+    return '';
   }
 
   function statusTagClass(item) {
     if (item?.status === 0) return 'tag-pending';
-    if (item?.status === 1) return 'tag-settled';
-    if (item?.status === 2) return 'tag-cancel';
+    if (item?.status === 10) return 'tag-settled';
+    if (item?.status === 20) return 'tag-cancel';
     return 'tag-pending';
   }
 
   function statusTextClass(item) {
     if (item?.status === 0) return 'text-pending';
-    if (item?.status === 1) return 'text-settled';
-    if (item?.status === 2) return 'text-cancel';
+    if (item?.status === 10) return 'text-settled';
+    if (item?.status === 20) return 'text-cancel';
     return 'text-pending';
   }
 
-  async function enrichOrders(list) {
-    await Promise.all(
-      (list || []).map(async (item) => {
-        const orderId = item?.bizId;
-        if (!orderId) return;
-        try {
-          const { code, data } = await OrderApi.getOrderDetail(orderId);
-          if (code !== 0 || !data) return;
-          const firstItem = Array.isArray(data.items) ? data.items[0] : undefined;
-          item._payPrice = Number(data.payPrice || 0);
-          item._orderCreateTime = data.createTime || item.createTime;
-          item._spuName = firstItem?.spuName || item.title;
-          item._picUrl = firstItem?.picUrl || '';
-        } catch (e) {}
-      }),
+  function normalizeOrderItem(item) {
+    const data = item || {};
+    const orderNo = data.orderNo || data.no || data._orderNo || '';
+    const payPrice = Number(
+      data.payPrice ?? data.orderPayPrice ?? data._payPrice ?? data.payAmount ?? 0,
     );
+    const orderCreateTime = data.orderCreateTime || data.orderTime || data._orderCreateTime || data.createTime;
+    const spuName = data.spuName || data.productName || data._spuName || data.title || '';
+    const picUrl = data.picUrl || data.productPicUrl || data._picUrl || '';
+    const count = Number(data.count ?? data.productCount ?? data._count ?? 0);
+    return {
+      ...data,
+      _orderNo: orderNo || data.bizId || '',
+      _payPrice: payPrice,
+      _orderCreateTime: orderCreateTime,
+      _spuName: spuName,
+      _picUrl: picUrl,
+      _count: count,
+    };
   }
 
   async function getOrderList() {
@@ -205,20 +212,19 @@
     const queryParams = {
       pageSize: state.pagination.pageSize,
       pageNo: state.pagination.pageNo,
-      bizType: 1, // 获得推广佣金
       status: tab.value,
     };
     if (tab.value === undefined) {
       delete queryParams.status;
     }
-    const { code, data } = await BrokerageApi.getBrokerageRecordPage(queryParams);
+    const { code, data } = await BrokerageApi.getBrokerageRecordOrderPage(queryParams);
     if (code !== 0) {
       state.loadStatus = 'more';
       return;
     }
     const list = Array.isArray(data.list) ? data.list : [];
-    await enrichOrders(list);
-    state.pagination.list = concat(state.pagination.list, list);
+    const normalized = list.map(normalizeOrderItem);
+    state.pagination.list = concat(state.pagination.list, normalized);
     state.pagination.total = data.total || 0;
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
@@ -391,24 +397,67 @@
   .box_7 {
     background-color: rgba(30, 63, 28, 1);
     border-radius: 1998rpx;
-    width: 120rpx;
+    width: 32rpx;
     height: 6rpx;
     will-change: transform;
   }
 
   .block_7 {
     width: 686rpx;
-    align-self: center;
-    margin-top: 24rpx;
+    margin: 24rpx 25rpx 0 39rpx;
     padding-bottom: 40rpx;
   }
 
   .order-card {
     background-color: rgba(255, 255, 250, 1);
     border-radius: 20rpx;
+    position: relative;
     width: 686rpx;
-    padding: 24rpx;
+    height: 320rpx;
+    padding: 62rpx 25rpx 24rpx 21rpx;
     margin-bottom: 24rpx;
+    box-sizing: border-box;
+  }
+
+  .order-head {
+    position: absolute;
+    left: 21rpx;
+    top: 15rpx;
+    width: 641rpx;
+  }
+
+  .order-no {
+    overflow-wrap: break-word;
+    color: rgba(185, 185, 185, 1);
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 33rpx;
+  }
+
+  .order-status {
+    overflow-wrap: break-word;
+    color: rgba(135, 145, 157, 1);
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 33rpx;
+  }
+
+  .order-divider {
+    width: 639rpx;
+    height: 1rpx;
+    border: 1rpx solid rgba(151, 151, 151, 0.2);
+    margin: 0 1rpx 0 0;
+  }
+
+  .order-body {
+    width: 640rpx;
+    margin-top: 23rpx;
   }
 
   .box_12 {
@@ -419,7 +468,8 @@
   }
 
   .group_26 {
-    width: 404rpx;
+    width: 406rpx;
+    margin: 7rpx 0 7rpx 0;
   }
 
   .text_7 {
@@ -443,51 +493,17 @@
     text-align: left;
     white-space: nowrap;
     line-height: 33rpx;
-    margin-top: 14rpx;
+    margin-top: 20rpx;
   }
 
-  .box_26 {
-    width: 404rpx;
-    margin-top: 12rpx;
+  .order-meta {
+    width: 406rpx;
+    margin-top: 18rpx;
   }
 
-  .text_10 {
+  .order-qty {
     overflow-wrap: break-word;
-    color: rgba(248, 99, 6, 1);
-    font-size: 24rpx;
-    font-family: PingFangSC-Medium;
-    font-weight: 500;
-    text-align: left;
-    white-space: nowrap;
-    line-height: 33rpx;
-    margin-top: 21rpx;
-  }
-
-  .status-tag {
-    border-radius: 10rpx;
-    border-width: 1rpx;
-    border-style: solid;
-    padding: 9rpx 21rpx 10rpx 22rpx;
-    margin-top: 12rpx;
-  }
-
-  .tag-pending {
-    background-color: rgba(255, 245, 245, 1);
-    border-color: rgba(252, 224, 224, 1);
-  }
-
-  .tag-settled {
-    background-color: rgba(246, 255, 245, 1);
-    border-color: rgba(231, 252, 224, 1);
-  }
-
-  .tag-cancel {
-    background-color: rgba(249, 249, 249, 1);
-    border-color: rgba(157, 156, 150, 1);
-  }
-
-  .status-text {
-    overflow-wrap: break-word;
+    color: rgba(135, 145, 157, 1);
     font-size: 24rpx;
     font-family: PingFangSC-Regular;
     font-weight: normal;
@@ -496,16 +512,15 @@
     line-height: 33rpx;
   }
 
-  .text-pending {
-    color: rgba(255, 51, 51, 1);
-  }
-
-  .text-settled {
-    color: rgba(29, 193, 25, 1);
-  }
-
-  .text-cancel {
-    color: rgba(157, 156, 150, 1);
+  .order-earn {
+    overflow-wrap: break-word;
+    color: rgba(248, 99, 6, 1);
+    font-size: 24rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 33rpx;
   }
 
   .flex-col {

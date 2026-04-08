@@ -9,7 +9,7 @@
         <radio-group @change="onChange">
           <label
             class="container-list ss-p-l-34 ss-p-r-24 ss-flex ss-col-center ss-row-center"
-            v-for="(item, index) in typeList"
+            v-for="(item, index) in visibleTypeList"
             :key="index"
           >
             <view class="container-icon ss-flex ss-m-r-20">
@@ -18,9 +18,8 @@
             <view class="ss-flex-1">{{ item.title }}</view>
             <radio
               :value="item.value"
-              color="var(--ui-BG-Main)"
+              color="#1e3f1c"
               :checked="item.value === state.currentValue"
-              :disabled="!methods.includes(parseInt(item.value))"
             />
           </label>
         </radio-group>
@@ -33,7 +32,7 @@
 </template>
 
 <script setup>
-  import { reactive } from 'vue';
+  import { reactive, computed } from 'vue';
   import sheep from '@/sheep';
 
   const props = defineProps({
@@ -88,6 +87,13 @@
       value: '6',
     },
   ];
+  const visibleTypeList = computed(() => {
+    if (!props.methods || props.methods.length === 0) {
+      return typeList;
+    }
+    const enabled = props.methods.map((v) => Number(v));
+    return typeList.filter((item) => enabled.includes(Number(item.value)));
+  });
 
   function onChange(e) {
     state.currentValue = e.detail.value;
@@ -100,6 +106,7 @@
     }
     // 赋值
     emits('update:modelValue', {
+      ...(props.modelValue || {}),
       type: state.currentValue,
     });
     // 关闭弹窗
@@ -158,7 +165,7 @@
         width: 710rpx;
         height: 80rpx;
         border-radius: 40rpx;
-        background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+        background: #1e3f1c;
         color: $white;
       }
     }

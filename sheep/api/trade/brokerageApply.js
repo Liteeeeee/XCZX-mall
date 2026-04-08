@@ -15,6 +15,19 @@ const BrokerageApplyApi = {
       data,
     });
   },
+  getApplyPage: (params) => {
+    return request({
+      url: '/trade/brokerage-apply/my-page',
+      method: 'GET',
+      params,
+    });
+  },
+  getApply: () => {
+    return request({
+      url: '/trade/brokerage-apply/my',
+      method: 'GET',
+    });
+  },
 };
 
 export default BrokerageApplyApi;

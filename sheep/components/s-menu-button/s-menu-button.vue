@@ -264,7 +264,7 @@
 		.ui-swiper-dot {
 			position: absolute;
 			width: 100%;
-			bottom: 90rpx;
+			bottom: 20rpx;
 			height: 30rpx;
 			display: flex;
 			align-items: center;
