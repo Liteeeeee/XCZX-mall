@@ -30,9 +30,7 @@
             <view class="nickname" :class="{ 'unlogin-nickname': !isLogin }">
               {{ isLogin ? (userInfo.nickname || '未设置昵称') : '登录/注册' }}
             </view>
-            <view v-if="isLogin" class="invite-qrcode-btn ss-m-l-10" @tap.stop="onOpenInviteQrcode">
-              <text class="sicon-qrcode invite-qrcode-icon"></text>
-            </view>
+           
           </view>
           <view v-if="!isLogin" class="unlogin-prompt" style="color: #666; font-size: 26rpx;">
             登录体验更多功能哦~

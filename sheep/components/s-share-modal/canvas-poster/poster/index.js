@@ -15,6 +15,11 @@ export function getPosterData(options) {
 }
 
 export function formatImageUrlProtocol(url) {
+  if (!url) return '';
+  // 处理 // 开头的地址
+  if (url.startsWith('//')) {
+    url = 'https:' + url;
+  }
   // #ifdef H5
   // H5平台 https协议下需要转换
   if (window.location.protocol === 'https:' && url.indexOf('http:') === 0) {

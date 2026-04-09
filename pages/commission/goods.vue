@@ -90,6 +90,7 @@
       {
         type: 'goods', // 商品海报
         title: goodsInfo.name, // 商品名称
+        picUrl: sheep.$url.cdn(goodsInfo.picUrl), // 商品主图
         image: sheep.$url.cdn(goodsInfo.picUrl), // 商品主图
         price: fen2yuan(goodsInfo.price), // 商品价格
         original_price: fen2yuan(goodsInfo.marketPrice), // 商品原价

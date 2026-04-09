@@ -213,6 +213,7 @@
       {
         type: 'goods', // 商品海报
         title: activity.value.name, // 商品标题
+        picUrl: sheep.$url.cdn(state.goodsInfo.picUrl), // 商品主图
         image: sheep.$url.cdn(state.goodsInfo.picUrl), // 商品主图
         price: fen2yuan(state.goodsInfo.price), // 商品价格
         marketPrice: fen2yuan(state.goodsInfo.marketPrice), // 商品原价

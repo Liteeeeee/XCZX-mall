@@ -44,12 +44,20 @@
             <text class="share-text">微信好友</text>
           </button>
 
+          <!-- 暂时隐藏朋友圈分享入口 -->
+          <!--
           <button v-if="shareConfig.methods.includes('forward')" class="share-item" @tap="onShareByTimeline">
             <image class="share-icon" :src="sheep.$url.cdn('/mp/static/share/sharePyq.webp')" mode="aspectFit" />
             <text class="share-text">朋友圈</text>
           </button>
+          -->
 
-          <button v-if="shareConfig.methods.includes('poster')" class="share-item" @tap="onShareByPoster">
+          <!-- 只有在非 user 类型（即非邀请会员场景）时，才显示生成海报按钮 -->
+          <button
+            v-if="shareConfig.methods.includes('poster') && shareInfo?.poster?.type !== 'user'"
+            class="share-item"
+            @tap="onShareByPoster"
+          >
             <image class="share-icon" :src="sheep.$url.cdn('/mp/static/share/shareImage.webp')" mode="aspectFit" />
             <text class="share-text">生成海报</text>
           </button>
@@ -110,7 +118,9 @@
       console.error('海报生成失败', e);
       state.showPosterModal = false;
     } finally {
-      uni.hideLoading();
+      uni.hideLoading({
+        fail: () => {},
+      });
     }
   };
 
@@ -144,12 +154,30 @@
     // #endif
   };
 
-  const onShareByTimeline = () => {
+  const onShareByTimeline = async () => {
     closeShareModal();
 
     // #ifdef MP-WEIXIN
-    state.guideImageError = false;
-    state.showShareGuide = true;
+    // 微信小程序点击朋友圈时，直接调用生成海报逻辑
+    if (!sheep.$store('user').isLogin) {
+      showAuthModal();
+      return;
+    }
+    uni.showLoading({ title: '生成中' });
+    try {
+      state.showPosterModal = true;
+      await nextTick();
+      await unref(SharePosterRef).getPoster();
+    } catch (e) {
+      const msg = e?.message || '';
+      sheep.$helper.toast(msg ? `海报生成失败：${msg}` : '海报生成失败，请重试');
+      console.error('海报生成失败', e);
+      state.showPosterModal = false;
+    } finally {
+      uni.hideLoading({
+        fail: () => {},
+      });
+    }
     return;
     // #endif
 
