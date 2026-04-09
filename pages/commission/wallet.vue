@@ -1,86 +1,158 @@
 <!-- 分销 - 佣金明细 -->
 <template>
-  <s-layout class="wallet-wrap" title="佣金">
-    <!-- 钱包卡片 -->
-    <view class="header-box ss-flex ss-row-center ss-col-center">
-      <view class="card-box ui-BG-Main ui-Shadow-Main">
-        <view class="card-head ss-flex ss-col-center">
-          <view class="card-title ss-m-r-10">当前佣金（元）</view>
-          <view
-            @tap="state.showMoney = !state.showMoney"
-            class="ss-eye-icon"
-            :class="state.showMoney ? 'cicon-eye' : 'cicon-eye-off'"
-          />
+  <s-layout class="wallet-wrap" title="佣金明细" navbar="clean">
+    <view class="full-page-bg">
+      <image :src="sheep.$url.static('/static/jifenbg.webp')" mode="widthFix" class="bg-img" />
+    </view>
+    <view class="header-box">
+      <su-status-bar />
+      <view class="custom-nav" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+        <view class="nav-inner ss-flex ss-col-center">
+          <view class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20" @tap="sheep.$router.back()">
+            <text class="sicon-back"></text>
+          </view>
+          <view class="title">佣金明细</view>
         </view>
-        <view class="ss-flex ss-row-between ss-col-center ss-m-t-30">
-          <view class="money-num">{{
-            state.showMoney ? fen2yuan(state.summary.withdrawPrice || 0) : '*****'
-          }}</view>
-          <view class="ss-flex">
-            <view class="ss-m-r-20">
-              <button
-                class="ss-reset-button withdraw-btn"
-                @tap="sheep.$router.go('/pages/commission/withdraw')"
-              >
-                提现
-              </button>
+      </view>
+
+      <view class="score-container ss-flex-col ss-p-x-40">
+        <view class="score-box ss-flex ss-row-between ss-col-center">
+          <view class="ss-flex-col">
+            <view class="ss-m-b-10 ss-flex ss-col-center">
+              <text class="all-title">当前佣金(元)</text>
+              <view
+                @tap="state.showMoney = !state.showMoney"
+                class="ss-eye-icon ss-m-l-10"
+                :class="state.showMoney ? 'cicon-eye' : 'cicon-eye-off'"
+              />
             </view>
-            <button class="ss-reset-button balance-btn ss-m-l-20" @tap="state.showModal = true">
+            <text class="all-num">{{ state.showMoney ? fen2yuan(state.summary.withdrawPrice || 0) : '*****' }}</text>
+          </view>
+          
+          <view class="ss-flex">
+            <view class="use-btn ss-flex ss-row-center ss-col-center ss-m-r-20" @tap="sheep.$router.go('/pages/commission/withdraw')">
+              提现
+            </view>
+            <view class="use-btn-outline ss-flex ss-row-center ss-col-center" @tap="state.showModal = true">
               转余额
-            </button>
+            </view>
           </view>
         </view>
 
-        <view class="ss-flex">
-          <view class="loading-money">
-            <view class="loading-money-title">冻结佣金</view>
-            <view class="loading-money-num">
-              {{ state.showMoney ? fen2yuan(state.summary.frozenPrice || 0) : '*****' }}
-            </view>
+        <view class="ss-flex ss-m-t-40 sub-info-box">
+          <view class="ss-flex-col ss-flex-1">
+            <view class="sub-title">冻结佣金</view>
+            <view class="sub-num">{{ state.showMoney ? fen2yuan(state.summary.frozenPrice || 0) : '*****' }}</view>
           </view>
-          <view class="loading-money ss-m-l-100">
-            <view class="loading-money-title">可提现佣金</view>
-            <view class="loading-money-num">
-              {{ state.showMoney ? fen2yuan(state.summary.brokeragePrice || 0) : '*****' }}
-            </view>
+          <view class="ss-flex-col ss-flex-1">
+            <view class="sub-title">可提现佣金</view>
+            <view class="sub-num">{{ state.showMoney ? fen2yuan(state.summary.brokeragePrice || 0) : '*****' }}</view>
           </view>
         </view>
       </view>
     </view>
 
-    <su-sticky>
-      <!-- 统计 -->
-      <view class="filter-box ss-p-x-30 ss-flex ss-col-center ss-row-between">
+    <!-- tab -->
+    <su-sticky :customNavHeight="sys_navBar">
+      <view class="section_2 flex-col">
+        <view class="text-wrapper_4 flex-row justify-between" style="width: 350rpx; margin: 0 auto;">
+          <text
+            class="tab-item"
+            :class="state.currentTab === 0 ? 'text_6' : 'text_7'"
+            @tap="onChangeTab(0)"
+            >分佣</text
+          >
+          <text
+            class="tab-item"
+            :class="state.currentTab === 1 ? 'text_6' : 'text_7'"
+            @tap="onChangeTab(1)"
+            >提现</text
+          >
+        </view>
+        <view class="group_39 flex-row" style="width: 350rpx; margin: 27rpx auto 0;">
+          <view
+            class="block_12 flex-col"
+            :style="{ transform: `translateX(${state.currentTab * 286}rpx)` }"
+          ></view>
+        </view>
+      </view>
+    </su-sticky>
+
+    <!-- list -->
+    <view class="list-box">
+      <!-- 日期筛选 -->
+      <view class="filter-box ss-flex ss-col-center ss-row-between ss-p-t-20 ss-p-b-10">
         <uni-datetime-picker
           v-model="state.date"
           type="daterange"
           @change="onChangeTime"
           :end="state.today"
         >
-          <button class="ss-reset-button date-btn">
+          <button class="ss-reset-button date-btn ss-flex ss-col-center">
             <text>{{ dateFilterText }}</text>
-            <text class="cicon-drop-down ss-seldate-icon" />
+            <text class="cicon-drop-down ss-seldate-icon ss-m-l-10" />
           </button>
         </uni-datetime-picker>
+      </view>
 
-        <view class="total-box">
-          <!-- TODO 芋艿：【钱包-可优化】这里暂时不考虑做 -->
-          <!-- <view class="ss-m-b-10">总收入￥{{ state.pagination.income.toFixed(2) }}</view> -->
-          <!-- <view>总支出￥{{ (-state.pagination.expense).toFixed(2) }}</view> -->
+      <view v-if="state.pagination.total > 0">
+        <!-- 分佣列表 -->
+        <view v-if="state.currentTab === 0">
+          <view
+            class="list-item ss-flex-col"
+            v-for="item in state.pagination.list"
+            :key="item.id"
+          >
+            <view class="ss-flex ss-col-center ss-row-between ss-m-b-20">
+              <view class="name ss-line-1">{{ item.title }}</view>
+              <view class="money">
+                <text v-if="item.price >= 0" class="add">+{{ fen2yuan(item.price) }}</text>
+                <text v-else class="minus">{{ fen2yuan(item.price) }}</text>
+              </view>
+            </view>
+            <view class="ss-flex ss-row-between ss-col-center">
+              <view class="time">{{ sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd hh:MM') }}</view>
+              <view class="status" :class="'status-' + item.status">{{ item.statusName }}</view>
+            </view>
+          </view>
+        </view>
+        <!-- 提现列表 -->
+        <view v-else>
+          <view
+            class="list-item ss-flex-col"
+            v-for="item in state.pagination.list"
+            :key="item.id"
+          >
+            <view class="ss-flex ss-col-center ss-row-between ss-m-b-20">
+              <view class="name ss-line-1">{{ item.typeName }}</view>
+              <view class="money">
+                <text class="minus">{{ fen2yuan(item.price) }}</text>
+              </view>
+            </view>
+            <view class="ss-flex ss-row-between ss-col-center">
+              <view class="time">{{ sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd hh:MM') }}</view>
+              <button
+                v-if="item.status === 10 && item.type === 5 && item.payTransferId > 0"
+                class="ss-reset-button confirm-btn"
+                @tap="onRequestMerchantTransfer(item)"
+              >
+                确认收款
+              </button>
+              <view v-else class="status" :class="'status-' + item.status">{{ item.statusName }}</view>
+            </view>
+          </view>
         </view>
       </view>
-      <su-tabs
-        :list="tabMaps"
-        @change="onChangeTab"
-        :scrollable="false"
-        :current="state.currentTab"
-      />
-    </su-sticky>
-    <s-empty
-      v-if="state.pagination.total === 0"
-      :icon="sheep.$url.static('/static/data-empty.webp')"
-      text="暂无数据"
-    ></s-empty>
+      <s-empty v-else text="暂无数据" :icon="sheep.$url.static('/static/data-empty.webp')" />
+    </view>
+
+    <uni-load-more
+      v-if="state.pagination.total > 0"
+      :status="state.loadStatus"
+      :content-text="{
+        contentdown: '上拉加载更多',
+      }"
+    />
 
     <!-- 转余额弹框 -->
     <su-popup
@@ -104,84 +176,13 @@
           />
         </view>
         <button
-          class="ss-reset-button model-btn ui-BG-Main-Gradient ui-Shadow-Main"
+          class="ss-reset-button model-btn"
           @tap="onConfirm"
         >
           确定
         </button>
       </view>
     </su-popup>
-
-    <!-- 钱包记录 -->
-    <view v-if="state.pagination.total > 0">
-      <!-- 分佣列表 -->
-      <view v-if="state.currentTab === 0">
-        <view
-          class="wallet-list ss-flex border-bottom"
-          v-for="item in state.pagination.list"
-          :key="item.id"
-        >
-          <view class="list-content">
-            <view class="title-box ss-flex ss-row-between ss-m-b-20">
-              <text class="title ss-line-1">{{ item.title }}</text>
-              <view class="money">
-                <text v-if="item.price >= 0" class="add">+{{ fen2yuan(item.price) }}</text>
-                <text v-else class="minus">{{ fen2yuan(item.price) }}</text>
-              </view>
-            </view>
-            <view class="ss-flex ss-row-between ss-col-center">
-              <text class="time">
-                {{ sheep.$helper.timeFormat(item.createTime, 'yyyy-mm-dd hh:MM:ss') }}
-              </text>
-              <view class="ss-flex ss-col-center">
-                <text class="status" :class="'status-' + item.status">{{ item.statusName }}</text>
-              </view>
-            </view>
-          </view>
-        </view>
-      </view>
-      <!-- 提现列表 -->
-      <view v-else>
-        <view
-          class="wallet-list ss-flex border-bottom"
-          v-for="item in state.pagination.list"
-          :key="item.id"
-        >
-          <view class="list-content">
-            <view class="title-box ss-flex ss-row-between ss-m-b-20">
-              <text class="title ss-line-1">{{ item.typeName }}</text>
-              <view class="money">
-                <text class="minus">{{ fen2yuan(item.price) }}</text>
-              </view>
-            </view>
-            <view class="ss-flex ss-row-between ss-col-center">
-              <text class="time">
-                {{ sheep.$helper.timeFormat(item.createTime, 'yyyy-mm-dd hh:MM:ss') }}
-              </text>
-              <button
-                v-if="item.status === 10 && item.type === 5 && item.payTransferId > 0"
-                class="ss-reset-button confirm-btn ss-m-l-20"
-                @tap="onRequestMerchantTransfer(item)"
-              >
-                确认收款
-              </button>
-              <text v-else class="status" :class="'status-' + item.status">{{
-                item.statusName
-              }}</text>
-            </view>
-          </view>
-        </view>
-      </view>
-    </view>
-
-    <!-- <u-gap></u-gap> -->
-    <uni-load-more
-      v-if="state.pagination.total > 0"
-      :status="state.loadStatus"
-      :content-text="{
-        contentdown: '上拉加载更多',
-      }"
-    />
   </s-layout>
 </template>
 
@@ -196,7 +197,7 @@
   import { resetPagination } from '@/sheep/helper/utils';
   import PayTransferApi from '@/sheep/api/pay/transfer';
 
-  const headerBg = sheep.$url.css('/static/img/shop/user/wallet_card_bg.webp');
+  const sys_navBar = sheep.$platform.navbar;
 
   const state = reactive({
     showMoney: false,
@@ -216,17 +217,6 @@
     price: undefined,
     showModal: false,
   });
-
-  const tabMaps = [
-    {
-      name: '分佣',
-      value: '1',
-    },
-    {
-      name: '提现',
-      value: '2',
-    },
-  ];
 
   const dateFilterText = computed(() => {
     if (state.date[0] === state.date[1]) {
@@ -259,9 +249,9 @@
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
 
-  function onChangeTab(e) {
+  function onChangeTab(index) {
     resetPagination(state.pagination);
-    state.currentTab = e.index;
+    state.currentTab = index;
     getLogList();
   }
 
@@ -292,9 +282,7 @@
         if (code === 0) {
           state.showModal = false;
           await getAgentInfo();
-          onChangeTab({
-            index: 1,
-          });
+          onChangeTab(1);
         }
       },
     });
@@ -383,210 +371,240 @@
 </script>
 
 <style lang="scss" scoped>
-  // 钱包
-  .header-box {
-    background-color: $white;
-    padding: 30rpx;
-
-    .card-box {
+  .full-page-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: -1;
+    .bg-img {
       width: 100%;
-      min-height: 300rpx;
-      padding: 40rpx;
-      background-size: 100% 100%;
-      border-radius: 30rpx;
-      overflow: hidden;
-      position: relative;
-      z-index: 1;
-      box-sizing: border-box;
+    }
+  }
 
-      &::after {
-        content: '';
-        display: block;
-        width: 100%;
-        height: 100%;
-        z-index: 2;
-        position: absolute;
-        top: 0;
-        left: 0;
-        background: v-bind(headerBg) no-repeat;
-        pointer-events: none;
+  .custom-nav {
+    position: relative;
+    width: 100%;
+    
+    .nav-inner {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      height: 100%;
+      width: 100%;
+      
+      .left-box {
+        .sicon-back {
+          font-size: 32rpx;
+          color: #1e3f1c;
+        }
       }
-
-      .card-head {
-        color: $white;
-        font-size: 24rpx;
-      }
-
-      .ss-eye-icon {
-        font-size: 40rpx;
-        color: $white;
-      }
-
-      .money-num {
-        font-size: 40rpx;
-        line-height: normal;
+      
+      .title {
+        font-size: 32rpx;
         font-weight: 500;
-        color: $white;
-        font-family: OPPOSANS;
-      }
-
-      .reduce-num {
-        font-size: 26rpx;
-        font-weight: 400;
-        color: $white;
-      }
-
-      .withdraw-btn {
-        width: 120rpx;
-        height: 60rpx;
-        line-height: 60rpx;
-        border-radius: 30px;
-        font-size: 24rpx;
-        font-weight: 500;
-        background-color: $white;
-        color: var(--ui-BG-Main);
-      }
-
-      .balance-btn {
-        width: 120rpx;
-        height: 60rpx;
-        line-height: 60rpx;
-        border-radius: 30px;
-        font-size: 24rpx;
-        font-weight: 500;
-        color: $white;
-        border: 1px solid $white;
+        color: #1e3f1c;
       }
     }
   }
 
-  .loading-money {
-    margin-top: 56rpx;
+  .header-box {
+    width: 100%;
+    background: url('https://file.sheepjs.com/storage/img/2024/11/12/3df8a9a4b8784d1ab1b83d81f2113f8c.webp') no-repeat;
+    background-size: 100% 100%;
+    padding: 0 0 120rpx 0;
+    box-sizing: border-box;
 
-    .loading-money-title {
-      font-size: 24rpx;
-      font-weight: 400;
-      color: #ffffff;
-      line-height: normal;
-      margin-bottom: 30rpx;
+    .score-container {
+      padding-top: 30rpx;
     }
 
-    .loading-money-num {
-      font-size: 30rpx;
-      font-family: OPPOSANS;
-      font-weight: 500;
-      color: #fefefe;
+    .score-box {
+      .all-num {
+        font-size: 64rpx;
+        font-family: AlibabaPuHuiTiB;
+        color: #000000;
+        line-height: 88rpx;
+      }
+
+      .all-title {
+        font-size: 28rpx;
+        color: #9d9c96;
+        line-height: 40rpx;
+      }
+
+      .ss-eye-icon {
+        font-size: 36rpx;
+        color: #9d9c96;
+      }
+    }
+    
+    .use-btn {
+      background: linear-gradient(270deg, #0f5c31 0%, #06943f 100%);
+      border-radius: 34rpx;
+      padding: 0 39rpx;
+      height: 68rpx;
+      font-size: 28rpx;
+      color: #fffefa;
+    }
+
+    .use-btn-outline {
+      border: 2rpx solid #0f5c31;
+      border-radius: 34rpx;
+      padding: 0 39rpx;
+      height: 64rpx;
+      font-size: 28rpx;
+      color: #0f5c31;
+      background: transparent;
+    }
+
+    .sub-info-box {
+      .sub-title {
+        font-size: 24rpx;
+        color: #9d9c96;
+        margin-bottom: 8rpx;
+      }
+      .sub-num {
+        font-size: 32rpx;
+        font-family: AlibabaPuHuiTiB;
+        color: #000000;
+      }
     }
   }
 
   // 筛选
+  .section_2 {
+    background-image: linear-gradient(
+      180deg,
+      rgba(255, 255, 253, 0.8) 0,
+      rgba(234, 243, 229, 0.8) 100%
+    );
+    border-radius: 22px 22px 0px 0px;
+    padding: 38rpx 82rpx 0 82rpx;
+    margin: -80rpx 33rpx 0;
+    position: relative;
+    z-index: 1;
+  }
+  .text-wrapper_4 {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  .text_6 {
+    overflow-wrap: break-word;
+    color: rgba(30, 63, 28, 1);
+    font-size: 32rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 45rpx;
+  }
+  .text_7 {
+    overflow-wrap: break-word;
+    color: rgba(61, 61, 60, 1);
+    font-size: 32rpx;
+    font-weight: normal;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 45rpx;
+  }
+  .group_39 {
+    display: flex;
+    flex-direction: row;
+  }
+  .block_12 {
+    background-color: rgba(30, 63, 28, 1);
+    border-radius: 45px;
+    width: 64rpx;
+    height: 10rpx;
+    transition: transform 0.3s;
+  }
 
-  .filter-box {
-    height: 120rpx;
+  .list-box {
+    background: #fffefa;
+    margin: 0 33rpx;
     padding: 0 30rpx;
-    background-color: $bg-page;
+    border-radius: 0 0 22rpx 22rpx;
+    position: relative;
+    z-index: 1;
 
-    .total-box {
-      font-size: 24rpx;
-      font-weight: 500;
-      color: $dark-9;
-    }
+    .filter-box {
+      .date-btn {
+        background-color: rgba(248, 249, 243, 1);
+        border-radius: 27rpx;
+        padding: 0 20rpx;
+        font-size: 24rpx;
+        font-weight: 500;
+        color: rgba(61, 61, 60, 1);
+        height: 54rpx;
 
-    .date-btn {
-      background-color: $white;
-      line-height: 54rpx;
-      border-radius: 27rpx;
-      padding: 0 20rpx;
-      font-size: 24rpx;
-      font-weight: 500;
-      color: $dark-6;
-
-      .ss-seldate-icon {
-        font-size: 50rpx;
-        color: $dark-9;
+        .ss-seldate-icon {
+          font-size: 24rpx;
+          color: rgba(61, 61, 60, 1);
+        }
       }
     }
-  }
-
-  // tab
-  .wallet-tab-card {
-    .tab-item {
-      height: 80rpx;
-      position: relative;
-
-      .tab-title {
-        font-size: 30rpx;
+    
+    .list-item {
+      border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
+      padding: 30rpx 0;
+      &:last-child {
+        border-bottom: none;
       }
 
-      .cur-tab-title {
-        font-weight: $font-weight-bold;
-      }
-
-      .tab-line {
-        width: 60rpx;
-        height: 6rpx;
-        border-radius: 6rpx;
-        position: absolute;
-        left: 50%;
-        transform: translateX(-50%);
-        bottom: 2rpx;
-        background-color: var(--ui-BG-Main);
-      }
-    }
-  }
-
-  // 钱包记录
-  .wallet-list {
-    padding: 30rpx;
-    background-color: #ffff;
-
-    .head-img {
-      width: 70rpx;
-      height: 70rpx;
-      border-radius: 50%;
-      background: $gray-c;
-    }
-
-    .list-content {
-      justify-content: space-between;
-      align-items: flex-start;
-      flex: 1;
-
-      .title {
+      .name {
         font-size: 28rpx;
-        color: $dark-3;
+        font-weight: 500;
+        color: rgba(0, 0, 0, 1);
+        line-height: 28rpx;
         width: 400rpx;
       }
 
       .time {
-        color: $gray-c;
+        font-size: 24rpx;
+        font-weight: normal;
+        color: rgba(157, 156, 150, 1);
+        line-height: 28rpx;
+      }
+
+      .money {
+        .add {
+          font-size: 32rpx;
+          font-family: Helvetica;
+          font-weight: normal;
+          color: rgba(54, 208, 7, 1);
+        }
+        .minus {
+          font-size: 32rpx;
+          font-family: Helvetica;
+          font-weight: normal;
+          color: rgba(255, 0, 0, 1);
+        }
+      }
+
+      .status {
+        font-size: 24rpx;
+        &.status-0 {
+          color: #ff9900;
+        }
+        &.status-1 {
+          color: #19be6b;
+        }
+        &.status-2 {
+          color: #fa3534;
+        }
+      }
+
+      .confirm-btn {
         font-size: 22rpx;
+        color: #fffefa;
+        background: linear-gradient(270deg, #0f5c31 0%, #06943f 100%);
+        padding: 4rpx 16rpx;
+        margin: 0;
+        line-height: 1.4;
+        border-radius: 20rpx;
       }
-    }
-
-    .money {
-      font-size: 28rpx;
-      font-weight: bold;
-      font-family: OPPOSANS;
-
-      .add {
-        color: var(--ui-BG-Main);
-      }
-
-      .minus {
-        color: $dark-3;
-      }
-    }
-
-    .confirm-btn {
-      font-size: 22rpx;
-      color: var(--ui-BG-Main);
-      background: rgba(var(--ui-BG-Main-rgb), 0.1);
-      padding: 4rpx 16rpx;
-      margin: 0;
-      line-height: 1.4;
-      border-radius: 20rpx;
-      border: 1px solid var(--ui-BG-Main);
     }
   }
 
@@ -609,6 +627,7 @@
     font-weight: 500;
     color: #ffffff;
     line-height: normal;
+    background: linear-gradient(270deg, #0f5c31 0%, #06943f 100%);
   }
 
   .input-box {
@@ -621,23 +640,10 @@
       line-height: normal;
     }
 
-    .uni-easyinput__placeholder-class {
+    :deep(.uni-easyinput__placeholder-class) {
       font-size: 30rpx;
       height: 40rpx;
       line-height: normal;
-    }
-  }
-
-  .status {
-    font-size: 22rpx;
-    &.status-0 {
-      color: #ff9900;
-    }
-    &.status-1 {
-      color: #19be6b;
-    }
-    &.status-2 {
-      color: #fa3534;
     }
   }
 </style>

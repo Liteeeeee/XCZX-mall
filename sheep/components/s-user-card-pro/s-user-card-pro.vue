@@ -250,7 +250,7 @@
   const onStatsClick = (type) => {
     if (!isLogin.value) return;
     const routes = {
-      balance: '/pages/user/wallet/money',
+      balance: '/pages/user/wallet/vip-recharge',
       point: '/pages/user/wallet/score',
       coupon: '/pages/coupon/list',
     };

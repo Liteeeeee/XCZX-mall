@@ -135,7 +135,8 @@
     background: radial-gradient(
       circle at 50% -4450rpx,
       transparent 4485rpx,
-      rgba(248, 249, 243, 1) 400.5rpx
+      rgba(248, 249, 243, 0.5) 4486rpx, /* 增加 1rpx 的半透明过渡缓冲区 */
+      rgba(248, 249, 243, 1) 4487rpx /* 平滑过渡到实色 */
     );
   }
 </style>

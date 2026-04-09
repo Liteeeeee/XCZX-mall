@@ -3,7 +3,7 @@
     <view class="container flex-col">
       <image
         class="illustration"
-        src="@/sheep/components/s-audit-reject/assets/audit_reject_bitmap.png"
+        src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/reject.webp"
         mode="widthFix"
       />
       <text class="title">审核未通过</text>
