@@ -58,9 +58,7 @@
           <view
             class="tcp-text"
             @tap="
-              sheep.$router.go('/pages/public/richtext', {
-                title: '用户协议'
-              })
+              sheep.$router.go('/pages/index/userAgreement')
             "
           >
             《用户协议》
@@ -69,9 +67,7 @@
           <view
             class="tcp-text"
             @tap="
-              sheep.$router.go('/pages/public/richtext', {
-                title: '隐私协议'
-              })
+              sheep.$router.go('/pages/index/privacyPolicy')
             "
           >
             《隐私协议》

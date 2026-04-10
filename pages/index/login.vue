@@ -140,7 +140,13 @@
   }
 
   function onProtocol(title) {
-    sheep.$router.go('/pages/public/richtext', { title });
+    if (title === '隐私协议') {
+      sheep.$router.go('/pages/index/privacyPolicy');
+    } else if (title === '用户协议') {
+      sheep.$router.go('/pages/index/userAgreement');
+    } else {
+      sheep.$router.go('/pages/public/richtext', { title });
+    }
   }
 
   function shakeProtocol() {

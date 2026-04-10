@@ -146,9 +146,15 @@
   // 查看协议
   function onProtocol(title) {
     closeAuthModal();
-    sheep.$router.go('/pages/public/richtext', {
-      title,
-    });
+    if (title === '隐私协议') {
+      sheep.$router.go('/pages/index/privacyPolicy');
+    } else if (title === '用户协议') {
+      sheep.$router.go('/pages/index/userAgreement');
+    } else {
+      sheep.$router.go('/pages/public/richtext', {
+        title,
+      });
+    }
   }
 
   // 点击登录 / 注册事件

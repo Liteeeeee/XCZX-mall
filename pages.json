@@ -94,6 +94,30 @@
 				"title": "会员中心",
 				"group": "用户中心"
 			}
+		},
+		{
+			"path": "pages/index/privacyPolicy",
+			"style": {
+				"navigationBarTitleText": "隐私协议"
+			},
+			"meta": {
+				"auth": false,
+				"sync": true,
+				"title": "隐私协议",
+				"group": "通用"
+			}
+		},
+		{
+			"path": "pages/index/userAgreement",
+			"style": {
+				"navigationBarTitleText": "用户协议"
+			},
+			"meta": {
+				"auth": false,
+				"sync": true,
+				"title": "用户协议",
+				"group": "通用"
+			}
 		}
 	],
 	"subPackages": [{
