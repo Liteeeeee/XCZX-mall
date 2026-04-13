@@ -25,6 +25,7 @@
           backgroundImage: 'url(' + sheep.$url.static('/static/member/chongzhiBg.png') + ')',
           backgroundSize: '100% 100%',
           backgroundRepeat: 'no-repeat',
+          marginBottom: '40rpx',
         }"
         @tap="sheep.$router.go('/pages/user/wallet/vip-recharge')"
       ></view>
