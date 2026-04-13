@@ -11,7 +11,6 @@
     >
       <!-- 左 -->
       <view class="left-box" @tap="onClickLeft">
-        <view class="circle"></view>
         <text class="sicon-back" v-if="hasHistory" />
         <text class="sicon-home" v-else />
       </view>
@@ -152,21 +151,8 @@
     margin-left: 8rpx;
     
     .sicon-back, .sicon-home {
-      font-size: 32rpx;
+      font-size: 36rpx;
       color: #000;
-    }
-    
-    .circle {
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: 60rpx;
-      height: 60rpx;
-      background: rgba(#fff, 0.6);
-      border: 1rpx solid #ebebeb;
-      border-radius: 50%;
-      box-sizing: border-box;
-      z-index: -1;
     }
   }
   .detail-tab-card {

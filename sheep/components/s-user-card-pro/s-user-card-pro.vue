@@ -341,7 +341,6 @@
       height: 120rpx;
       border-radius: 50%;
       overflow: hidden;
-      border: 4rpx solid #fff;
       transition: all 0.3s;
       background: #f5f5f5;
 

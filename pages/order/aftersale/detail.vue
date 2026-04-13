@@ -277,7 +277,7 @@
     height: 60rpx;
   }
   .nav-title {
-    color: rgba(30, 63, 28, 0.9);
+    color: #000000;
     font-size: 36rpx;
     font-weight: 600;
   }

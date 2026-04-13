@@ -170,7 +170,6 @@
   .order-list-card-box {
     .order-card-header {
       height: 80rpx;
-
       .order-no {
         font-size: 26rpx;
         font-weight: 500;

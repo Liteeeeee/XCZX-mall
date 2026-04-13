@@ -349,7 +349,7 @@
 
   .nav-title {
     overflow-wrap: break-word;
-    color: rgba(0, 0, 0, 0.9);
+    color: #000000;
     font-size: 36rpx;
     font-family: PingFangSC-Medium;
     font-weight: 500;

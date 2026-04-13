@@ -87,6 +87,14 @@
             </radio-group>
           </view>
         </view>
+        <!-- 绑定微信 -->
+        <view class="form-item ss-flex ss-row-between ss-col-center ss-m-t-70" @tap="onBindWechat">
+          <text class="item-label">绑定微信</text>
+          <view class="item-value-box ss-flex ss-col-center">
+            <text class="item-value" :class="{'is-empty': !state.isBindWechat}">{{ state.isBindWechat ? '已绑定' : '未绑定' }}</text>
+            <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
+          </view>
+        </view>
       </view>
 
       <view class="hint-text ss-flex ss-row-center">
@@ -108,12 +116,14 @@
   import { clone } from 'lodash-es';
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import UserApi from '@/sheep/api/member/user';
+  import SocialApi from '@/sheep/api/member/social';
   import {
     chooseAndUploadFile,
     uploadFilesFromPath,
   } from '@/sheep/components/s-uploader/choose-and-upload-file';
 
   const state = reactive({
+    isBindWechat: false,
     model: {
       avatar: '',
       nickname: '',
@@ -150,6 +160,40 @@
   // 修改手机号
   const onChangeMobile = () => {
     showAuthModal('changeMobile');
+  };
+
+  // 绑定/解绑微信
+  const onBindWechat = async () => {
+    if (state.isBindWechat) {
+      uni.showModal({
+        title: '解除绑定',
+        content: '确定要解除绑定微信吗？',
+        success: async function (res) {
+          if (res.confirm) {
+            // 这里因为我们无法直接拿到 openid，通常由后端根据当前登录 token 直接解绑，或者需要传具体的 openid
+            // 目前先展示解绑提示，若要调用 SocialApi.socialUnbind(type, openid) 需补充获取 openid 的逻辑
+            const openid = uni.getStorageSync('openid');
+            const type = sheep.$platform.name === 'WechatOfficialAccount' ? 31 : 34; // 31为公众号, 34为小程序
+            if (openid) {
+              const { code } = await SocialApi.socialUnbind(type, openid);
+              if (code === 0) {
+                state.isBindWechat = false;
+                uni.removeStorageSync('openid');
+                sheep.$helper.toast('解绑成功');
+              }
+            } else {
+              sheep.$helper.toast('未找到绑定信息');
+            }
+          }
+        },
+      });
+    } else {
+      const result = await sheep.$platform.useProvider('wechat').bind();
+      if (result) {
+        state.isBindWechat = true;
+        sheep.$helper.toast('绑定成功');
+      }
+    }
   };
 
   // 选择微信头像
@@ -211,6 +255,16 @@
     if (userInfo.birthday) {
       state.model.birthday = sheep.$helper.timeFormat(userInfo.birthday, 'yyyy-mm-dd');
     }
+    
+    // 获取微信绑定状态
+    const type = sheep.$platform.name === 'WechatOfficialAccount' ? 31 : 34; // 31公众号，34小程序
+    const { code, data } = await SocialApi.getSocialUser(type);
+    if (code === 0 && data) {
+      state.isBindWechat = true;
+      uni.setStorageSync('openid', data.openid); // 同步保存 openid 方便解绑
+    } else {
+      state.isBindWechat = false;
+    }
   };
 
   onBeforeMount(() => {
@@ -239,7 +293,7 @@
   }
 
   .nav-title {
-    color: rgba(30, 63, 28, 0.9);
+    color: #000000;
     font-size: 36rpx;
     font-weight: 600;
     font-family: PingFangSC-Semibold;

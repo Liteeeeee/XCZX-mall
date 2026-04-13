@@ -415,7 +415,7 @@
     font-size: 36rpx;
     font-family: PingFangSC-Semibold;
     font-weight: 600;
-    color: rgba(30, 63, 28, 0.9);
+    color: #000000;
   }
 
   .page-body {

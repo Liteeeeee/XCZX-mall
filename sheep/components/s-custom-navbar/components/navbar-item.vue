@@ -61,7 +61,7 @@
     text-align: center;
     font-family: PingFangSC, PingFang SC;
     font-weight: 600;
-    color: #1E3F1C !important;
+    color: #000000 !important;
     line-height: 50rpx;
     padding-left: 34rpx;
     box-sizing: border-box;

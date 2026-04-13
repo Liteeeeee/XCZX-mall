@@ -6,7 +6,7 @@
       navbar="custom"
       tabbar="/pages/index/index"
       :bgStyle="template.page"
-      :navbarStyle="template.navigationBar"
+      :navbarStyle="homeNavbarStyle"
       onShareAppMessage
     >
       <!-- 首页自定义导航左侧 -->
@@ -17,7 +17,6 @@
             :src="sheep.$url.static('/static/log.webp')"
             mode="aspectFit"
           ></image>
-          <text class="title">仙草甄选</text>
         </view>
       </template>
 
@@ -51,6 +50,16 @@
   });
 
   const template = computed(() => sheep.$store('app').template?.home);
+  const homeNavbarStyle = computed(() => {
+    const nav = template.value?.navigationBar || {};
+    const bgColor =
+      nav.bgColor && nav.bgColor !== 'transparent' ? nav.bgColor : 'rgba(248, 249, 243, 1.0)';
+    return {
+      ...nav,
+      styleType: 'normal',
+      bgColor,
+    };
+  });
   const showDownGuide = ref(true);
 
   // 在此处拦截改变一下首页轮播图 此处先写死后期复活 放到启动函数里
@@ -149,7 +158,7 @@
 <style lang="scss" scoped>
   .down-guide {
     position: fixed;
-    bottom: 19vh;
+    bottom: 12vh;
     left: 50%;
     transform: translateX(-50%);
     width: 140rpx;
@@ -163,16 +172,28 @@
     align-items: center;
 
     .logo {
-      width: 75rpx;
-      height: 72rpx;
-      margin-right: 12rpx;
+      width: 208rpx;
+      height: 65rpx;
     }
 
     .title {
       font-size: 31rpx;
       font-weight: bold;
-      color: #fff;
+      color: #000000;
       font-family: Kingsoft_Cloud_Font;
+    }
+  }
+
+  // 首页专属的轮播图指示器样式
+  :deep(.ui-swiper-dot) {
+    width: 100%;
+  }
+
+  // 强制首页的轮播图按 1282rpx 比例显示
+  :deep(.ui-swiper) {
+    height: 1282rpx !important;
+    swiper {
+      height: 1282rpx !important;
     }
   }
 </style>

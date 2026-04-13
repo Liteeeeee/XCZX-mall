@@ -3,7 +3,7 @@
     <!-- 权益区域 -->
     <view class="block_14 flex-col">
       <!-- 会员统计数据 -->
-      <view
+      <!-- <view
         class="member-stats-card flex-row align-center"
         v-if="isCurrent"
         :style="memberStatsCardStyle"
@@ -17,8 +17,17 @@
           <text class="stats-title">累计获得积分</text>
           <text class="stats-value">{{ userInfo.totalPoints || '1000' }}</text>
         </view>
-      </view>
-
+      </view> -->
+      <view
+        v-if="isVipOpened"
+        :style="{
+          height: '151rpx',
+          backgroundImage: 'url(' + sheep.$url.static('/static/member/chongzhiBg.png') + ')',
+          backgroundSize: '100% 100%',
+          backgroundRepeat: 'no-repeat',
+        }"
+        @tap="sheep.$router.go('/pages/user/wallet/vip-recharge')"
+      ></view>
       <text class="text_8">已解锁{{ unlockedCount }}项权益</text>
       <view class="section_5 flex-row" v-if="rightsToRender.length > 0">
         <view class="rights-item" v-for="(item, index) in rightsToRender" :key="item?.id ?? index">
@@ -32,12 +41,18 @@
             ></image>
           </view>
           <text class="rights-title">{{ item?.title ?? item?.name ?? '' }}</text>
-          <text class="rights-desc">{{ item?.desc ?? item?.description ?? item?.remark ?? '' }}</text>
+          <text class="rights-desc">{{
+            item?.desc ?? item?.description ?? item?.remark ?? ''
+          }}</text>
         </view>
       </view>
 
       <view class="box_89 flex-col" v-if="isUnlocked" :style="upgradeGuideCardStyle">
-        <text class="text_64">会员升级攻略{{ '>' }}</text>
+        <view class="text_64 ss-flex ss-col-center"
+          >会员升级攻略<image
+            :src="sheep.$url.static('/static/member/chevron-right.png')"
+            style="width: 36rpx; height: 36rpx"
+        /></view>
         <view class="upgrade-guide-tipbar flex-row align-center">
           <view class="upgrade-guide-tipbar-icon">
             <text class="upgrade-guide-tipbar-icon-text">!</text>
@@ -46,17 +61,21 @@
         </view>
         <view class="box_90 flex-row" v-if="platinumItem">
           <view class="text-wrapper_34 flex-col">
-            <text class="paragraph_5">{{ platinumItem.levelTag[0] }}\n{{ platinumItem.levelTag[1] }}</text>
+            <text class="paragraph_5"
+              >{{ platinumItem.levelTag[0] }}\n{{ platinumItem.levelTag[1] }}</text
+            >
           </view>
           <view class="block_41 flex-col">
             <view class="box_91 flex-row justify-between">
               <text class="text_56">{{ platinumItem.title }}</text>
               <view class="group_107 flex-col">
                 <view class="block_42 flex-col">
-                  <view class="block_43 flex-col">
-                    <view class="box_92 flex-col"></view>
-                    <view class="box_93 flex-col"></view>
-                  </view>
+                  <image
+                    class="block_43"
+                    :src="sheep.$url.static('/static/member/tanhao.png')"
+                    mode="aspectFit"
+                    style="width: 24rpx; height: 24rpx"
+                  />
                 </view>
               </view>
             </view>
@@ -74,7 +93,9 @@
         </view>
         <view class="box_96 flex-row" v-if="diamondItem">
           <view class="text-wrapper_36 flex-col">
-            <text class="paragraph_6">{{ diamondItem.levelTag[0] }}\n{{ diamondItem.levelTag[1] }}</text>
+            <text class="paragraph_6"
+              >{{ diamondItem.levelTag[0] }}\n{{ diamondItem.levelTag[1] }}</text
+            >
           </view>
           <view class="box_97 flex-col">
             <view class="group_108 flex-row justify-between">
@@ -82,26 +103,31 @@
               <view class="section_69 flex-col">
                 <view class="group_109 flex-col">
                   <view class="section_70 flex-col">
-                    <view class="box_98 flex-col"></view>
-                    <view class="box_99 flex-col"></view>
+                    <image
+                      class="block_43"
+                      :src="sheep.$url.static('/static/member/tanhao.png')"
+                      mode="aspectFit"
+                      style="width: 24rpx; height: 24rpx"
+                    />
                   </view>
                 </view>
               </view>
             </view>
             <text class="text_60">再邀请{{ diamondItem.needInvite }}人成功升级到钻石会员</text>
             <view class="group_110 flex-col" v-if="!diamondItem.achieved">
-              <view class="box_100 flex-col" :style="{ width: diamondItem.progressPercent + '%' }"></view>
+              <view
+                class="box_100 flex-col"
+                :style="{ width: diamondItem.progressPercent + '%' }"
+              ></view>
             </view>
           </view>
           <view class="achieve-check" v-if="diamondItem.achieved">
             <text class="achieve-check-icon">✓</text>
           </view>
-         <button class="achieve-check is-dim" v-else open-type="share">
+          <button class="achieve-check is-dim" v-else open-type="share">
             <text class="achieve-check-icon">分享邀请</text>
           </button>
         </view>
-        
-      
       </view>
     </view>
   </view>
@@ -115,24 +141,24 @@
     level: {
       type: Object,
       required: true,
-      default: () => ({})
+      default: () => ({}),
     },
     userInfo: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     rightsAll: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     rightsUnlockedMap: {
       type: Object,
-      default: () => ({})
+      default: () => ({}),
     },
     rightsUnlockLoaded: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   });
 
   const rightsUnlockLoaded = computed(() => !!props.rightsUnlockLoaded);
@@ -186,14 +212,13 @@
 
     const rawLevel = props.userInfo?.level;
     const level =
-      typeof rawLevel === 'object' && rawLevel
-        ? rawLevel.level ?? rawLevel.id ?? null
-        : rawLevel;
-    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      level === null || level === undefined || level === '' ? null : Number(level);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
       return idByLevel[normalizedLevel] === props.level.id;
     }
-    
+
     const rawLevelName = props.userInfo?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
     if (levelName.includes('钻石')) return props.level.id === 'diamond';
@@ -202,15 +227,39 @@
     return props.level.id === 'golden'; // Default fallback
   });
 
+  // 判断用户是否已开通会员（用于控制充值入口占位图的显示）
+  const isVipOpened = computed(() => {
+    const rawLevel = props.userInfo?.level;
+    const levelValue =
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      levelValue === null || levelValue === undefined || levelValue === ''
+        ? null
+        : Number(levelValue);
+
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return true;
+
+    const rawLevelName = props.userInfo?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (
+      levelName &&
+      (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))
+    ) {
+      return true;
+    }
+
+    return false;
+  });
+
   const currentUserLevel = computed(() => {
     const rawLevel = props.userInfo?.level;
     const level =
-      typeof rawLevel === 'object' && rawLevel
-        ? rawLevel.level ?? rawLevel.id ?? null
-        : rawLevel;
-    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
-    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return normalizedLevel;
-    
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3)
+      return normalizedLevel;
+
     const rawLevelName = props.userInfo?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
     if (levelName) {
@@ -293,8 +342,20 @@
   const upgradeGuideItems = computed(() => {
     const invite = inviteSuccessCount.value;
     const tasks = [
-      { id: 'platinum', levelTag: ['铂金', '会员'], title: '直升铂金会员', needInvite: 1, targetLevel: 2 },
-      { id: 'diamond', levelTag: ['钻石', '会员'], title: '直升钻石会员', needInvite: 3, targetLevel: 3 },
+      {
+        id: 'platinum',
+        levelTag: ['铂金', '会员'],
+        title: '直升铂金会员',
+        needInvite: 1,
+        targetLevel: 2,
+      },
+      {
+        id: 'diamond',
+        levelTag: ['钻石', '会员'],
+        title: '直升钻石会员',
+        needInvite: 3,
+        targetLevel: 3,
+      },
     ];
     return tasks.map((t) => {
       const achieved = currentUserLevel.value >= t.targetLevel || invite >= t.needInvite;
@@ -304,7 +365,9 @@
     });
   });
 
-  const platinumItem = computed(() => upgradeGuideItems.value.find((item) => item.id === 'platinum'));
+  const platinumItem = computed(() =>
+    upgradeGuideItems.value.find((item) => item.id === 'platinum'),
+  );
   const diamondItem = computed(() => upgradeGuideItems.value.find((item) => item.id === 'diamond'));
 </script>
 
@@ -321,15 +384,19 @@
     width: 100%;
     padding: 80rpx 30rpx 20rpx; // 调整顶部内边距，并将下边距设为 20rpx
     box-sizing: border-box;
-    background: radial-gradient(circle at 50% -4450rpx, transparent 4485rpx, rgba(248, 249, 243, 1) 400.5rpx);
+    background: radial-gradient(
+      circle at 50% -4450rpx,
+      transparent 4485rpx,
+      rgba(248, 249, 243, 1) 400.5rpx
+    );
   }
 
   /* 会员统计卡片 */
   .member-stats-card {
     width: 100%;
     height: 152rpx;
-    background: #FFFFFF;
-    border: 1rpx solid #F0F0F0;
+    background: #ffffff;
+    border: 1rpx solid #f0f0f0;
     border-radius: 16rpx;
     margin-bottom: 40rpx;
     display: flex;
@@ -348,7 +415,7 @@
 
   .stats-title {
     font-size: 24rpx;
-    color: #B67F09;
+    color: #b67f09;
     margin-bottom: 12rpx;
   }
 
@@ -362,7 +429,7 @@
   .stats-line {
     width: 2rpx;
     height: 60rpx;
-    background: #FFFEFA;
+    background: #fffefa;
   }
 
   .text_8 {
@@ -452,7 +519,11 @@
 
   .paragraph_5,
   .paragraph_6 {
-    background-image: linear-gradient(180deg, rgba(255, 254, 247, 1) 0, rgba(227, 197, 144, 1) 100%);
+    background-image: linear-gradient(
+      180deg,
+      rgba(255, 254, 247, 1) 0,
+      rgba(227, 197, 144, 1) 100%
+    );
     height: 62rpx;
     overflow-wrap: break-word;
     font-size: 24rpx;
@@ -486,24 +557,18 @@
     white-space: nowrap;
     line-height: 45rpx;
   }
-.group_107{
-    background-color: rgba(255, 254, 250, 0.3);
-    margin: 12rpx 0 9rpx 0;
-  border-radius: 50%;
-}
+
   .group_107,
   .section_69 {
-    border-radius: 50%;
-    background-color: rgba(255, 254, 250, 0.3);
-    margin: 12rpx 0 9rpx 0;
+    align-items: center;
+    justify-content: center;
   }
 
   .block_42 {
-    padding: 1rpx 1rpx 2rpx 2rpx;
-  }
-
-  .block_43 {
-    padding: 4rpx 10rpx 3rpx 9rpx;
+    border-radius: 50%;
+    width: 24rpx;
+    height: 24rpx;
+    justify-content: center;
   }
 
   .box_92,
@@ -543,10 +608,10 @@
   }
 
   .achieve-check {
-    width: auto;
-    height: 40rpx;
-    border-radius: 20rpx;
-    background-image: linear-gradient(90deg, rgba(255, 254, 224, 1) 0, rgba(255, 232, 165, 1) 100%);
+    width: 150rpx;
+    height: 60rpx;
+    border-radius: 30rpx;
+    background-image: linear-gradient(90deg, #fffee0 0%, #ffe8a5 100%);
     margin: 21rpx 21rpx 20rpx 18rpx;
     padding: 0 16rpx;
     display: flex;
@@ -560,8 +625,8 @@
   }
 
   .achieve-check-icon {
-    color: #000;
-    font-size: 22rpx;
+    color: #562A08;
+    font-size: 28rpx;
     line-height: 1;
     font-weight: normal;
   }
@@ -578,7 +643,11 @@
   }
 
   .text-wrapper_37 {
-    background-image: linear-gradient(90deg, rgba(255, 254, 224, 0.5) 0, rgba(255, 232, 165, 0.5) 100%);
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 254, 224, 0.5) 0,
+      rgba(255, 232, 165, 0.5) 100%
+    );
     border-radius: 100px;
     margin: 21rpx 0 20rpx 38rpx;
     padding: 10rpx 19rpx;
@@ -591,7 +660,7 @@
   .box_95 {
     width: 532rpx;
     height: 1rpx;
-    border: 1px solid rgba(151, 151, 151, 0.3);
+    border-bottom: 1px solid rgba(151, 151, 151, 0.3);
   }
 
   .box_96 {
@@ -615,7 +684,10 @@
   }
 
   .section_70 {
-    padding: 3rpx 10rpx 3rpx 9rpx;
+    border-radius: 50%;
+    width: 24rpx;
+    height: 24rpx;
+    justify-content: center;
   }
 
   .group_110 {

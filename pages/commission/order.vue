@@ -69,7 +69,7 @@
                 </view>
                 <view class="order-meta flex-row justify-between">
                   <text class="order-qty">数量*{{ item._totalCount || item._count || 1 }}</text>
-                  <text class="order-earn">预估可赚{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text>
+                  <text class="order-earn">预估收益{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text>
                 </view>
               </view>
             </view>
@@ -88,13 +88,13 @@
                   <text class="text_8">实付金额：¥{{ fen2yuan(goods.payPrice) }}</text>
                   <view class="order-meta flex-row justify-between">
                     <text class="order-qty">数量*{{ goods.count || 1 }}</text>
-                    <text class="order-earn">预估可赚{{ toYuanInt(goods.brokeragePrice) }}元</text>
+                    <text class="order-earn">预估收益{{ toYuanInt(goods.brokeragePrice) }}元</text>
                   </view>
                 </view>
               </view>
               <view class="multi-footer flex-col">
                 <text class="multi-time">下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text>
-                <text class="multi-total-earn">预估总收益可赚{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text>
+                <text class="multi-total-earn">预估总收益{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text>
               </view>
             </view>
           </view>

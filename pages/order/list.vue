@@ -520,7 +520,7 @@
     background: #F8F9F3;
   }
   .nav-title {
-    color: rgba(30, 63, 28, 0.9);
+    color: #000000;
     font-size: 36rpx;
     font-weight: 600;
   }
@@ -536,7 +536,7 @@
     
     .order-card-header {
       height: 88rpx;
-
+      border-bottom: 1rpx solid rgba(157,156,150,0.3);
       .order-no {
         font-size: 28rpx;
         color: #9D9C96;

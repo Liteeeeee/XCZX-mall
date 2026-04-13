@@ -22,11 +22,11 @@
         <view class="ss-flex">
           <view class="ss-flex ss-col-center">
             <view
-              class="price-text ss-flex ss-col-center"
-              :style="[{ color: priceColor }]"
+              class="price-text ss-flex ss-col-bottom"
+              :style="[{ color: priceColor ,fontSize:'40rpx'}]"
               v-if="price && Number(price) > 0"
             >
-              ￥{{ fen2yuan(price) }}
+              <text :style="{fontSize:'28rpx !important'}">￥</text>{{ fen2yuan(price) }}
             </view>
             <view v-if="point && Number(price) > 0">+</view>
             <view class="price-text ss-flex ss-col-center" v-if="point">
@@ -179,7 +179,7 @@
     }
 
     .price-text {
-      font-size: 24rpx;
+      font-size: 28rpx;
       font-weight: 500;
       font-family: CountFont, OPPOSANS;
     }

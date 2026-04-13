@@ -66,12 +66,12 @@
       z-index: 2;
       width: 152rpx;
       height: 52rpx;
-      background: linear-gradient(121deg, #f6ce8d 0%, #ffe8c3 100%);
+      background: linear-gradient( 270deg, #F7EDD6 0%, #F9D6B4 100%);
       border-radius: 26rpx;
-      font-size: 24rpx;
+      font-size: 22rpx;
       font-family: PingFangSC, PingFang SC;
       font-weight: 500;
-      color: #1e3f1c;
+      color: #774910;
       margin-right: 26rpx;
     }
   }

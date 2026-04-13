@@ -204,7 +204,7 @@
     .nav-title {
       font-size: 32rpx;
       font-weight: bold;
-      color: #1E3F1C;
+      color: #000000;
     }
   }
 

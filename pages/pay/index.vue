@@ -131,13 +131,16 @@
   import { getPayMethods, goPayResult } from '@/sheep/platform/pay';
 
   const userWallet = computed(() => sheep.$store('user').userWallet);
+  const allowPayMethodValues = computed(() =>
+    state.orderType === 'vip_upgrade' ? ['wechat'] : ['wechat', 'wallet'],
+  );
 
   // 检测支付环境
   const state = reactive({
     orderType: 'goods', // 订单类型; goods - 商品订单, recharge - 充值订单
     orderInfo: {}, // 支付单信息
     payStatus: 0, // 0=检测支付环境, -2=未查询到支付单信息， -1=支付已过期， 1=待支付，2=订单已支付
-    payMethods: getPayMethods([]).filter((item) => ['wechat', 'wallet'].includes(item.value)), // 可选的支付方式
+    payMethods: [], // 可选的支付方式
     payment: '', // 选中的支付方式
   });
 
@@ -303,9 +306,11 @@
     let channels = data || [];
     // 兼容会员升级等可能没有返回正确 appId 导致渠道为空的情况
     if (channels.length === 0 && state.orderType === 'vip_upgrade') {
-      channels = ['wx_lite', 'wx_pub', 'wx_app', 'alipay_wap', 'alipay_app', 'wallet'];
+      channels = ['wx_lite', 'wx_pub', 'wx_app', 'alipay_wap', 'alipay_app'];
     }
-    state.payMethods = getPayMethods(channels).filter((item) => ['wechat', 'wallet'].includes(item.value));
+    state.payMethods = getPayMethods(channels).filter((item) =>
+      allowPayMethodValues.value.includes(item.value),
+    );
     state.payMethods.find((item) => {
       if (item.value && !item.disabled) {
         state.payment = item.value;
@@ -341,6 +346,7 @@
     if (options.orderType) {
       state.orderType = options.orderType;
     }
+    state.payMethods = getPayMethods([]).filter((item) => allowPayMethodValues.value.includes(item.value));
     setOrder(id);
     // 刷新钱包的缓存
     sheep.$store('user').getWallet();
@@ -355,6 +361,11 @@
 </script>
 
 <style lang="scss" scoped>
+  @font-face {
+    font-family: 'CountFont';
+    src: url('https://xiancao.oss-cn-beijing.aliyuncs.com/static/count_font.ttf') format('truetype');
+  }
+
   .fixed-header {
     width: 100%;
     background-color: transparent;
@@ -367,7 +378,7 @@
 
   .nav-title {
     overflow-wrap: break-word;
-    color: rgba(30, 63, 28, 0.9);
+    color: #000000;
     font-size: 36rpx;
     font-family: PingFangSC-Semibold;
     font-weight: 600;
@@ -399,14 +410,13 @@
 
   .pay-amount {
     margin-top: 10rpx;
+    font-family: 'CountFont', sans-serif;
   }
 
   .amount-currency {
     overflow-wrap: break-word;
     color: rgba(0, 0, 0, 1);
     font-size: 52rpx;
-    font-family: PingFangSC-Semibold;
-    font-weight: 600;
     text-align: left;
     white-space: nowrap;
     line-height: 73rpx;
@@ -417,8 +427,6 @@
     overflow-wrap: break-word;
     color: rgba(0, 0, 0, 1);
     font-size: 80rpx;
-    font-family: PingFangSC-Semibold;
-    font-weight: 600;
     text-align: left;
     white-space: nowrap;
     line-height: 112rpx;
@@ -429,8 +437,6 @@
     overflow-wrap: break-word;
     color: rgba(0, 0, 0, 1);
     font-size: 52rpx;
-    font-family: PingFangSC-Semibold;
-    font-weight: 600;
     text-align: left;
     white-space: nowrap;
     line-height: 73rpx;

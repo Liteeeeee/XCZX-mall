@@ -272,7 +272,7 @@
     background: transparent;
   }
   .nav-title {
-    color: rgba(0, 0, 0, 0.9);
+    color: #000000;
     font-size: 36rpx;
     font-weight: 600;
   }

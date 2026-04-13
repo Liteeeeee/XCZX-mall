@@ -1,6 +1,6 @@
 <template>
   <s-layout
-    :title="navTitle"
+    title=""
     navbar="custom"
     :bgStyle="{ color: '#F8F9F3' }"
     :navbarStyle="navbarStyle"
@@ -92,7 +92,7 @@
           </view>
         </view>
         <!-- 升级操作区域 -->
-        <view class="block_27 flex-col" v-if="currentLevel">
+        <view class="block_27 flex-col" v-if="currentLevel && !isVipOpened">
           <view class="box_19 flex-col">
             <view class="box_20">
               <view>
@@ -614,15 +614,7 @@
     if (!base) return base;
     const patchCells = (cells) => {
       if (!Array.isArray(cells)) return cells;
-      return cells.map((item) => {
-        if (item?.type === 'text') {
-          return {
-            ...item,
-            text: navTitle.value,
-          };
-        }
-        return item;
-      });
+      return cells.filter((item) => item?.type !== 'text');
     };
     return {
       ...base,
