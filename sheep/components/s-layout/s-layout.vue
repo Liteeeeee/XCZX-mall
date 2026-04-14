@@ -47,6 +47,8 @@
           </template>
         </s-custom-navbar>
 
+        <s-watermark v-if="commissionWatermarkText" :text="commissionWatermarkText" />
+
         <!-- 页面内容插槽 -->
         <slot />
 
@@ -70,7 +72,7 @@
   /**
    * 模板组件 - 提供页面公共组件，属性，方法
    */
-  import { computed, onMounted } from 'vue';
+  import { computed, onMounted, ref } from 'vue';
   import sheep from '@/sheep';
   import { isEmpty } from 'lodash-es';
   // #ifdef MP-WEIXIN
@@ -153,6 +155,14 @@
   const appStore = sheep.$store('app');
   const modalStore = sheep.$store('modal');
   const sys = computed(() => sysStore);
+  const pageRoute = ref('');
+  try {
+    const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+    const last = pages && pages.length ? pages[pages.length - 1] : null;
+    pageRoute.value = last?.route || last?.$page?.fullPath || '';
+  } catch (e) {
+    pageRoute.value = '';
+  }
 
   // 导航栏模式(因为有自定义导航栏 需要计算)
   const navbarMode = computed(() => {
@@ -224,6 +234,13 @@
 
   // 组件中使用 onMounted 监听页面加载，不是页面组件不使用 onShow
   onMounted(()=>{
+    try {
+      const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
+      const last = pages && pages.length ? pages[pages.length - 1] : null;
+      pageRoute.value = last?.route || last?.$page?.fullPath || '';
+    } catch (e) {
+      pageRoute.value = '';
+    }
     // #ifdef MP-ALIPAY
     uni.setNavigationBarTitle({
       title: "",
@@ -234,6 +251,17 @@
     }
   })
   onMounted(() => {});
+
+  const isCommissionPage = computed(() => {
+    const r = pageRoute.value || '';
+    return r.includes('pages/commission');
+  });
+
+  const commissionWatermarkText = computed(() => {
+    if (!isCommissionPage.value) return '';
+    const u = userStore?.userInfo || {};
+    return u.mobile || u.phone || '';
+  });
 </script>
 
 <style lang="scss" scoped>

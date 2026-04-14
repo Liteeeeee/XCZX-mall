@@ -56,7 +56,7 @@
         { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.webp', activeIconUrl: '/static/tabbar/cart_active.webp' },
         { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.webp', activeIconUrl: '/static/tabbar/user_active.webp' }
       ],
-      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#fff' }
+      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#FFFFFA' }
     };
   });
 

@@ -139,7 +139,7 @@
   }
   .ui-tabbar {
     display: flex;
-    height: 100rpx;
+    height: 125rpx;
     background: #fff;
 
     .detail-tabbar-item {

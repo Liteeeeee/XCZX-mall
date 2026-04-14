@@ -50,13 +50,13 @@
       .vip-title {
         font-size: 30rpx;
         font-weight: bold;
-        color: #fff;
+        color: #FFECC9;
         line-height: 42rpx;
       }
 
       .vip-subtitle {
         font-size: 22rpx;
-        color: rgba(255, 255, 255, 0.8);
+        color: #FFECC9;
         line-height: 32rpx;
       }
     }

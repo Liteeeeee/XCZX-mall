@@ -43,7 +43,7 @@
 
       <!-- 会员卡片 -->
       <view v-if="showVipCard" class="ss-m-20 ss-w-100">
-        <s-vip-card />
+        <s-cart-vip-card />
       </view>
 
       <!-- 内容 -->
@@ -126,7 +126,7 @@
               <view class="popup-header ss-flex ss-row-center ss-col-center">
                 <text class="popup-title">金额明细</text>
                 <view class="close-btn ss-flex ss-row-center ss-col-center" @tap="state.showDetailPopup = false">
-                  <text class="sicon-close">x</text>
+                  <image class="close-icon" :src="sheep.$url.static('/static/close.webp')" mode="aspectFit" />
                 </view>
               </view>
               <view class="popup-content">
@@ -640,7 +640,7 @@
           font-size: 36rpx;
           color: #ff3000;
           font-weight: bold;
-          font-family: OPPOSANS;
+          font-family: DINAlternate-Bold, OPPOSANS;
           line-height: 1;
         }
 
@@ -777,7 +777,7 @@
         .price-text {
           font-size: 32rpx;
           font-weight: bold;
-          font-family: OPPOSANS;
+          font-family: DINAlternate-Bold, OPPOSANS;
         }
 
         .price-unit {
@@ -875,9 +875,9 @@
         height: 40rpx;
         background: #f5f5f5;
         border-radius: 50%;
-        .sicon-close {
-          font-size: 20rpx;
-          color: #000000;
+        .close-icon {
+          width:40rpx;
+          height: 40rpx;
         }
       }
     }
@@ -901,6 +901,7 @@
           font-size: 28rpx;
           color: #333333;
           font-weight: 500;
+          font-family: DINAlternate-Bold, OPPOSANS;
         }
       }
     }

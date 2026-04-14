@@ -202,7 +202,7 @@
     &__content {
       display: flex;
       flex-direction: column;
-      background-color: #fff;
+      background-color: #FFFFFA;
       padding-top: 10rpx;
 
       &__item-wrapper {

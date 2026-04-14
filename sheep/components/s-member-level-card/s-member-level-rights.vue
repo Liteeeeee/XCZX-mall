@@ -165,9 +165,13 @@
   const rightsUnlockLoaded = computed(() => !!props.rightsUnlockLoaded);
 
   const rightsToRender = computed(() => {
-    if (Array.isArray(props.rightsAll) && props.rightsAll.length > 0) return props.rightsAll;
-    if (Array.isArray(props.level?.rights)) return props.level.rights;
-    return [];
+    const list =
+      Array.isArray(props.rightsAll) && props.rightsAll.length > 0
+        ? props.rightsAll
+        : Array.isArray(props.level?.rights)
+          ? props.level.rights
+          : [];
+    return [...list].sort((a, b) => Number(a?.sort ?? 0) - Number(b?.sort ?? 0));
   });
 
   const lockIconSrc = computed(() =>
@@ -451,7 +455,7 @@
 
   .box_89 {
     background-color: rgba(42, 37, 51, 1);
-    border-radius: 20px;
+    border-radius: 21rpx;
     overflow: hidden;
     align-self: center;
     margin-top: 22rpx;
@@ -622,7 +626,6 @@
   }
 
   .achieve-check.is-dim {
-    opacity: 0.8;
   }
 
   .achieve-check-icon {

@@ -19,15 +19,36 @@
           <view style="width: 20rpx;"></view>
           <text class="text_4" :style="{ color: level.mainColor }">{{ level.name }}</text>
           <view style="height: 14rpx;"></view>
-          <text class="text_5" :style="{ color: level.mainColor }">健康省钱·专属服务一站式享</text>
+          <view
+            v-if="showSavedMoney"
+            class="saved-money-tip"
+            :style="{
+              color: level.mainColor,
+              backgroundImage: 'url(' + sheep.$url.static('/static/member/countBg.webp') + ')',
+            }"
+          >
+            <text class="saved-money-text">累计已省{{ totalSavedMoneyText }}元</text>
+          </view>
+          <text v-else class="text_5" :style="{ color: level.mainColor }">健康省钱·专属服务一站式</text>
         </view>
         <view style="margin-top: 40rpx !important;" class="group_5 flex-col" :style="{ background: level.decoGradient }"></view>
         <view class="group_6 flex-row">
-          <text class="text_6" :style="{ color: level.mainColor }" v-if="isCurrent">已有{{ userInfo.experience || 0 }}成长值</text>
+          <text
+            class="text_6"
+            :style="{ color: level.mainColor }"
+            v-if="isCurrent && isVipUser && currentUserLevel < 3"
+            >{{ currentGrowthText }}</text
+          >
+          <!-- <text class="text_6" :style="{ color: level.mainColor }" v-else-if="isCurrent && isVipUser"
+            >已解锁该等级权益</text
+          > -->
+          <text class="text_6" :style="{ color: level.mainColor }" v-else-if="isCurrent"
+            >已有{{ userInfo.experience || 0 }}成长值</text
+          >
           <text class="text_6" :style="{ color: level.mainColor }" v-else-if="currentUserLevel > currentCardLevel">已解锁该等级权益</text>
           <text class="text_6" :style="{ color: level.mainColor }" v-else>升级解锁更多权益</text>
-            <text v-if="!isVipUser" class="text_7" @tap="sheep.$router.go('/pages/index/index')">
-            {{ isCurrent ? '升级会员>' : '立即开通>' }}
+            <text v-if="!isVipUser" class="text_7" @tap="onOpenVip">
+            {{ '立即开通>' }}
           </text>
         </view>
       </view>
@@ -40,7 +61,9 @@
 
 <script setup>
   import sheep from '@/sheep';
-  import { computed } from 'vue';
+  import { computed, ref, watch } from 'vue';
+  import TradeSummaryApi from '@/sheep/api/trade/summary';
+  import MemberLevelApi from '@/sheep/api/member/level';
 
   const props = defineProps({
     level: {
@@ -94,6 +117,26 @@
     return levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石');
   });
 
+  async function onOpenVip() {
+    const priceYuan = Number(props.level?.price || 0);
+    if (!priceYuan || Number.isNaN(priceYuan)) {
+      sheep.$helper.toast('套餐价格异常');
+      return;
+    }
+    const { code, data } = await MemberLevelApi.activateCreate({
+      payPrice: priceYuan * 100,
+      validPayPriceAndPackageId: true,
+    });
+    if (code === 0 && data?.payOrderId) {
+      sheep.$router.redirect('/pages/pay/index', {
+        id: data.payOrderId,
+        orderType: 'vip_upgrade',
+      });
+      return;
+    }
+    sheep.$helper.toast(data?.msg || '创建支付订单失败');
+  }
+
   const currentUserLevel = computed(() => {
     const rawLevel = props.userInfo?.level;
     const level =
@@ -119,10 +162,45 @@
     return 1;
   });
 
+  const currentGrowthText = computed(() => {
+    const exp = Number(props.userInfo?.experience || 0);
+    if (currentUserLevel.value === 2) return `${exp}/15000`;
+    return `${exp}/5000`;
+  });
+
   const badgeText = computed(() => {
+    if (!isVipUser.value) return '未开通';
     if (isCurrent.value) return '当前等级';
     return currentCardLevel.value <= currentUserLevel.value ? '已解锁' : '未解锁';
   });
+
+  const showSavedMoney = computed(() => isVipUser.value && isCurrent.value);
+  const totalSavedMoney = ref(undefined);
+  const totalSavedMoneyText = computed(() => {
+    const v = totalSavedMoney.value;
+    if (v === undefined) return '--';
+    if (v === null || v === undefined || v === '') return '0.00';
+    const n = Number(v);
+    if (Number.isFinite(n)) return n.toFixed(2);
+    return String(v);
+  });
+
+  const loadTradeSummary = async () => {
+    const { code, data } = await TradeSummaryApi.getSummary();
+    if (code === 0 && data) {
+      totalSavedMoney.value = data.totalSavedMoney ?? 0;
+    }
+  };
+
+  watch(
+    showSavedMoney,
+    (val) => {
+      if (!val) return;
+      if (totalSavedMoney.value !== undefined) return;
+      loadTradeSummary();
+    },
+    { immediate: true },
+  );
 </script>
 
 <style lang="scss" scoped>
@@ -173,6 +251,23 @@
     font-size: 24rpx;
     color: #1E3F1C;
     opacity: 0.8;
+  }
+
+  .saved-money-tip {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 19rpx;
+    padding: 4rpx 12rpx;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    width: 266rpx;
+    opacity: 0.8;
+  }
+
+  .saved-money-text {
+    font-size: 24rpx;
+    line-height: 34rpx;
+    white-space: nowrap;
   }
 
   .group_5 {

@@ -39,7 +39,14 @@
         
       ></view>
 
-      <view class="balance-card">
+      <view
+        class="balance-card"
+        :style="{
+          backgroundImage: 'url(' + sheep.$url.static('/static/chongzhiBg.webp') + ')',
+          backgroundSize: '100% 100%',
+          backgroundRepeat: 'no-repeat',
+        }"
+      >
         <view class="balance-row">
           <text class="balance-label">账户余额（元）</text>
           <text class="balance-value count-font">{{
@@ -83,7 +90,11 @@
               <text class="package-desc">{{ getPackageDesc(item) }}</text>
             </view>
             <view class="package-corner" v-if="state.selectedPackageId === item.id">
-              <text class="package-corner-check">✓</text>
+              <image
+                class="package-selected-icon"
+                :src="sheep.$url.static('/static/selected.webp')"
+                mode="aspectFit"
+              />
             </view>
           </view>
         </view>
@@ -301,7 +312,6 @@
   }
 
   .balance-card {
-    background-image: linear-gradient(180deg, rgba(255, 255, 253, 1) 0, rgba(234, 243, 229, 1) 100%);
     border-radius: 22rpx 22rpx 0 0;
     height: 216rpx;
     padding: 46rpx 34rpx 21rpx 34rpx;
@@ -457,9 +467,9 @@
 
   .package-corner {
     background-color: rgba(30, 63, 28, 1);
-    border-radius: 14rpx 0 14rpx 0;
+    border-radius: 14rpx 0rpx 10rpx 0rpx;
     width: 37rpx;
-    height: 27rpx;
+    height: 37rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -468,14 +478,9 @@
     bottom: 0;
   }
 
-  .package-corner-check {
-    color: rgba(255, 254, 250, 1);
-    font-size: 24rpx;
-    line-height: 24rpx;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .package-selected-icon {
+    width: 24rpx;
+    height: 24rpx;
   }
 
   .bottom-bar {

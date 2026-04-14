@@ -97,8 +97,8 @@
             <view class="box_20">
               <view>
                 <text class="text_20">¥</text>
-                <text class="text_21">{{ currentLevel.price }}</text></view
-              >
+                <text class="text_21">{{ currentLevel.price }}</text>
+              </view>
               <view class="group_45">
                 <view class="box_21 flex-col">
                   <view class="block_28 flex-col">
@@ -180,10 +180,10 @@
       const list = Array.isArray(data?.list)
         ? data.list
         : Array.isArray(data?.records)
-          ? data.records
-          : Array.isArray(data?.items)
-            ? data.items
-            : [];
+        ? data.records
+        : Array.isArray(data?.items)
+        ? data.items
+        : [];
       all.push(...list);
       const totalRaw = data?.total ?? data?.count;
       const total = Number(totalRaw);
@@ -279,7 +279,7 @@
       },
       {
         type: 'user', // 指定分享类型
-      }
+      },
     );
   });
 
@@ -465,9 +465,7 @@
       .filter(
         (item) =>
           item &&
-          (Number(item.level) === 1 ||
-            Number(item.level) === 2 ||
-            Number(item.level) === 3),
+          (Number(item.level) === 1 || Number(item.level) === 2 || Number(item.level) === 3),
       )
       .sort((a, b) => Number(a.level) - Number(b.level))
       .map((item) => {
@@ -520,7 +518,7 @@
     if (levelName.includes('钻石')) return 'diamond';
     if (levelName.includes('铂金')) return 'platinum';
     if (levelName.includes('黄金')) return 'golden';
-    
+
     return 'golden';
   });
 
@@ -552,7 +550,6 @@
     { immediate: true },
   );
 
-
   const currentLevel = computed(
     () => memberLevels.value[state.currentLevelIndex] || memberLevels.value[0],
   );
@@ -562,7 +559,9 @@
     const levelValue =
       typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
     const normalizedLevel =
-      levelValue === null || levelValue === undefined || levelValue === '' ? null : Number(levelValue);
+      levelValue === null || levelValue === undefined || levelValue === ''
+        ? null
+        : Number(levelValue);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
       const hit = Array.isArray(state.levelList)
         ? state.levelList.find((it) => Number(it?.level) === normalizedLevel)
@@ -590,7 +589,9 @@
       userInfo.value?.memberLevelId ??
       userInfo.value?.levelId ??
       userInfo.value?.memberLevelID ??
-      (typeof rawLevel === 'object' && rawLevel ? rawLevel.memberLevelId ?? rawLevel.levelId : null);
+      (typeof rawLevel === 'object' && rawLevel
+        ? rawLevel.memberLevelId ?? rawLevel.levelId
+        : null);
     const directId = Number(direct);
     if (Number.isFinite(directId)) return directId;
     return null;
@@ -634,16 +635,21 @@
     const levelValue =
       typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
     const normalizedLevel =
-      levelValue === null || levelValue === undefined || levelValue === '' ? null : Number(levelValue);
-    
+      levelValue === null || levelValue === undefined || levelValue === ''
+        ? null
+        : Number(levelValue);
+
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return true;
-    
+
     const rawLevelName = userInfo.value?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
-    if (levelName && (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))) {
+    if (
+      levelName &&
+      (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))
+    ) {
       return true;
     }
-    
+
     return false;
   });
 
@@ -761,15 +767,14 @@
     width: calc(100% - 40rpx);
     margin: 20rpx;
     margin-top: 0rpx;
-    padding: 40rpx 30rpx;
     box-sizing: border-box;
     align-self: auto;
-    background-color: rgba(255, 254, 250, 1);
     border-radius: 20rpx;
   }
 
   .text_11 {
     margin: 0 0 30rpx;
+    color: #1d2129;
   }
 
   .group_14 {
@@ -869,7 +874,7 @@
   .block_18 {
     .section_13 {
       background-color: rgba(88, 120, 104, 1);
-      border-radius: 20px;
+      border-radius: 21rpx;
       position: relative;
       width: 690rpx;
       height: 500rpx;
@@ -1049,7 +1054,7 @@
     position: fixed;
     bottom: calc(86rpx + env(safe-area-inset-bottom));
     left: 0;
-    background: #fff;
+    background: #fffffa;
     border-radius: 20rpx 20rpx 0 0;
     z-index: 99;
     display: flex;
@@ -1143,8 +1148,8 @@
   }
 
   .text_21 {
-    font-family: 'PingFang SC';
-    font-weight: 600;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
     font-size: 62rpx;
     line-height: 87rpx;
   }

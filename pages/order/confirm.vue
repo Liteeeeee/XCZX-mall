@@ -70,6 +70,23 @@
               <text class="item-value ss-m-r-24">￥{{ fen2yuan(state.orderInfo.price.totalPrice) }}</text>
             </view>
           </view>
+           <view class="group_38 ss-flex-col" v-if="state.orderInfo.price.vipPrice > 0">
+            <view class="box_79 ss-flex">
+              <view class="box_80 ss-flex ss-col-center ss-row-between">
+                <view class="box_81 ss-flex ss-col-center ss-row-between">
+                  <image
+                    class="vip-badge-img"
+                    :src="vipLevelBadgeImg"
+                  />
+                </view>
+                <text class="text_33">{{ vipDiscountText }}</text>
+              </view>
+            </view>
+            <view class="text-wrapper_28 ss-flex ss-col-center ss-row-between">
+              <text class="text_34">会员优惠</text>
+              <text class="text_35">-￥{{ fen2yuan(state.orderInfo.price.vipPrice) }}</text>
+            </view>
+          </view>
           <view
             v-if="state.orderPayload.pointActivityId"
             class="order-item ss-flex ss-col-center ss-row-between"
@@ -129,15 +146,7 @@
               <text class="_icon-forward item-icon" />
             </view>
           </view>
-          <view
-            class="order-item ss-flex ss-col-center ss-row-between"
-            v-if="state.orderInfo.price.vipPrice > 0"
-          >
-            <view class="item-title">会员优惠</view>
-            <view class="ss-flex ss-col-center">
-              <text class="item-value text-red">-￥{{ fen2yuan(state.orderInfo.price.vipPrice) }}</text>
-            </view>
-          </view>
+         
         </view>
         <view class="total-box-footer ss-font-28 ss-flex ss-row-right ss-col-center ss-m-r-28">
           <view class="total-num ss-m-r-20">
@@ -182,7 +191,7 @@
 </template>
 
 <script setup>
-  import { reactive, ref, watch } from 'vue';
+  import { computed, reactive, ref, watch } from 'vue';
   import { onLoad } from '@dcloudio/uni-app';
   import AddressSelection from '@/pages/order/addressSelection.vue';
   import sheep from '@/sheep';
@@ -203,6 +212,35 @@
   const addressState = ref({
     addressInfo: {}, // 选择的收货地址
     deliveryType: 1, // 收货方式：1-快递配送
+  });
+
+  const userInfo = computed(() => sheep.$store('user')?.userInfo || {});
+  const vipLevel = computed(() => {
+    const rawLevel = userInfo.value?.level;
+    const levelFromRaw =
+      typeof rawLevel === 'number' ? rawLevel : rawLevel?.level ?? rawLevel?.id ?? rawLevel;
+    if (typeof levelFromRaw === 'number') return levelFromRaw;
+    const name = userInfo.value?.levelName || rawLevel?.name || '';
+    if (typeof name === 'string') {
+      if (name.includes('钻石')) return 3;
+      if (name.includes('铂金')) return 2;
+      if (name.includes('黄金')) return 1;
+    }
+    return 0;
+  });
+
+  const vipLevelBadgeImg = computed(() => {
+    if (vipLevel.value === 3) return sheep.$url.static('/static/zuanshiicon.webp');
+    if (vipLevel.value === 2) return sheep.$url.static('/static/bojinicon.webp');
+    if (vipLevel.value === 1) return sheep.$url.static('/static/huangjinicon.webp');
+    return sheep.$url.static('/static/vipIcon.png');
+  });
+
+  const vipDiscountText = computed(() => {
+    if (vipLevel.value === 3) return '会员专享 8.5 折优惠';
+    if (vipLevel.value === 2) return '会员专享 9 折优惠';
+    if (vipLevel.value === 1) return '会员专享 9.5 折优惠';
+    return '会员专享折扣优惠';
   });
 
   // 选择优惠券
@@ -466,5 +504,64 @@
   .cicon-box {
     font-size: 36rpx;
     color: #999999;
+  }
+
+  .group_38 {
+    background-color: rgba(244, 244, 244, 1);
+    border-radius: 16rpx;
+    padding: 0 24rpx 22rpx 0;
+    margin: 25rpx 0 0 0;
+  }
+  .box_79 {
+    margin: 0 211rpx 0 0;
+  }
+  .box_80 {
+    background-color: rgba(196, 145, 36, 1);
+    border-radius: 16rpx 0 16rpx 0;
+    width: 403rpx;
+    padding-right: 29rpx;
+    height: 40rpx;
+  }
+  .box_81 {
+    width: 155rpx;
+    height: 45rpx;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  .group_39 {
+    width: 36rpx;
+    height: 34rpx;
+    margin: 0 0 1rpx 0;
+  }
+  .vip-badge-img {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .text_32 {
+    color: rgba(255, 255, 255, 1);
+    font-size: 24rpx;
+    font-weight: normal;
+  }
+  .text_33 {
+    color: rgba(255, 255, 255, 1);
+    font-size: 24rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+  }
+  .text-wrapper_28 {
+    width: 590rpx;
+    margin: 21rpx 0 0 24rpx;
+  }
+  .text_34 {
+    color: rgba(61, 61, 60, 1);
+    font-size: 26rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+  }
+  .text_35 {
+    font-size: 26rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
   }
 </style>

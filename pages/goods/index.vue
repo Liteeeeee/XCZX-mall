@@ -56,7 +56,7 @@
                 </view>
               </view>
               <view class="sales-text">
-                已售{{ formatSales('exact', state.goodsInfo.salesCount) }}
+                {{ formatSales('exact', state.goodsInfo.salesCount) }}
               </view>
             </view>
             <view class="banner-right ss-flex-col ss-col-end ss-row-between">
@@ -485,7 +485,7 @@
   :deep(.ui-swiper-dot.tag) {
     background: rgba(0, 0, 0, 0.4);
     border-radius: 20rpx;
-    padding: 4rpx 16rpx;
+    padding: 0;
     bottom: 20rpx;
     right: 30rpx;
     color: #fff;
@@ -560,14 +560,15 @@
     }
 
     .banner-right {
-      justify-content: center;
+      justify-content: space-between;
+      padding: 21rpx;
       .brand-name {
-        font-size: 28rpx;
+        font-size: 40rpx;
         font-weight: bold;
         text-align: right;
       }
       .brand-desc {
-        font-size: 20rpx;
+        font-size: 24rpx;
         opacity: 0.8;
         text-align: right;
         margin-top: 4rpx;
@@ -709,7 +710,7 @@
       .check-name {
         font-size: 32rpx;
         font-weight: bold;
-        color: #1a9c75;
+        color: #fff;
       }
       .check-tag {
         background: linear-gradient( 127deg, #F5EBD9 0%, #FFD6AD 100%);
@@ -722,7 +723,7 @@
     }
     .check-desc {
       font-size: 20rpx;
-      color: #99a9a5;
+      color: #fff;
       line-height: 1.4;
       margin-bottom: 16rpx;
     }
@@ -751,7 +752,7 @@
 
   // 购买
   .buy-box {
-    padding: 0 20rpx;
+    padding:  20rpx;
     flex: 1;
     justify-content: flex-end;
     .add-btn {
@@ -759,7 +760,7 @@
       height: 80rpx;
       font-weight: bold;
       font-size: 28rpx;
-      border-radius: 40rpx 0 0 40rpx;
+      border-radius: 10rpx 0 0 10rpx;
       background-color: #f8f9f3;
       color: #1e3f1c;
       border: 2rpx solid #1e3f1c;
@@ -770,7 +771,7 @@
       height: 80rpx;
       font-weight: bold;
       font-size: 28rpx;
-      border-radius: 0rpx 40rpx 40rpx 0rpx;
+      border-radius: 0rpx 10rpx 10rpx 0rpx;
       background: #1e3f1c;
       color: #fff;
     }

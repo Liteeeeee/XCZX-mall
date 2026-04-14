@@ -96,6 +96,7 @@
 
 <style lang="scss" scoped>
   .ss-user-info-list {
+    background: #fffffa;
     margin-top: 40rpx !important;
     margin-left: 0 !important;
     margin-right: 0 !important;
@@ -106,11 +107,11 @@
     .list-title {
       font-size: 30rpx;
       font-weight: bold;
-      color: rgba(30, 63, 28, 1);
+      color: #3c3c3c;
     }
 
     .list-item {
-      background: #fff;
+      background: #fffffa;
       transition: all 0.3s;
 
       &:active {
