@@ -1,5 +1,5 @@
 <template>
-  <view class="goods-item-box flex-row justify-between">
+  <view class="goods-item-box">
     <view v-for="item in list" :key="item.id" class="group_49 flex-col" @tap="onItemTap(item)">
       <image class="box_51 flex-col" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
       <text class="paragraph_1">
@@ -64,7 +64,9 @@
 
 <style lang="scss" scoped>
   .goods-item-box {
+    display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
   }
 
   .group_49 {
@@ -113,7 +115,7 @@
   .text_28 {
     overflow-wrap: break-word;
     color: rgba(245, 63, 63, 1);
-    font-size: 28rpx;
+    font-size: 28rpx !important;
     font-family: DINAlternate-Bold;
     font-weight: 700;
     text-align: left;

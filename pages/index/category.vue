@@ -35,7 +35,7 @@
     <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
 
     <view class="s-category">
-      <view class="search-wrap">
+      <!-- <view class="search-wrap">
         <view class="search-inner ss-flex ss-col-center">
           <uni-icons
             type="search"
@@ -53,10 +53,10 @@
             @confirm="onSearch"
           />
         </view>
-      </view>
+      </view> -->
       <view class="three-level-wrap ss-flex ss-col-top">
         <!-- 商品分类（左） -->
-        <view class="side-menu-wrap" :style="[{ top: menuTop }]">
+        <view class="side-menu-wrap">
           <scroll-view scroll-y :style="[{ height: menuScrollHeight + 'px' }]">
             <view
               class="menu-item ss-flex"
@@ -88,8 +88,10 @@
               <text class="text_27">{{ state.categoryList[state.activeMenu]?.name || '' }}</text>
               <view class="section_27 flex-col"></view>
             </view>
-            <first-one v-if="state.style === 'first_one'" :pagination="state.pagination" />
-            <first-two v-if="state.style === 'first_two'" :pagination="state.pagination" />
+            <second-one
+              v-if="state.style === 'first_one' || state.style === 'first_two'"
+              :pagination="state.pagination"
+            />
             <second-one
               v-if="state.style === 'second_one'"
               :data="state.categoryList"
@@ -115,8 +117,6 @@
 
 <script setup>
   import secondOne from './components/second-one.vue';
-  import firstOne from './components/first-one.vue';
-  import firstTwo from './components/first-two.vue';
   import sheep from '@/sheep';
   import CategoryApi from '@/sheep/api/product/category';
   import BannerApi from '@/sheep/api/promotion/banner';
@@ -337,7 +337,6 @@
       .side-menu-wrap {
         width: 200rpx;
         height: 100%;
-        padding-left: 12rpx;
         background-color: #f6f6f6;
         position: fixed;
         left: 0;
