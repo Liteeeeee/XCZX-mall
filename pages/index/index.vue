@@ -161,8 +161,8 @@
     bottom: 12vh;
     left: 50%;
     transform: translateX(-50%);
-    width: 140rpx;
-    height: 140rpx;
+    width: 110rpx;
+    height: 110rpx;
     z-index: 99999;
     pointer-events: none; /* 防止遮挡用户点击事件 */
   }

@@ -1,17 +1,63 @@
 <!-- 商品分类列表 -->
 <template>
-  <s-layout
-    :bgStyle="{ color: '#fff' }"
-    tabbar="/pages/index/category"
-    title="分类"
-    navbar="custom"
-    :navbarStyle="navbarStyle"
-  >
-    <view class="s-category" :style="[{ paddingTop: sheep.$platform.navbar + 'px' }]">
+  <s-layout :bgStyle="{ color: '#fff' }" tabbar="/pages/index/category" navbar="clear">
+    <view class="fixed-header">
+      <su-status-bar />
+      <view
+        class="nav-bar-container"
+        :style="{
+          position: 'relative',
+          height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px',
+        }"
+      >
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{
+            position: 'absolute',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            height: '100%',
+            left: '0',
+            width: '100%',
+          }"
+        >
+          <uni-icons
+            type="left"
+            size="22"
+            color="#000"
+            @tap="sheep.$router.back()"
+            class="ss-m-l-20"
+          ></uni-icons>
+          <text class="nav-title ss-m-l-10">商品分类</text>
+        </view>
+      </view>
+    </view>
+    <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+
+    <view class="s-category">
+      <view class="search-wrap">
+        <view class="search-inner ss-flex ss-col-center">
+          <uni-icons
+            type="search"
+            size="16"
+            color="rgba(157, 156, 150, 1)"
+            class="search-icon"
+            @tap="onSearch"
+          />
+          <input
+            v-model="state.keyword"
+            class="search-input"
+            confirm-type="search"
+            placeholder="搜索您想要的商品"
+            placeholder-class="search-placeholder"
+            @confirm="onSearch"
+          />
+        </view>
+      </view>
       <view class="three-level-wrap ss-flex ss-col-top">
         <!-- 商品分类（左） -->
-        <view class="side-menu-wrap" :style="[{ top: Number(statusBarHeight + 88) + 'rpx' }]">
-          <scroll-view scroll-y :style="[{ height: pageHeight + 'px' }]">
+        <view class="side-menu-wrap" :style="[{ top: menuTop }]">
+          <scroll-view scroll-y :style="[{ height: menuScrollHeight + 'px' }]">
             <view
               class="menu-item ss-flex"
               v-for="(item, index) in state.categoryList"
@@ -19,7 +65,15 @@
               :class="[{ 'menu-item-active': index === state.activeMenu }]"
               @tap="onMenu(index)"
             >
-              <view class="menu-title ss-line-1">
+              <view class="menu-icon-wrap">
+                <image
+                  class="menu-icon"
+                  :class="{ 'menu-icon-muted': index !== state.activeMenu }"
+                  :src="sheep.$url.cdn(item.picUrl)"
+                  mode="aspectFit"
+                />
+              </view>
+              <view class="menu-title ss-line-2">
                 {{ item.name }}
               </view>
             </view>
@@ -27,13 +81,13 @@
         </view>
         <!-- 商品分类（右） -->
         <view class="goods-list-box" v-if="state.categoryList?.length">
-          <scroll-view scroll-y :style="[{ height: pageHeight + 'px' }]">
-            <image
-              v-if="state.categoryList[state.activeMenu].picUrl"
-              class="banner-img"
-              :src="sheep.$url.cdn(state.categoryList[state.activeMenu].picUrl)"
-              mode="widthFix"
-            />
+          <scroll-view scroll-y :style="[{ height: menuScrollHeight + 'px' }]">
+            <image v-if="bannerPicUrl" class="banner-img" :src="bannerPicUrl" mode="widthFix" />
+            <view class="group_60 flex-row">
+              <view class="section_26 flex-col"></view>
+              <text class="text_27">{{ state.categoryList[state.activeMenu]?.name || '' }}</text>
+              <view class="section_27 flex-col"></view>
+            </view>
             <first-one v-if="state.style === 'first_one'" :pagination="state.pagination" />
             <first-two v-if="state.style === 'first_two'" :pagination="state.pagination" />
             <second-one
@@ -65,14 +119,15 @@
   import firstTwo from './components/first-two.vue';
   import sheep from '@/sheep';
   import CategoryApi from '@/sheep/api/product/category';
+  import BannerApi from '@/sheep/api/promotion/banner';
   import SpuApi from '@/sheep/api/product/spu';
-  import { onLoad, onShow } from '@dcloudio/uni-app';
+  import { onShow } from '@dcloudio/uni-app';
   import { computed, reactive } from 'vue';
   import { concat } from 'lodash-es';
   import { handleTree } from '@/sheep/helper/utils';
 
   const state = reactive({
-    style: 'second_one', // first_one（一级 - 样式一）, first_two（二级 - 样式二）, second_one（二级）
+    style: 'first_two', // first_one（一级 - 样式一）, first_two（二级 - 样式二）, second_one（二级）
     categoryList: [], // 商品分类树
     activeMenu: 0, // 选中的一级菜单，在 categoryList 的下标
 
@@ -84,22 +139,25 @@
       pageSize: 6,
     },
     loadStatus: '',
+    keyword: '',
+    bannerPicUrl: '',
+  });
+
+  const bannerPicUrl = computed(() => {
+    const raw = state.bannerPicUrl;
+    if (!raw) return '';
+    return sheep.$url.cdn(raw);
   });
 
   const { safeArea } = sheep.$platform.device;
-  const pageHeight = computed(() => safeArea.height - 44 - 50);
-  const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
-
-  const navbarStyle = computed(() => {
-    const homeTemplate = sheep.$store('app').template?.home;
-    return (
-      homeTemplate?.navigationBar || {
-        styleType: 'inner',
-        bgColor: 'transparent',
-        alwaysShow: true,
-      }
-    );
-  });
+  const pageHeight = computed(() => safeArea.height - 50);
+  const windowWidth =
+    sheep.$platform.device.windowWidth || uni.getSystemInfoSync().windowWidth || 375;
+  const searchBlockHeightPx = Math.ceil((142 / 750) * windowWidth);
+  const menuTop = computed(() => Number(sheep.$platform.navbar || 0) + searchBlockHeightPx + 'px');
+  const menuScrollHeight = computed(() =>
+    Math.max(0, pageHeight.value - Number(sheep.$platform.navbar || 0) - searchBlockHeightPx),
+  );
 
   // 加载商品分类
   async function getList() {
@@ -107,18 +165,20 @@
     if (code !== 0) {
       return;
     }
-    state.categoryList = handleTree(data);
+    const tree = handleTree(data);
+    const rootCategory = tree.find((item) => Number(item.id) === 84);
+    const secondLevelList = Array.isArray(rootCategory?.children) ? rootCategory.children : [];
+    state.categoryList = secondLevelList.length > 0 ? secondLevelList : tree;
+    state.activeMenu = 0;
   }
 
   // 选中菜单
   const onMenu = (val) => {
     state.activeMenu = val;
-    if (state.style === 'first_one' || state.style === 'first_two') {
-      state.pagination.pageNo = 1;
-      state.pagination.list = [];
-      state.pagination.total = 0;
-      getGoodsList();
-    }
+    state.pagination.pageNo = 1;
+    state.pagination.list = [];
+    state.pagination.total = 0;
+    getGoodsList();
   };
 
   // 加载商品列表
@@ -129,6 +189,7 @@
       categoryId: state.categoryList[state.activeMenu].id,
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
+      keyword: state.keyword,
     });
     if (res.code !== 0) {
       return;
@@ -162,16 +223,117 @@
   onShow(async () => {
     await getList();
     initMenuIndex();
+    await loadBanner();
   });
 
-  function handleScrollToLower() {
-    loadMore();
+  function onSearch() {
+    state.pagination.pageNo = 1;
+    state.pagination.list = [];
+    state.pagination.total = 0;
+    getGoodsList();
+  }
+
+  async function loadBanner() {
+    const { code, data } = await BannerApi.getBannerList();
+    if (code !== 0) return;
+    const list = Array.isArray(data) ? data : data?.list || [];
+    const banner = list.find((it) => Number(it?.position) === 6);
+    state.bannerPicUrl =
+      banner?.picUrl ||
+      banner?.url ||
+      banner?.imageUrl ||
+      banner?.imgUrl ||
+      banner?.bannerUrl ||
+      '';
   }
 </script>
 
 <style lang="scss" scoped>
+  .fixed-header {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: #fff;
+  }
+
+  .nav-title {
+    font-size: 36rpx;
+    font-family: PingFangSC-Semibold;
+    font-weight: 600;
+    color: #000000;
+  }
+
   .s-category {
+    .group_60 {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 20rpx 0;
+    }
+
+    .section_26 {
+      width: 48rpx;
+      height: 1rpx;
+      border: 2rpx solid rgba(61, 61, 60, 1);
+      margin: 22rpx 0;
+      box-sizing: border-box;
+    }
+
+    .text_27 {
+      overflow-wrap: break-word;
+      color: rgba(61, 61, 60, 1);
+      font-size: 32rpx;
+      font-family: PingFangSC-Medium;
+      font-weight: 500;
+      text-align: left;
+      white-space: nowrap;
+      line-height: 45rpx;
+      margin-left: 15rpx;
+    }
+
+    .section_27 {
+      width: 48rpx;
+      height: 1rpx;
+      border: 2rpx solid rgba(61, 61, 60, 1);
+      margin: 22rpx 0 22rpx 14rpx;
+      box-sizing: border-box;
+    }
+
+    .search-wrap {
+      margin: 22rpx 32rpx 18rpx 32rpx;
+      background: rgba(157, 156, 150, 0.1);
+      border-radius: 20rpx;
+      padding: 18rpx 28rpx 17rpx 28rpx;
+      box-sizing: border-box;
+    }
+
+    .search-inner {
+      height: 36rpx;
+    }
+
+    .search-icon {
+      flex-shrink: 0;
+    }
+
+    .search-input {
+      flex: 1;
+      margin-left: 14rpx;
+      font-size: 24rpx;
+      font-family: PingFangSC-Regular;
+      line-height: 33rpx;
+      color: rgba(61, 61, 60, 1);
+      height: 36rpx;
+      min-height: 36rpx;
+    }
+
     :deep() {
+      .search-placeholder {
+        color: rgba(157, 156, 150, 1);
+      }
+
       .side-menu-wrap {
         width: 200rpx;
         height: 100%;
@@ -182,65 +344,64 @@
 
         .menu-item {
           width: 100%;
-          height: 88rpx;
+          min-height: 180rpx;
+          padding: 24rpx 10rpx 20rpx 10rpx;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
           position: relative;
           transition: all linear 0.2s;
 
+          .menu-icon-wrap {
+            width: 52rpx;
+            height: 52rpx;
+            position: relative;
+            border-radius: 8rpx;
+            overflow: hidden;
+          }
+
+          .menu-icon {
+            width: 100%;
+            height: 100%;
+          }
+
+          .menu-icon-muted {
+            filter: grayscale(100%) brightness(82%);
+            opacity: 0.82;
+          }
+
           .menu-title {
-            line-height: 32rpx;
+            line-height: 42rpx;
             font-size: 30rpx;
             font-weight: 400;
-            color: #333;
-            margin-left: 28rpx;
+            color: rgba(157, 156, 150, 1);
+            text-align: center;
+            margin-top: 24rpx;
             position: relative;
             z-index: 0;
 
             &::before {
-              content: '';
-              width: 64rpx;
-              height: 12rpx;
-              background: linear-gradient(
-                90deg,
-                var(--ui-BG-Main-gradient),
-                var(--ui-BG-Main-light)
-              ) !important;
-              position: absolute;
-              left: -64rpx;
-              bottom: 0;
-              z-index: -1;
-              transition: all linear 0.2s;
+              content: none;
             }
           }
 
           &.menu-item-active {
-            background-color: #fff;
-            border-radius: 20rpx 0 0 20rpx;
+            background-color: rgba(255, 255, 250, 1);
 
             &::before {
-              content: '';
-              position: absolute;
-              right: 0;
-              bottom: -20rpx;
-              width: 20rpx;
-              height: 20rpx;
-              background: radial-gradient(circle at 0 100%, transparent 20rpx, #fff 0);
+              content: none;
             }
 
             &::after {
-              content: '';
-              position: absolute;
-              top: -20rpx;
-              right: 0;
-              width: 20rpx;
-              height: 20rpx;
-              background: radial-gradient(circle at 0% 0%, transparent 20rpx, #fff 0);
+              content: none;
             }
 
             .menu-title {
               font-weight: 600;
+              color: rgba(30, 63, 28, 1);
 
               &::before {
-                left: 0;
+                content: none;
               }
             }
           }
@@ -257,7 +418,6 @@
       .banner-img {
         width: calc(100vw - 130px);
         border-radius: 5px;
-        margin-bottom: 20rpx;
       }
     }
   }

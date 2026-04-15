@@ -1,28 +1,16 @@
-<!-- 分类展示：second-one 风格  -->
 <template>
-  <view>
-    <!-- 一级分类的名字 -->
-    <view class="title-box ss-flex ss-col-center ss-row-center ss-p-b-30">
-      <view class="title-line-left" />
-      <view class="title-text ss-p-x-20">{{ props.data[activeMenu].name }}</view>
-      <view class="title-line-right" />
-    </view>
-    <!-- 二级分类的名字 -->
-    <view class="goods-item-box ss-flex ss-flex-wrap ss-p-b-20">
-      <view
-        class="goods-item"
-        v-for="item in props.data[activeMenu].children"
-        :key="item.id"
-        @tap="
-          sheep.$router.go('/pages/goods/list', {
-            categoryId: item.id,
-          })
-        "
-      >
-        <image class="goods-img" :src="item.picUrl" mode="aspectFill" />
-        <view class="ss-p-10">
-          <view class="goods-title ss-line-1">{{ item.name }}</view>
+  <view class="goods-item-box flex-row justify-between">
+    <view v-for="item in list" :key="item.id" class="group_49 flex-col" @tap="onItemTap(item)">
+      <image class="box_51 flex-col" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
+      <text class="paragraph_1">
+        {{ item.name }}
+      </text>
+      <view class="section_30 flex-row justify-between">
+        <view class="text-wrapper_8">
+          <text class="text_28">¥</text>
+          <text class="text_29">{{ priceText(item) }}</text>
         </view>
+        <text class="text_30" v-if="soldText(item)">{{ soldText(item) }}</text>
       </view>
     </view>
   </view>
@@ -30,6 +18,8 @@
 
 <script setup>
   import sheep from '@/sheep';
+  import { computed } from 'vue';
+  import { fen2yuan } from '@/sheep/hooks/useGoods';
 
   const props = defineProps({
     data: {
@@ -37,44 +27,119 @@
       default: () => ({}),
     },
     activeMenu: [Number, String],
+    pagination: {
+      type: Object,
+      default: undefined,
+    },
   });
+
+  const list = computed(() => {
+    if (Array.isArray(props.pagination?.list)) return props.pagination.list;
+    const active = Number(props.activeMenu || 0);
+    const raw = props.data?.[active]?.children;
+    return Array.isArray(raw) ? raw : [];
+  });
+
+  const priceText = (item) => {
+    const raw = item?.price;
+    if (raw === undefined || raw === null || raw === '') return '';
+    return fen2yuan(raw);
+  };
+
+  const soldText = (item) => {
+    const raw = item?.salesCount;
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return '';
+    return `已售${n}`;
+  };
+
+  const onItemTap = (item) => {
+    if (item?.price !== undefined && item?.price !== null) {
+      sheep.$router.go('/pages/goods/index', { id: item.id });
+      return;
+    }
+    sheep.$router.go('/pages/goods/list', { categoryId: item.id });
+  };
 </script>
 
 <style lang="scss" scoped>
-  .title-box {
-    .title-line-left,
-    .title-line-right {
-      width: 15px;
-      height: 1px;
-      background: #d2d2d2;
-    }
+  .goods-item-box {
+    flex-wrap: wrap;
   }
 
-  .goods-item {
-    width: calc((100% - 20px) / 3);
-    margin-right: 10px;
-    margin-bottom: 10px;
+  .group_49 {
+    background-color: rgba(248, 249, 243, 1);
+    border-radius: 10px;
+    padding-bottom: 27rpx;
+    width: 245rpx;
+    margin-bottom: 24rpx;
+  }
 
-    &:nth-of-type(3n) {
-      margin-right: 0;
-    }
+  .box_51 {
+    border-radius: 10px 10px 0px 0px;
+    width: 245rpx;
+    height: 245rpx;
+  }
 
-    .goods-img {
-      width: calc((100vw - 140px) / 3);
-      height: calc((100vw - 140px) / 3);
-    }
+  .paragraph_1 {
+    width: 216rpx;
+    height: 66rpx;
+    overflow-wrap: break-word;
+    color: rgba(0, 0, 0, 1);
+    font-size: 24rpx;
+    font-weight: normal;
+    text-align: left;
+    line-height: 33rpx;
+    margin: 11rpx 14rpx 0 15rpx;
+  }
 
-    .goods-title {
-      font-size: 26rpx;
-      font-weight: bold;
-      color: #333333;
-      line-height: 40rpx;
-      text-align: center;
-    }
+  .section_30 {
+    width: 211rpx;
+    margin: 24rpx 14rpx 0 20rpx;
+  }
 
-    .goods-price {
-      color: $red;
-      line-height: 40rpx;
-    }
+  .text-wrapper_8 {
+    width: 78rpx;
+    height: 32rpx;
+    overflow-wrap: break-word;
+    font-size: 0;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 32rpx;
+  }
+
+  .text_28 {
+    overflow-wrap: break-word;
+    color: rgba(245, 63, 63, 1);
+    font-size: 28rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 32rpx;
+  }
+
+  .text_29 {
+    overflow-wrap: break-word;
+    color: rgba(245, 63, 63, 1);
+    font-size: 40rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 32rpx;
+  }
+
+  .text_30 {
+    overflow-wrap: break-word;
+    color: rgba(157, 156, 150, 1);
+    font-size: 22rpx;
+    font-weight: normal;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 30rpx;
+    margin-top: 2rpx;
   }
 </style>

@@ -1,18 +1,20 @@
 <!-- 我的积分 -->
 <template>
-  <s-layout
-    class="wallet-wrap"
-    title="积分明细"
-    navbar="clean"
-  >
+  <s-layout class="wallet-wrap" title="积分明细" navbar="clean">
     <view class="full-page-bg">
       <image :src="sheep.$url.static('/static/jifenbg.webp')" mode="widthFix" class="bg-img" />
     </view>
     <view class="header-box">
       <su-status-bar />
-      <view class="custom-nav" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+      <view
+        class="custom-nav"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
         <view class="nav-inner ss-flex ss-col-center">
-          <view class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20" @tap="sheep.$router.back()">
+          <view
+            class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20"
+            @tap="sheep.$router.back()"
+          >
             <text class="sicon-back"></text>
           </view>
           <view class="title">积分明细</view>
@@ -26,9 +28,9 @@
           </view>
           <text class="all-num">{{ userInfo.point || 0 }}</text>
         </view>
-        <view class="use-btn ss-flex ss-row-center ss-col-center" @tap="sheep.$router.go('/pages/goods/index')">
+        <!-- <view class="use-btn ss-flex ss-row-center ss-col-center" @tap="sheep.$router.go('/pages/goods/index')">
           去使用
-        </view>
+        </view> -->
       </view>
     </view>
     <!-- tab -->
@@ -210,21 +212,21 @@
   .custom-nav {
     position: relative;
     width: 100%;
-    
+
     .nav-inner {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
       height: 100%;
       width: 100%;
-      
+
       .left-box {
         .sicon-back {
           font-size: 32rpx;
           color: #1e3f1c;
         }
       }
-      
+
       .title {
         font-size: 32rpx;
         font-weight: 500;
@@ -235,7 +237,8 @@
 
   .header-box {
     width: 100%;
-    background: url('https://file.sheepjs.com/storage/img/2024/11/12/3df8a9a4b8784d1ab1b83d81f2113f8c.webp') no-repeat;
+    background: url('https://file.sheepjs.com/storage/img/2024/11/12/3df8a9a4b8784d1ab1b83d81f2113f8c.webp')
+      no-repeat;
     background-size: 100% 100%;
     padding: 0 0 120rpx 0;
     box-sizing: border-box;
@@ -258,7 +261,7 @@
         line-height: 40rpx;
       }
     }
-    
+
     .use-btn {
       background: linear-gradient(270deg, #0f5c31 0%, #06943f 100%);
       border-radius: 34rpx;
@@ -327,7 +330,7 @@
     border-radius: 0 0 22rpx 22rpx;
     position: relative;
     z-index: 1;
-    
+
     .list-item {
       border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
       padding: 30rpx 0;
@@ -341,7 +344,7 @@
         color: rgba(0, 0, 0, 1);
         line-height: 28rpx;
         margin-bottom: 20rpx;
-        
+
         .coin-icon {
           width: 32rpx;
           height: 32rpx;
