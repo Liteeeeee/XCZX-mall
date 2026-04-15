@@ -1,10 +1,21 @@
 <template>
-  <s-layout class="coupon-wrap" title="优惠券" navbar="clear" :bgStyle="{ backgroundColor: '#f8f9f3' }">
+  <s-layout
+    class="coupon-wrap"
+    title="优惠券"
+    navbar="clear"
+    :bgStyle="{ backgroundColor: '#f8f9f3' }"
+  >
     <view class="header-box">
       <su-status-bar />
-      <view class="custom-nav" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+      <view
+        class="custom-nav"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
         <view class="nav-inner ss-flex ss-col-center">
-          <view class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20" @tap="sheep.$router.back()">
+          <view
+            class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20"
+            @tap="sheep.$router.back()"
+          >
             <text class="sicon-back"></text>
           </view>
           <view class="title">优惠券</view>
@@ -49,20 +60,21 @@
       :icon="sheep.$url.static('/static/coupon-empty.webp')"
       text="暂无优惠券"
     />
-    
+
     <!-- 优惠券列表 -->
     <view class="coupon-list ss-p-x-32 ss-m-t-20">
       <view v-for="item in state.pagination.list" :key="item.id" class="ss-m-b-24">
-        <s-coupon-list
-          :data="item"
-          type="user"
-        >
+        <s-coupon-list :data="item" type="user">
           <template #default>
             <button
-              class="ss-reset-button coupon-btn  ss-flex ss-row-center ss-col-center"
+              class="ss-reset-button coupon-btn ss-flex ss-row-center ss-col-center"
               :class="item.status !== 1 ? 'disabled-btn' : ''"
               :disabled="item.status !== 1"
-              @click.stop="item.status === 1 ? sheep.$router.go('/pages/index/index') : sheep.$router.go('/pages/coupon/detail', { id: item.id })"
+              @click.stop="
+                item.status === 1
+                  ? sheep.$router.go('/pages/index/category')
+                  : sheep.$router.go('/pages/coupon/detail', { id: item.id })
+              "
             >
               {{ item.status === 1 ? '立即使用' : item.status === 2 ? '已使用' : '已过期' }}
             </button>
@@ -225,21 +237,21 @@
   .custom-nav {
     position: relative;
     width: 100%;
-    
+
     .nav-inner {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
       height: 100%;
       width: 100%;
-      
+
       .left-box {
         .sicon-back {
           font-size: 32rpx;
           color: #1e3f1c;
         }
       }
-      
+
       .title {
         font-size: 36rpx;
         font-weight: 600;
@@ -252,7 +264,7 @@
     width: 100%;
     background-color: #f8f9f3;
   }
-  
+
   .section_2 {
     box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.03);
     background-color: rgba(248, 249, 243, 1);
