@@ -31,13 +31,13 @@
         </view>
       </view>
     </view>
-    <view class="wallet-recharge-page" :style="{
-          backgroundImage: `url(${sheep.$url.cdn('/mp/static/vipNeo/chongzhiBg.webp')})`,
-        }">
-      <view
-        class="top-bg"
-        
-      ></view>
+    <view
+      class="wallet-recharge-page"
+      :style="{
+        backgroundImage: `url(${sheep.$url.cdn('/mp/static/vipNeo/chongzhiBg.webp')})`,
+      }"
+    >
+      <view class="top-bg"></view>
 
       <view
         class="balance-card"
@@ -53,12 +53,9 @@
             state.showMoney ? fen2yuan(userWallet.balance) : '*****'
           }}</text>
         </view>
-        <view class="balance-actions">
-          <view
-            @tap="state.showMoney = !state.showMoney"
-            class="balance-eye"
-            :class="state.showMoney ? 'cicon-eye' : 'cicon-eye-off'"
-          />
+        <view class="balance-actions" @tap="sheep.$router.go('/pages/user/wallet/money')">
+          <text class="detail-text">消费明细</text>
+          <uni-icons type="right" size="14" color="#9D9C96" class="detail-arrow" />
         </view>
       </view>
 
@@ -347,11 +344,18 @@
     position: absolute;
     right: 34rpx;
     top: 46rpx;
+    display: flex;
+    align-items: center;
   }
 
-  .balance-eye {
-    font-size: 44rpx;
-    color: rgba(61, 61, 60, 1);
+  .detail-text {
+    font-size: 24rpx;
+    color: #9d9c96;
+    line-height: 33rpx;
+  }
+
+  .detail-arrow {
+    margin-left: 4rpx;
   }
 
   .recharge-header {
@@ -444,19 +448,19 @@
   }
 
   .package-unit {
-    color: #3D3D3C;
+    color: #3d3d3c;
     font-size: 28rpx;
     line-height: 48rpx;
   }
 
   .package-price {
-    color: #3D3D3C;
+    color: #3d3d3c;
     font-size: 48rpx;
     line-height: 48rpx;
   }
 
   .package-desc {
-    color: #9D9C96;
+    color: #9d9c96;
     font-size: 22rpx;
     line-height: 30rpx;
     margin-top: 6rpx;

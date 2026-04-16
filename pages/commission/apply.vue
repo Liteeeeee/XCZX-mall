@@ -113,34 +113,20 @@
           </view>
         </view> -->
 
-        <view class="row flex-row">
+        <view class="row flex-row" @tap="openCareerDrawer">
           <text class="row-label">职业</text>
-          <!-- <text class="row-select" :class="state.careerName ? '' : 'row-select-placeholder'">{{
+          <text class="row-select" :class="state.careerName ? '' : 'row-select-placeholder'">{{
             state.careerName || '请选择'
-          }}</text> -->
+          }}</text>
+          <uni-icons
+            type="right"
+            size="14"
+            color="rgba(212, 212, 213, 1)"
+            class="row-right-arrow"
+          />
         </view>
-        <view class="career-box">
-          <view
-            class="chip"
-            v-for="item in state.careerOptions"
-            :key="item.value"
-            :class="
-              String(state.careerValue) === String(item.value) ? 'chip-active' : 'chip-normal'
-            "
-            @tap="onSelectCareer(item)"
-          >
-            <text
-              :class="
-                String(state.careerValue) === String(item.value)
-                  ? 'chip-text-active'
-                  : 'chip-text-normal'
-              "
-              >{{ item.label }}</text
-            >
-          </view>
-        </view>
-        <text class="text_12">您的资质</text>
-
+        <text class="text_12">资质上传(必填)</text>
+        <text class="text_16">{{ careerDescription }}</text>
         <view class="box_21">
           <s-uploader
             v-model:url="state.images"
@@ -153,7 +139,7 @@
               border: {
                 radius: '20rpx',
                 color: 'rgba(157,156,150,1)',
-                style: 'solid',
+                style: 'dashed',
                 width: '1rpx',
               },
             }"
@@ -168,8 +154,6 @@
             </view>
           </s-uploader>
         </view>
-
-        <text class="text_16">{{ careerDescription }}</text>
 
         <view class="divider"></view>
 
@@ -218,6 +202,40 @@
           <text class="submit-text">提交审核</text>
         </view>
       </view>
+
+      <su-popup
+        :show="state.showCareerDrawer"
+        type="bottom"
+        round="20"
+        :showClose="true"
+        backgroundColor="#FFFFFA"
+        @close="closeCareerDrawer"
+      >
+        <view class="career-drawer flex-col">
+          <text class="drawer-title">选择职业</text>
+          <scroll-view class="career-list" scroll-y>
+            <view
+              class="career-item flex-row justify-between align-center"
+              v-for="item in state.careerOptions"
+              :key="item.value"
+              @tap="state.tempCareerValue = item.value"
+            >
+              <text class="career-item-label">{{ item.label }}</text>
+              <view
+                class="gender-check flex-col"
+                :class="state.tempCareerValue === item.value ? 'gender-check-on' : ''"
+              >
+                <view v-if="state.tempCareerValue === item.value" class="gender-check-tick"></view>
+              </view>
+            </view>
+          </scroll-view>
+          <view class="drawer-footer">
+            <view class="submit-btn" @tap="onConfirmCareer">
+              <text class="submit-text">确认</text>
+            </view>
+          </view>
+        </view>
+      </su-popup>
     </view>
   </s-layout>
 </template>
@@ -243,13 +261,35 @@
     idCardBackUrl: '',
     careerName: '',
     careerValue: '',
+    tempCareerValue: '',
     careerOptions: [],
     images: [],
     gender: 1,
     reason: '',
     showReject: false,
     rejectApplyData: null,
+    showCareerDrawer: false,
   });
+
+  function openCareerDrawer() {
+    state.tempCareerValue = state.careerValue;
+    state.showCareerDrawer = true;
+  }
+
+  function closeCareerDrawer() {
+    state.showCareerDrawer = false;
+  }
+
+  function onConfirmCareer() {
+    const opt = state.careerOptions.find(
+      (it) => String(it.value) === String(state.tempCareerValue),
+    );
+    if (opt) {
+      state.careerName = opt.label;
+      state.careerValue = opt.value;
+    }
+    closeCareerDrawer();
+  }
 
   function syncCareerNameByValue() {
     if (!state.careerValue) return;
@@ -615,6 +655,11 @@
     margin: 0 27rpx 0 7rpx;
   }
 
+  .row-right-arrow {
+    flex-shrink: 0;
+    margin-left: 10rpx;
+  }
+
   .row-input {
     flex: 1;
     font-size: 28rpx;
@@ -644,9 +689,8 @@
 
   .text_12 {
     color: rgba(0, 0, 0, 1);
-    font-size: 32rpx;
-    font-family: PingFangSC-Medium;
-    font-weight: 500;
+    font-size: 28rpx;
+    font-weight: 400;
     line-height: 45rpx;
     margin: 40rpx 0 0 0;
   }
@@ -662,48 +706,6 @@
     font-family: PingFangSC-Regular;
     line-height: 33rpx;
     margin: 24rpx 0 0 0;
-  }
-
-  .career-box {
-    width: 639rpx;
-    margin: 24rpx 0 0 0;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 28rpx;
-  }
-
-  .chip {
-    width: 210rpx;
-    height: 88rpx;
-    border-radius: 44rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-  }
-
-  .chip-active {
-    background-color: rgba(248, 249, 243, 1);
-    border: 2rpx solid rgba(30, 63, 28, 1);
-  }
-
-  .chip-normal {
-    background-color: rgba(255, 254, 250, 1);
-    border: 1rpx solid rgba(157, 156, 150, 1);
-  }
-
-  .chip-text-active {
-    color: rgba(30, 63, 28, 1);
-    font-size: 28rpx;
-    font-family: PingFangSC-Regular;
-    line-height: 40rpx;
-  }
-
-  .chip-text-normal {
-    color: rgba(159, 158, 152, 1);
-    font-size: 28rpx;
-    font-family: PingFangSC-Regular;
-    line-height: 40rpx;
   }
 
   .gender-group {
@@ -857,5 +859,58 @@
     font-family: PingFangSC-Regular;
     line-height: 40rpx;
     margin-top: 12rpx;
+  }
+
+  .career-drawer {
+    width: 100%;
+    background-color: rgba(255, 255, 250, 1);
+  }
+
+  .drawer-title {
+    color: rgba(0, 0, 0, 0.9);
+    font-size: 36rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: left;
+    margin: 40rpx 32rpx 32rpx;
+  }
+
+  .career-list {
+    width: 100%;
+    max-height: 60vh;
+    padding: 0 32rpx;
+    box-sizing: border-box;
+  }
+
+  .career-item {
+    background-color: rgba(248, 249, 243, 1);
+    border-radius: 10rpx;
+    width: 100%;
+    height: 130rpx;
+    padding: 25rpx 24rpx;
+    margin-bottom: 24rpx;
+    box-sizing: border-box;
+  }
+
+  .career-item-label {
+    width: 518rpx;
+    color: rgba(61, 61, 60, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: left;
+    line-height: 40rpx;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+
+  .drawer-footer {
+    width: 100%;
+    padding: 24rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 250, 1);
+    box-shadow: 0rpx -6rpx 10rpx 0rpx rgba(0, 0, 0, 0.02);
   }
 </style>

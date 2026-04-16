@@ -1,5 +1,5 @@
 <template>
-  <view class="coupon-item-wrap">
+  <view class="coupon-item-wrap" @tap="$emit('tap')">
     <view
       class="coupon-item ss-flex ss-row-between"
       :class="{ 'is-disabled': disabled || isDisable }"
@@ -51,23 +51,18 @@
                   '天内可用'
                 : Number(data.fixedEndTerm || 0) + '天内可用'
             }}
-            <text v-if="Number(data.takeLimitCount || 0) > 0">
-              | 每人限领{{ Number(data.takeLimitCount || 0) }}张
-            </text>
           </view>
           <view class="time" v-else>
             {{
-              data.validStartTime ? sheep.$helper.timeFormat(data.validStartTime, 'yyyy-mm-dd') : ''
+              data.validStartTime
+                ? sheep.$helper.timeFormat(data.validStartTime, 'yyyy-mm-dd hh:MM:ss')
+                : ''
             }}
             至
-            {{ data.validEndTime ? sheep.$helper.timeFormat(data.validEndTime, 'yyyy-mm-dd') : '' }}
-            |
             {{
-              data.productScope === 1
-                ? '全场通用'
-                : data.productScope === 2
-                ? '指定商品'
-                : '指定分类'
+              data.validEndTime
+                ? sheep.$helper.timeFormat(data.validEndTime, 'yyyy-mm-dd hh:MM:ss')
+                : ''
             }}
           </view>
         </view>
@@ -76,7 +71,7 @@
 
         <view class="bottom-box ss-flex ss-row-between ss-col-center">
           <view class="rule ss-flex ss-col-center" @tap.stop="state.showRule = !state.showRule">
-            使用规则
+            使用说明
             <text class="cicon-drop-down ss-m-l-8" :class="state.showRule ? 'rotate' : ''"></text>
           </view>
           <view class="btn-box">
@@ -101,21 +96,8 @@
       :class="{ 'is-disabled': disabled || isDisable }"
       v-show="state.showRule"
     >
-      <view v-if="data.discountType === 1"
-        >满{{ fen2yuan(data.usePrice) }}减{{ fen2yuan(data.discountPrice) }}元</view
-      >
-      <view v-if="data.discountType === 2 && data.discountLimitPrice > 0"
-        >最多优惠{{ fen2yuan(data.discountLimitPrice) }}元</view
-      >
-      <view v-if="data.description">{{ data.description }}</view>
-      <view
-        v-if="
-          !data.description &&
-          data.discountType !== 1 &&
-          !(data.discountType === 2 && data.discountLimitPrice > 0)
-        "
-        >暂无使用规则</view
-      >
+      <view v-if="!data.description">暂无使用规则</view>
+      <view v-else>{{ data.description }}</view>
     </view>
   </view>
 </template>
@@ -145,11 +127,10 @@
     },
   });
 
+  defineEmits(['tap']);
+
   const isDisable = computed(() => {
-    if (props.type === 'coupon') {
-      return !props.data.canTake;
-    }
-    return props.data.status !== 1;
+    return props.disabled;
   });
 </script>
 
@@ -310,23 +291,7 @@
     }
 
     &.is-disabled {
-      background-color: #f2f2f2;
-      .item-left {
-        .price-box,
-        .condition-text {
-          color: #999;
-        }
-      }
-      .item-right .info-box .title {
-        color: #999;
-      }
-      .tag-box {
-        background-color: #e6e6e6;
-        color: #999;
-      }
-      .line-box .dash-line {
-        border-left-color: #ccc;
-      }
+      opacity: 0.7;
     }
   }
 </style>

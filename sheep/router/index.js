@@ -69,6 +69,15 @@ const _go = (
       }
     };
   }
+  if (!nextRoute && page === '/pages/user/wallet/money') {
+    nextRoute = {
+      path: '/pages/user/wallet/money',
+      meta: {
+        auth: true,
+        title: '消费明细'
+      }
+    };
+  }
   if (!nextRoute && page === '/pages/commission/apply') {
     nextRoute = {
       path: '/pages/commission/apply',

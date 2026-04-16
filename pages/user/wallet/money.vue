@@ -1,92 +1,74 @@
 <!-- 我的钱包 -->
 <template>
-  <s-layout class="wallet-wrap" title="钱包" navbar="normal">
-    <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
-    <!-- 钱包卡片 -->
-    <view
-      class="header-box ss-flex ss-row-center ss-col-center"
-      :style="{
-        paddingTop: '30rpx',
-      }"
-    >
-      <view class="card-box ui-BG-Main ui-Shadow-Main">
-        <view class="card-head ss-flex ss-col-center">
-          <view class="card-title ss-m-r-10">钱包余额（元）</view>
-          <view
-            @tap="state.showMoney = !state.showMoney"
-            class="ss-eye-icon"
-            :class="state.showMoney ? 'cicon-eye' : 'cicon-eye-off'"
-          />
-        </view>
-        <view class="ss-flex ss-row-between ss-col-center ss-m-t-64">
-          <view class="money-num">{{
-            state.showMoney ? fen2yuan(userWallet.balance) : '*****'
-          }}</view>
-          <button class="ss-reset-button topup-btn" @tap="sheep.$router.go('/pages/pay/recharge')">
-            充值
-          </button>
-        </view>
-      </view>
-    </view>
-
-    <su-sticky>
-      <!-- 统计 -->
-      <view class="filter-box ss-p-x-30 ss-flex ss-col-center ss-row-between">
-        <uni-datetime-picker
-          v-model="state.data"
-          type="daterange"
-          @change="onChangeTime"
-          :end="state.today"
-        >
-          <button class="ss-reset-button date-btn">
-            <text>{{ dateFilterText }}</text>
-            <text class="cicon-drop-down ss-seldate-icon"></text>
-          </button>
-        </uni-datetime-picker>
-        <view class="total-box">
-          <view class="ss-m-b-10">总收入￥{{ fen2yuan(state.summary.totalIncome) }}</view>
-          <view>总支出￥{{ fen2yuan(state.summary.totalExpense) }}</view>
-        </view>
-      </view>
-      <su-tabs
-        :list="tabMaps"
-        @change="onChange"
-        :scrollable="false"
-        :current="state.currentTab"
-      ></su-tabs>
-    </su-sticky>
-    <s-empty v-if="state.pagination.total === 0" text="暂无数据" :icon="sheep.$url.static('/static/data-empty.webp')" />
-
-    <!-- 钱包记录 -->
-    <view v-if="state.pagination.total > 0">
+  <s-layout
+    class="wallet-wrap"
+    navbar="clear"
+    :bgStyle="{ color: 'rgba(248, 250, 251, 1)' }"
+    @scrolltolower="loadMore"
+  >
+    <view class="wallet-page-bg">
+      <su-status-bar />
       <view
-        class="wallet-list ss-flex border-bottom"
-        v-for="item in state.pagination.list"
-        :key="item.id"
+        class="nav-bar-container"
+        :style="{
+          position: 'relative',
+          height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px',
+        }"
       >
-        <view class="list-content">
-          <view class="title-box ss-flex ss-row-between ss-m-b-20">
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{
+            position: 'absolute',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            height: '100%',
+            left: '0',
+            width: '100%',
+          }"
+        >
+          <uni-icons
+            type="left"
+            size="22"
+            color="#000"
+            @tap="sheep.$router.back()"
+            class="ss-m-l-20"
+          ></uni-icons>
+          <text class="nav-title ss-m-l-10">消费明细</text>
+        </view>
+      </view>
+      <view v-if="state.pagination.total === 0" style="padding-top: 100rpx">
+        <s-empty text="暂无数据" :icon="sheep.$url.static('/static/data-empty.webp')" />
+      </view>
+
+      <view v-if="state.pagination.total > 0" class="list-container">
+        <view
+          class="wallet-list flex-row justify-between"
+          v-for="item in state.pagination.list"
+          :key="item.id"
+        >
+          <view class="list-content flex-col">
             <text class="title ss-line-1">
               {{ item.title }}
             </text>
-            <view class="money">
-              <text v-if="item.price >= 0" class="add">+{{ fen2yuan(item.price) }}</text>
-              <text v-else class="minus">{{ fen2yuan(item.price) }}</text>
-            </view>
+            <text class="time">
+              {{ sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd   hh:MM') }}
+            </text>
           </view>
-          <text class="time">
-            {{ sheep.$helper.timeFormat(item.createTime, 'yyyy-mm-dd hh:MM:ss') }}
-          </text>
+          <view class="money-box flex-col justify-center">
+            <text v-if="item.price >= 0" class="add">+{{ fen2yuan(item.price) }}</text>
+            <text v-else class="minus">{{ fen2yuan(item.price) }}</text>
+          </view>
         </view>
       </view>
+      <uni-load-more
+        v-if="state.pagination.total > 0"
+        :status="state.loadStatus"
+        :content-text="{
+          contentdown: '上拉加载更多',
+        }"
+        @tap="loadMore"
+      />
     </view>
-    <uni-load-more
-      v-if="state.pagination.total > 0"
-      :status="state.loadStatus"
-      :content-text="{
-        contentdown: '上拉加载更多',
-      }"
-    />
   </s-layout>
 </template>
 
@@ -95,7 +77,6 @@
   import { onLoad, onReachBottom } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import dayjs from 'dayjs';
-  import { concat } from 'lodash-es';
   import PayWalletApi from '@/sheep/api/pay/wallet';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import { resetPagination } from '@/sheep/helper/utils';
@@ -151,18 +132,18 @@
 
   // 获得钱包记录分页
   async function getLogList() {
+    if (state.loadStatus === 'loading') return;
+
     state.loadStatus = 'loading';
     const { data, code } = await PayWalletApi.getWalletTransactionPage({
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
-      type: tabMaps[state.currentTab].value,
-      'createTime[0]': state.date[0] + ' 00:00:00',
-      'createTime[1]': state.date[1] + ' 23:59:59',
     });
     if (code !== 0) {
+      state.loadStatus = 'more';
       return;
     }
-    state.pagination.list = concat(state.pagination.list, data.list);
+    state.pagination.list = state.pagination.list.concat(data.list);
     state.pagination.total = data.total;
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
@@ -179,10 +160,7 @@
   }
 
   onLoad(() => {
-    state.today = dayjs().format('YYYY-MM-DD');
-    state.date = [state.today, state.today];
     getLogList();
-    getSummary();
     // 刷新钱包的缓存
     sheep.$store('user').getWallet();
   });
@@ -206,19 +184,29 @@
     getSummary();
   }
 
-  onReachBottom(() => {
+  // 加载更多
+  function loadMore() {
     if (state.loadStatus === 'noMore') {
       return;
     }
     state.pagination.pageNo++;
     getLogList();
+  }
+
+  // 监听页面滚动到底部
+  onReachBottom(() => {
+    loadMore();
   });
 </script>
 
 <style lang="scss" scoped>
   // 钱包
+  .wallet-page-bg {
+    background-color: rgba(248, 250, 251, 1);
+    min-height: 100vh;
+  }
   .header-box {
-    background-color: $white;
+    background-color: rgba(248, 250, 251, 1);
     padding: 30rpx;
 
     .card-box {
@@ -283,7 +271,7 @@
 
   .filter-box {
     height: 114rpx;
-    background-color: $bg-page;
+    background-color: rgba(248, 250, 251, 1);
 
     .total-box {
       font-size: 24rpx;
@@ -308,8 +296,7 @@
   }
 
   .tabs-box {
-    background: $white;
-    border-bottom: 2rpx solid #eeeeee;
+    background: rgba(248, 250, 251, 1);
   }
 
   // tab
@@ -339,46 +326,89 @@
     }
   }
 
-  // 钱包记录
-  .wallet-list {
-    padding: 30rpx;
-    background-color: #ffff;
+  .list-container {
+    background-color: rgba(255, 254, 250, 1);
+    border-radius: 22rpx;
+    margin: 40rpx 31rpx 0 33rpx;
+    padding: 0 30rpx 40rpx 29rpx;
+  }
 
-    .head-img {
-      width: 70rpx;
-      height: 70rpx;
-      border-radius: 50%;
-      background: $gray-c;
+  .wallet-list {
+    position: relative;
+    padding: 24rpx 0;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 626rpx;
+      height: 1rpx;
+      border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
+    }
+
+    &:last-child::after {
+      display: none;
     }
 
     .list-content {
-      justify-content: space-between;
-      align-items: flex-start;
-      flex: 1;
+      justify-content: center;
 
       .title {
+        color: rgba(0, 0, 0, 1);
         font-size: 28rpx;
-        color: $dark-3;
+        font-family: PingFangSC-Medium;
+        font-weight: 500;
+        line-height: 28rpx;
         width: 400rpx;
       }
 
       .time {
-        color: $gray-c;
-        font-size: 22rpx;
+        color: rgba(157, 156, 150, 1);
+        font-size: 28rpx;
+        font-family: PingFangSC-Regular;
+        font-weight: normal;
+        line-height: 28rpx;
+        margin-top: 16rpx;
       }
     }
 
-    .money {
-      font-size: 28rpx;
-      font-weight: bold;
-      font-family: OPPOSANS;
+    .money-box {
+      font-family: Helvetica, 'Microsoft YaHei', Arial, sans-serif;
+      font-size: 32rpx;
+      font-weight: normal;
+      text-align: right;
+      line-height: 32rpx;
+
       .add {
-        color: var(--ui-BG-Main);
+        color: rgba(54, 208, 7, 1);
       }
 
       .minus {
-        color: $dark-3;
+        color: rgba(255, 0, 0, 1);
       }
     }
+  }
+
+  .flex-col {
+    display: flex;
+    flex-direction: column;
+  }
+  .flex-row {
+    display: flex;
+    flex-direction: row;
+  }
+  .justify-between {
+    justify-content: space-between;
+  }
+  .justify-center {
+    justify-content: center;
+  }
+  .nav-title {
+    color: rgba(0, 0, 0, 0.9);
+    font-size: 36rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    line-height: 50rpx;
   }
 </style>
