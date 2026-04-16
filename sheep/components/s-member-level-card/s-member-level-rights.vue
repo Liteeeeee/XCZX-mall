@@ -61,11 +61,11 @@
           <text class="upgrade-guide-tipbar-text">保留原有会员成长值</text>
         </view>
         <view class="box_90 flex-row" v-if="platinumItem">
-          <view class="text-wrapper_34 flex-col">
-            <text class="paragraph_5"
-              >{{ platinumItem.levelTag[0] }}\n{{ platinumItem.levelTag[1] }}</text
-            >
-          </view>
+          <image
+            class="level-icon-plat"
+            src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/bojinIcon.png"
+            mode="aspectFit"
+          ></image>
           <view class="block_41 flex-col">
             <view class="box_91 flex-row justify-between">
               <text class="text_56">{{ platinumItem.title }}</text>
@@ -93,11 +93,11 @@
           <view class="box_95 flex-col"></view>
         </view>
         <view class="box_96 flex-row" v-if="diamondItem">
-          <view class="text-wrapper_36 flex-col">
-            <text class="paragraph_6"
-              >{{ diamondItem.levelTag[0] }}\n{{ diamondItem.levelTag[1] }}</text
-            >
-          </view>
+          <image
+            class="level-icon-diamond"
+            src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/zuanshiIcon.png"
+            mode="aspectFit"
+          ></image>
           <view class="box_97 flex-col">
             <view class="group_108 flex-row justify-between">
               <text class="text_59">{{ diamondItem.title }}</text>
@@ -169,8 +169,8 @@
       Array.isArray(props.rightsAll) && props.rightsAll.length > 0
         ? props.rightsAll
         : Array.isArray(props.level?.rights)
-          ? props.level.rights
-          : [];
+        ? props.level.rights
+        : [];
     return [...list].sort((a, b) => Number(a?.sort ?? 0) - Number(b?.sort ?? 0));
   });
 
@@ -507,38 +507,16 @@
     width: 100%;
   }
 
-  .text-wrapper_34,
-  .text-wrapper_36 {
-    background-image: linear-gradient(
-      180deg,
-      rgba(66, 62, 73, 1) 0,
-      rgba(47, 43, 55, 1) 50.1875%,
-      rgba(66, 63, 74, 1) 100%
-    );
-    border-radius: 14px;
-    border: 1px solid rgba(181, 158, 109, 0.2);
-    padding: 21rpx 16rpx 20rpx 17rpx;
-    box-sizing: border-box;
-    flex: none;
+  .level-icon-plat {
+    width: 74rpx;
+    height: 101rpx;
+    margin: 0rpx 0rpx 0 0;
   }
 
-  .paragraph_5,
-  .paragraph_6 {
-    background-image: linear-gradient(
-      180deg,
-      rgba(255, 254, 247, 1) 0,
-      rgba(227, 197, 144, 1) 100%
-    );
-    height: 62rpx;
-    overflow-wrap: break-word;
-    font-size: 24rpx;
-    font-family: Kingsoft_Cloud_Font;
-    font-weight: normal;
-    text-align: left;
-    line-height: 34rpx;
-    white-space: pre-line;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .level-icon-diamond {
+    width: 74rpx;
+    height: 101rpx;
+    margin: 0rpx 0rpx 0 0;
   }
 
   .block_41 {
@@ -629,7 +607,7 @@
   }
 
   .achieve-check-icon {
-    color: #562A08;
+    color: #562a08;
     font-size: 28rpx;
     line-height: 1;
     font-weight: normal;
