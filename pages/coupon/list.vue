@@ -64,19 +64,25 @@
     <!-- 优惠券列表 -->
     <view class="coupon-list ss-p-x-32 ss-m-t-20">
       <view v-for="item in state.pagination.list" :key="item.id" class="ss-m-b-24">
-        <s-coupon-list :data="item" type="user">
+        <s-coupon-list :data="item" type="user" :disabled="item.status !== 1 || isExpired(item)">
           <template #default>
             <button
               class="ss-reset-button coupon-btn ss-flex ss-row-center ss-col-center"
-              :class="item.status !== 1 ? 'disabled-btn' : ''"
-              :disabled="item.status !== 1"
+              :class="item.status !== 1 || isExpired(item) ? 'disabled-btn' : ''"
+              :disabled="item.status !== 1 || isExpired(item)"
               @click.stop="
-                item.status === 1
+                item.status === 1 && !isExpired(item)
                   ? sheep.$router.go('/pages/index/category')
                   : sheep.$router.go('/pages/coupon/detail', { id: item.id })
               "
             >
-              {{ item.status === 1 ? '立即使用' : item.status === 2 ? '已使用' : '已过期' }}
+              {{
+                item.status === 1 && !isExpired(item)
+                  ? '立即使用'
+                  : item.status === 2
+                  ? '已使用'
+                  : '已过期'
+              }}
             </button>
           </template>
         </s-coupon-list>
@@ -152,6 +158,12 @@
     // 根据二级标签刷新数据
     resetPagination(state.pagination);
     getCoupon();
+  }
+
+  // 判断是否过期
+  function isExpired(item) {
+    if (!item.validEndTime) return false;
+    return item.validEndTime < new Date().getTime();
   }
 
   // 获得优惠劵模版列表（保留供参考或后续领券页使用）

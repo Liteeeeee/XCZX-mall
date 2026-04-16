@@ -83,7 +83,11 @@
     </view>
 
     <!-- 收货地址 -->
-    <view class="order-address-box ss-flex ss-col-center" v-if="state.orderInfo.receiverAreaId > 0" @tap="onSelectAddress">
+    <view
+      class="order-address-box ss-flex ss-col-center"
+      v-if="state.orderInfo.receiverAreaId > 0"
+      @tap="onSelectAddress"
+    >
       <view class="address-icon-box ss-flex ss-col-center ss-row-center">
         <image class="address-icon" :src="sheep.$url.static('/static/address.webp')" />
       </view>
@@ -125,7 +129,6 @@
                 {{ item.status_text }}
               </button>
             </template>
-
           </s-goods-item>
         </view>
       </view>
@@ -221,7 +224,7 @@
         state.orderInfo.items?.some(
           (item) =>
             ([10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0) ||
-            [10, 20].includes(item.afterSaleStatus)
+            [10, 20].includes(item.afterSaleStatus),
         )
       "
     >
@@ -402,6 +405,23 @@
   function onGoodsDetail(id) {
     sheep.$router.go('/pages/goods/index', {
       id,
+    });
+  }
+
+  // 删除订单
+  async function onDelete(orderId) {
+    uni.showModal({
+      title: '提示',
+      content: '确定要删除订单吗?',
+      success: async function (res) {
+        if (!res.confirm) {
+          return;
+        }
+        const { code } = await OrderApi.deleteOrder(orderId);
+        if (code === 0) {
+          sheep.$router.back();
+        }
+      },
     });
   }
 
@@ -628,8 +648,9 @@
   }
   .back-btn {
     width: 60rpx;
-    color: rgba(30, 63, 28, 0.9);
+    color: black;
     height: 60rpx;
+    font-size: 40rpx;
   }
   .nav-title {
     color: #000000;
@@ -905,11 +926,11 @@
       height: 60rpx;
       background: #ffffff;
       border-radius: 30rpx;
-      border: 2rpx solid #9d9c96;
+      border: 2rpx solid red;
       margin-right: 20rpx;
       font-size: 28rpx;
       font-weight: 400;
-      color: #9d9c96;
+      color: red;
       line-height: 56rpx;
     }
 

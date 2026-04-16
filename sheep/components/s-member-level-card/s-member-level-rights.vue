@@ -379,7 +379,7 @@
 <style lang="scss" scoped>
   .s-member-level-rights-wrapper {
     width: 100%;
-    margin-top: -155rpx; // 向上移动以覆盖在卡片下方
+    margin-top: -85rpx; // 向上移动以覆盖在卡片下方
     position: relative;
     z-index: 1;
   }

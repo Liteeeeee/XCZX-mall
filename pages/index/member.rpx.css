@@ -3,7 +3,7 @@
   width: 750rpx;
   height: 2007rpx;
   overflow: hidden;
-  background-color:rgba(248, 249, 243, 1);
+  background-color: rgba(248, 249, 243, 1);
 }
 
 .block_1 {
@@ -212,10 +212,6 @@
   text-align: left;
   white-space: nowrap;
   line-height: 30rpx;
-}
-
-.text-group_1 {
-  margin: 23rpx 285rpx 0 24rpx;
 }
 
 .text_4 {
@@ -868,7 +864,6 @@
   margin: 8rpx 0 0 2rpx;
 }
 
-
 .box_21 {
   padding-bottom: 0rpx;
 }
@@ -896,10 +891,10 @@
   width: 16rpx;
   height: 8rpx;
 }
-.group_45{
-    position: absolute;
-    left: 206rpx;
-    top: 2rpx;
+.group_45 {
+  position: absolute;
+  left: 206rpx;
+  top: 2rpx;
 }
 .text_23 {
   overflow-wrap: break-word;
@@ -914,11 +909,7 @@
 }
 
 .text-wrapper_4 {
-  background-image: linear-gradient(
-    270deg,
-    rgba(15, 92, 49, 1) 0,
-    rgba(6, 148, 63, 1) 100%
-  );
+  background-image: linear-gradient(270deg, rgba(15, 92, 49, 1) 0, rgba(6, 148, 63, 1) 100%);
   border-radius: 34rpx;
   margin-left: 66rpx;
   padding: 27rpx 36rpx 26rpx 36rpx;

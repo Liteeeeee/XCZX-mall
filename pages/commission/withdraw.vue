@@ -33,7 +33,10 @@
           </view>
         </view>
       </view>
-      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+      <view
+        class="header-placeholder"
+        :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
+      ></view>
 
       <view class="account-card flex-row justify-between" @tap="onAccountSelect(true)">
         <text class="account-label">提现账号</text>
@@ -54,11 +57,27 @@
           <text class="withdraw-all" @tap="onWithdrawAll">全部提现</text>
         </view>
         <view class="divider-line"></view>
-        <text class="balance-tip">可提现余额{{ fen2yuan(state.brokerageInfo.brokeragePrice) }}元</text>
+        <text class="balance-tip"
+          >可提现余额{{ fen2yuan(state.brokerageInfo.brokeragePrice) }}元</text
+        >
       </view>
 
       <su-fixed bottom placeholder :bgStyles="{ backgroundColor: 'rgba(255, 255, 250, 1.0)' }">
         <view class="bottom-bar flex-col">
+          <view class="agreement-box flex-row align-center justify-center">
+            <view class="radio-box flex-row align-center" @tap="state.isAgree = !state.isAgree">
+              <view class="coupon-check flex-col" :class="state.isAgree ? 'coupon-check-on' : ''">
+                <image
+                  v-if="state.isAgree"
+                  class="check-icon"
+                  :src="sheep.$url.cdn('/mp/static/confirmSelected.png')"
+                  mode="aspectFit"
+                ></image>
+              </view>
+              <text class="agreement-text">我已阅读并同意</text>
+            </view>
+            <text class="agreement-link" @tap="state.showStatement = true">《提现相关声明》</text>
+          </view>
           <button class="ss-reset-button apply-btn" @tap="onConfirm">
             <text class="apply-btn-text">申请提现</text>
           </button>
@@ -72,6 +91,48 @@
         v-model="state.accountInfo"
         :methods="state.withdrawTypes"
       />
+
+      <su-popup
+        :show="state.showStatement"
+        type="bottom"
+        round="20"
+        @close="state.showStatement = false"
+        showClose
+        backgroundColor="rgba(255, 255, 250, 1.0)"
+      >
+        <view class="statement-modal flex-col">
+          <text class="statement-title">提现相关声明</text>
+          <scroll-view class="statement-content" scroll-y>
+            <view class="statement-text">
+              <view class="statement-subtitle">收益说明</view>
+              (1)您的粉丝下单付款并完成收货后，您将获得佣金收益;<br />
+              (2)当出现取消订单、退货退款、或者因订单异常等情况时，将相应扣除收益，实际根据系统结算为准。<br />
+              <view class="statement-subtitle">名词解析</view>
+              1.累计推广收益:自您成为平台合伙人之日起至今已经结算的收益合计;<br />
+              2.今日付款订单:今天确认付款的订单;<br />
+              3.今日预估订单收益:今日所有已付款订单的预估收益;<br />
+              4.今日推广商品:今日推广商品次数;<br />
+              <view class="statement-subtitle">提现说明</view>
+              1.账户余额为可提现的金额，单笔提现至少1元;<br />
+              2.同一时间只能申请一笔提现，在审核结束前不能再次申请;<br />
+              3.申请提交成功后，平台会在三个工作日内完成审核，请耐心等待;<br />
+              4.已申请提现的金额会从账户余额中扣除，并被冻结;<br />
+              5.提现失败后，冻结金额会再次计入账户余额中，您可以随时申请提现;
+            </view>
+          </scroll-view>
+          <view class="statement-footer flex-col">
+            <button
+              class="ss-reset-button apply-btn"
+              @tap="
+                state.isAgree = true;
+                state.showStatement = false;
+              "
+            >
+              <text class="apply-btn-text">已阅读并同意</text>
+            </button>
+          </view>
+        </view>
+      </su-popup>
     </view>
   </s-layout>
 </template>
@@ -86,6 +147,8 @@
   import { getWeixinPayChannelCode, goBindWeixin } from '@/sheep/platform/pay';
 
   const state = reactive({
+    isAgree: false,
+    showStatement: false,
     accountInfo: {
       // 提现表单
       type: undefined,
@@ -128,6 +191,10 @@
 
   // 提交提现
   const onConfirm = async () => {
+    if (!state.isAgree) {
+      sheep.$helper.toast('请先阅读并勾选同意提现声明');
+      return;
+    }
     // 参数校验
     const price = Number(state.accountInfo.price);
     const maxPrice = Number(state.brokerageInfo.brokeragePrice || 0) / 100;
@@ -241,7 +308,7 @@
   }
 
   .page {
-    background-color: rgba(248, 249, 243, 1.0);
+    background-color: rgba(248, 249, 243, 1);
     width: 750rpx;
     min-height: 100vh;
   }
@@ -252,7 +319,7 @@
     top: 0;
     width: 100%;
     z-index: 10;
-    background-color: rgba(248, 249, 243, 1.0);
+    background-color: rgba(248, 249, 243, 1);
   }
 
   .header-placeholder {
@@ -276,7 +343,7 @@
   }
 
   .account-card {
-    background-color: rgba(255, 255, 250, 1.0);
+    background-color: rgba(255, 255, 250, 1);
     border-radius: 30rpx;
     width: 680rpx;
     margin: 18rpx 38rpx 0 32rpx;
@@ -307,7 +374,7 @@
   }
 
   .amount-card {
-    background-color: rgba(255, 255, 250, 1.0);
+    background-color: rgba(255, 255, 250, 1);
     border-radius: 30rpx;
     margin: 24rpx 38rpx 0 32rpx;
     padding: 32rpx 18rpx 28rpx 23rpx;
@@ -394,12 +461,105 @@
 
   .bottom-bar {
     box-shadow: 0rpx -6rpx 10rpx 0rpx rgba(0, 0, 0, 0.02);
-    background-color: rgba(255, 255, 250, 1.0);
+    background-color: rgba(255, 255, 250, 1);
     padding: 24rpx 32rpx 24rpx 32rpx;
   }
 
+  .agreement-box {
+    margin-bottom: 24rpx;
+    font-size: 24rpx;
+  }
+
+  .radio-box {
+    cursor: pointer;
+  }
+
+  .coupon-check {
+    width: 28rpx;
+    height: 28rpx;
+    border: 2rpx solid rgba(206, 199, 189, 1);
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 1);
+    margin-right: 12rpx;
+    overflow: hidden;
+  }
+
+  .coupon-check-on {
+    border-color: transparent;
+    background-color: transparent;
+  }
+
+  .check-icon {
+    width: 100%;
+    height: 100%;
+  }
+
+  .agreement-text {
+    color: rgba(157, 156, 150, 1);
+    font-family: PingFangSC-Regular;
+  }
+
+  .agreement-link {
+    color: rgba(30, 63, 28, 1);
+    font-family: PingFangSC-Regular;
+    cursor: pointer;
+  }
+
+  .statement-modal {
+    width: 100%;
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 20rpx 20rpx 0 0;
+    overflow: hidden;
+  }
+
+  .statement-title {
+    color: rgba(0, 0, 0, 0.9);
+    font-size: 36rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: center;
+    margin: 40rpx 32rpx 32rpx;
+  }
+
+  .statement-content {
+    width: 100%;
+    max-height: 60vh;
+    padding: 0 40rpx;
+    box-sizing: border-box;
+  }
+
+  .statement-text {
+    color: rgba(102, 102, 102, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular;
+    line-height: 48rpx;
+    margin-bottom: 40rpx;
+  }
+
+  .statement-subtitle {
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.9);
+    margin-top: 24rpx;
+    margin-bottom: 8rpx;
+    font-size: 30rpx;
+  }
+
+  .statement-subtitle:first-child {
+    margin-top: 0;
+  }
+
+  .statement-footer {
+    width: 100%;
+    padding: 24rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 250, 1);
+    box-shadow: 0rpx -6rpx 10rpx 0rpx rgba(0, 0, 0, 0.02);
+  }
+
   .apply-btn {
-    background-color: rgba(30, 63, 28, 1.0);
+    background-color: rgba(30, 63, 28, 1);
     border-radius: 20rpx;
     border: 1rpx solid rgba(157, 156, 150, 1);
     height: 88rpx;

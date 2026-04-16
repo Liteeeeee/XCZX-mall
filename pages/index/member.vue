@@ -10,10 +10,8 @@
     <view class="page flex-col">
       <view class="block_1 flex-col">
         <view class="block_2 flex-col" :style="{ backgroundImage: currentLevel.bgGradient }">
-          <view :style="{ height: sheep.$platform.navbar + 'px' }"></view>
-
           <!-- 会员卡片轮播区域 -->
-          <swiper
+          <!-- <swiper
             class="member-swiper"
             @change="onSwiperChange"
             :current="state.currentLevelIndex"
@@ -29,8 +27,14 @@
                 <s-member-level-card :level="level" :userInfo="userInfo" />
               </view>
             </swiper-item>
-          </swiper>
+          </swiper> -->
 
+          <!-- 进度条组件 -->
+          <s-member-progress
+            :experience="userInfo?.experience || 0"
+            :currentLevel="currentLevel"
+            :nextLevel="nextLevel"
+          ></s-member-progress>
           <!-- 静态权益展示区域 -->
           <s-member-level-rights
             :level="currentLevel"
@@ -150,6 +154,7 @@
   import { onShow } from '@dcloudio/uni-app';
   import memberData from '@/sheep/data/member';
   import sMemberLevelCard from '@/sheep/components/s-member-level-card/s-member-level-card.vue';
+  import sMemberProgress from '@/sheep/components/s-member-level-card/s-member-progress.vue';
   import sMemberLevelRights from '@/sheep/components/s-member-level-card/s-member-level-rights.vue';
   import MemberLevelApi from '@/sheep/api/member/level';
   import MemberRightsApi from '@/sheep/api/member/rights';
@@ -550,9 +555,7 @@
     { immediate: true },
   );
 
-  const currentLevel = computed(
-    () => memberLevels.value[state.currentLevelIndex] || memberLevels.value[0],
-  );
+  const currentLevel = computed(() => memberLevels.value[state.currentLevelIndex] || {});
 
   const userMemberLevelId = computed(() => {
     const rawLevel = userInfo.value?.level;
@@ -629,6 +632,19 @@
     state.currentLevelIndex = e.detail.current;
     state.hasUserInteracted = true;
   };
+
+  const nextLevel = computed(() => {
+    const list = memberLevels.value || [];
+    if (list.length === 0) return null;
+
+    // 假设索引递增代表等级递增
+    if (state.currentLevelIndex < list.length - 1) {
+      return list[state.currentLevelIndex + 1];
+    }
+
+    // 如果已经是最高等级，就返回当前等级，避免超出
+    return list[list.length - 1];
+  });
 
   const isVipOpened = computed(() => {
     const rawLevel = userInfo.value?.level;
@@ -719,7 +735,7 @@
 
   .block_2 {
     width: 100%;
-    padding: 30rpx 0 0; // 强制清除左右内边距，确保 swiper 贴边
+    padding: 0rpx 0 0; // 强制清除左右内边距，确保 swiper 贴边
     box-sizing: border-box;
     position: relative;
   }

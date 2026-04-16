@@ -72,6 +72,17 @@
 			}
 		},
 		{
+			"path": "pages/index/story",
+			"style": {
+				"navigationBarTitleText": "品牌故事"
+			},
+			"meta": {
+				"sync": true,
+				"title": "品牌故事",
+				"group": "商城"
+			}
+		},
+		{
 			"path": "pages/index/page",
 			"style": {
 				"navigationBarTitleText": ""

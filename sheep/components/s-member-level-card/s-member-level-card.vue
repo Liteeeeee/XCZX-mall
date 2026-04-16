@@ -5,7 +5,7 @@
 <template>
   <view class="s-member-level-card-wrapper">
     <!-- 等级卡片区域 -->
-    <view class="box_5 flex-col" style="background: none !important;">
+    <view class="box_5 flex-col" style="background: none !important">
       <image
         :src="sheep.$url.static(level.cardBg)"
         mode="scaleToFill"
@@ -15,23 +15,12 @@
         <view class="text-wrapper_1 flex-col" :style="{ background: level.badgeBg }">
           <text class="text_3" :style="{ color: level.badgeColor }">{{ badgeText }}</text>
         </view>
-        <view class="text-group_1 flex-col">
-          <view style="width: 20rpx;"></view>
-          <text class="text_4" :style="{ color: level.mainColor }">{{ level.name }}</text>
-          <view style="height: 14rpx;"></view>
-          <view
-            v-if="showSavedMoney"
-            class="saved-money-tip"
-            :style="{
-              color: level.mainColor,
-              backgroundImage: 'url(' + sheep.$url.static('/static/member/countBg.webp') + ')',
-            }"
-          >
-            <text class="saved-money-text">累计已省{{ totalSavedMoneyText }}元</text>
-          </view>
-          <text v-else class="text_5" :style="{ color: level.mainColor }">健康省钱·专属服务一站式</text>
-        </view>
-        <view style="margin-top: 40rpx !important;" class="group_5 flex-col" :style="{ background: level.decoGradient }"></view>
+        <!-- 进度条已接管这部分展示 -->
+        <view
+          style="margin-top: 40rpx !important"
+          class="group_5 flex-col"
+          :style="{ background: level.decoGradient }"
+        ></view>
         <view class="group_6 flex-row">
           <text
             class="text_6"
@@ -45,9 +34,14 @@
           <text class="text_6" :style="{ color: level.mainColor }" v-else-if="isCurrent"
             >已有{{ userInfo.experience || 0 }}成长值</text
           >
-          <text class="text_6" :style="{ color: level.mainColor }" v-else-if="currentUserLevel > currentCardLevel">已解锁该等级权益</text>
+          <text
+            class="text_6"
+            :style="{ color: level.mainColor }"
+            v-else-if="currentUserLevel > currentCardLevel"
+            >已解锁该等级权益</text
+          >
           <text class="text_6" :style="{ color: level.mainColor }" v-else>升级解锁更多权益</text>
-            <text v-if="!isVipUser" class="text_7" @tap="onOpenVip">
+          <text v-if="!isVipUser" class="text_7" @tap="onOpenVip">
             {{ '立即开通>' }}
           </text>
         </view>
@@ -55,7 +49,6 @@
     </view>
 
     <!-- 权益区域 -->
-  
   </view>
 </template>
 
@@ -69,12 +62,12 @@
     level: {
       type: Object,
       required: true,
-      default: () => ({})
+      default: () => ({}),
     },
     userInfo: {
       type: Object,
-      default: () => ({})
-    }
+      default: () => ({}),
+    },
   });
 
   const isCurrent = computed(() => {
@@ -86,10 +79,9 @@
 
     const rawLevel = props.userInfo?.level;
     const level =
-      typeof rawLevel === 'object' && rawLevel
-        ? rawLevel.level ?? rawLevel.id ?? null
-        : rawLevel;
-    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      level === null || level === undefined || level === '' ? null : Number(level);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
       return idByLevel[normalizedLevel] === props.level.id;
     }
@@ -99,17 +91,16 @@
     if (levelName.includes('钻石')) return props.level.id === 'diamond';
     if (levelName.includes('铂金')) return props.level.id === 'platinum';
     if (levelName.includes('黄金')) return props.level.id === 'golden';
-    
+
     return props.level.id === 'golden'; // Default fallback
   });
 
   const isVipUser = computed(() => {
     const rawLevel = props.userInfo?.level;
     const level =
-      typeof rawLevel === 'object' && rawLevel
-        ? rawLevel.level ?? rawLevel.id ?? null
-        : rawLevel;
-    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      level === null || level === undefined || level === '' ? null : Number(level);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return true;
 
     const rawLevelName = props.userInfo?.levelName;
@@ -140,12 +131,12 @@
   const currentUserLevel = computed(() => {
     const rawLevel = props.userInfo?.level;
     const level =
-      typeof rawLevel === 'object' && rawLevel
-        ? rawLevel.level ?? rawLevel.id ?? null
-        : rawLevel;
-    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
-    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return normalizedLevel;
-    
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      level === null || level === undefined || level === '' ? null : Number(level);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3)
+      return normalizedLevel;
+
     const rawLevelName = props.userInfo?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
     if (levelName.includes('钻石')) return 3;
@@ -233,7 +224,7 @@
 
   .text_3 {
     font-size: 20rpx;
-    color: #1E3F1C;
+    color: #1e3f1c;
   }
 
   .text-group_1 {
@@ -243,13 +234,13 @@
   .text_4 {
     font-family: Kingsoft_Cloud_Font;
     font-size: 60rpx;
-    color: #1E3F1C;
+    color: #1e3f1c;
     line-height: 84rpx;
   }
 
   .text_5 {
     font-size: 24rpx;
-    color: #1E3F1C;
+    color: #1e3f1c;
     opacity: 0.8;
   }
 
@@ -274,7 +265,13 @@
     width: 590rpx;
     height: 8rpx;
     border-radius: 4rpx;
-    background: linear-gradient(90deg, #1E3F1C 0%, rgba(30, 63, 28, 0.45) 17.81%, rgba(30, 63, 28, 0.1) 50.53%, rgba(163, 160, 191, 0) 100%);
+    background: linear-gradient(
+      90deg,
+      #1e3f1c 0%,
+      rgba(30, 63, 28, 0.45) 17.81%,
+      rgba(30, 63, 28, 0.1) 50.53%,
+      rgba(163, 160, 191, 0) 100%
+    );
     margin: 20rpx 0 0 20rpx;
   }
 
@@ -288,7 +285,7 @@
 
   .text_6 {
     font-size: 24rpx;
-    color: #1E3F1C;
+    color: #1e3f1c;
   }
 
   .text_7 {
@@ -309,7 +306,11 @@
     padding: 80rpx 30rpx 40rpx;
     box-sizing: border-box;
     margin-top: -73rpx;
-    background: radial-gradient(circle at 50% -4450rpx, transparent 4485rpx, rgba(248, 249, 243, 1) 400.5rpx);
+    background: radial-gradient(
+      circle at 50% -4450rpx,
+      transparent 4485rpx,
+      rgba(248, 249, 243, 1) 400.5rpx
+    );
     position: relative;
     z-index: 1;
   }
@@ -328,7 +329,7 @@
     flex-direction: row;
     overflow-x: auto;
     padding: 10rpx 0;
-    
+
     /* 隐藏滚动条 */
     &::-webkit-scrollbar {
       display: none;

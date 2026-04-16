@@ -37,6 +37,18 @@ const SpuApi = {
       },
     });
   },
+  // 获得商品 SKU 分页
+  getSkuPage: (params) => {
+    return request({
+      url: '/product/sku/page',
+      method: 'GET',
+      params,
+      custom: {
+        showLoading: false,
+        showError: false,
+      },
+    });
+  },
   // 查询商品
   getSpuDetail: (id) => {
     return request({

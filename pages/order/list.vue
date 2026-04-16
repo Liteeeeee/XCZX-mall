@@ -3,9 +3,31 @@
   <s-layout navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
     <view class="fixed-header">
       <su-status-bar />
-      <view class="nav-bar-container" :style="{ position: 'relative', height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
-        <view class="nav-bar-inner ss-flex ss-col-center" :style="{ position: 'absolute', top: '50%', transform: 'translateY(-50%)', height: '100%', left: '0', width: '100%' }">
-          <uni-icons type="left" size="22" color="#000" @tap="sheep.$router.back()" class="ss-m-l-20"></uni-icons>
+      <view
+        class="nav-bar-container"
+        :style="{
+          position: 'relative',
+          height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px',
+        }"
+      >
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{
+            position: 'absolute',
+            top: '50%',
+            transform: 'translateY(-50%)',
+            height: '100%',
+            left: '0',
+            width: '100%',
+          }"
+        >
+          <uni-icons
+            type="left"
+            size="22"
+            color="#000"
+            @tap="sheep.$router.back()"
+            class="ss-m-l-20"
+          ></uni-icons>
           <text class="nav-title ss-m-l-10">订单</text>
         </view>
       </view>
@@ -21,9 +43,16 @@
         lineHeight="6"
       />
     </view>
-    <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 44 + 'px' }"></view>
+    <view
+      class="header-placeholder"
+      :style="{ paddingTop: sheep.$platform.navbar + 44 + 'px' }"
+    ></view>
 
-    <s-empty v-if="state.pagination.total === 0" :icon="sheep.$url.static('/static/order-empty.webp')" text="暂无订单" />
+    <s-empty
+      v-if="state.pagination.total === 0"
+      :icon="sheep.$url.static('/static/order-empty.webp')"
+      text="暂无订单"
+    />
     <view v-if="state.pagination.total > 0" class="page-list-container">
       <view
         class="bg-white order-list-card-box ss-r-10 ss-m-t-14 ss-m-x-20"
@@ -53,7 +82,11 @@
           <s-goods-item
             :img="item.picUrl"
             :title="item.spuName"
-            :skuText="item.properties ? '已选：' + item.properties.map((property) => property.valueName).join('，') : ''"
+            :skuText="
+              item.properties
+                ? '已选：' + item.properties.map((property) => property.valueName).join('，')
+                : ''
+            "
             :price="item.price"
             priceColor="#F53F3F"
           >
@@ -64,10 +97,10 @@
         </view>
         <view class="pay-box ss-m-t-30 ss-flex ss-row-right ss-p-r-20">
           <view class="ss-flex ss-col-center">
-            <view class="discounts-title pay-color"
-              >共{{ order.productCount }}件 支付总额 </view
-            >
-            <view class="discounts-money pay-color ss-m-l-10"> ￥{{ fen2yuan(order.payPrice) }} </view>
+            <view class="discounts-title pay-color">共{{ order.productCount }}件 支付总额 </view>
+            <view class="discounts-money pay-color ss-m-l-10">
+              ￥{{ fen2yuan(order.payPrice) }}
+            </view>
           </view>
         </view>
         <view
@@ -157,7 +190,7 @@
 
 <script setup>
   import { reactive, onUnmounted } from 'vue';
-  import { onLoad, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app';
+  import { onLoad, onShow, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app';
   import dayjs from 'dayjs';
   import {
     fen2yuan,
@@ -414,12 +447,24 @@
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
 
+  let isFirstLoad = true;
+
+  onShow(async () => {
+    // 每次显示页面时（非首次加载），重新加载订单列表，以确保从订单详情页删除订单后列表能刷新
+    if (!isFirstLoad && state.currentTab !== undefined) {
+      resetPagination(state.pagination);
+      await getOrderList();
+    }
+  });
+
   onLoad(async (options) => {
     if (options.type) {
       state.currentTab = options.type;
     }
+    // 初次加载时获取列表
     await getOrderList();
-    
+    isFirstLoad = false;
+
     // 开启定时器，每分钟更新一次当前时间以刷新倒计时
     timer = setInterval(() => {
       state.now = dayjs();
@@ -487,7 +532,7 @@
   }
 
   .warning-color {
-    color: #B59E6D;
+    color: #b59e6d;
   }
 
   .danger-color {
@@ -495,11 +540,11 @@
   }
 
   .success-color {
-    color: #9D9C96;
+    color: #9d9c96;
   }
 
   .info-color {
-    color: #F53F3F;
+    color: #f53f3f;
   }
 
   /* 页面背景 */
@@ -514,10 +559,10 @@
     left: 0;
     width: 100%;
     z-index: 999;
-    background: #F8F9F3;
+    background: #f8f9f3;
   }
   .nav-bar-container {
-    background: #F8F9F3;
+    background: #f8f9f3;
   }
   .nav-title {
     color: #000000;
@@ -525,7 +570,7 @@
     font-weight: 600;
   }
   :deep(.u-tabs) {
-    background: #F8F9F3 !important;
+    background: #f8f9f3 !important;
     border-bottom: none !important;
   }
 
@@ -533,20 +578,20 @@
   .order-list-card-box {
     border-radius: 10rpx;
     margin-top: 24rpx;
-    
+
     .order-card-header {
       height: 88rpx;
-      border-bottom: 1rpx solid rgba(157,156,150,0.3);
+      border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
       .order-no {
         font-size: 28rpx;
-        color: #9D9C96;
+        color: #9d9c96;
       }
 
       .order-state {
         font-size: 28rpx;
         font-weight: 700;
       }
-      
+
       .pay-timer-box {
         background-color: rgba(255, 228, 229, 1);
         border-radius: 93rpx;
@@ -577,14 +622,14 @@
     }
 
     .goods-count-text {
-      color: #3D3D3C;
+      color: #3d3d3c;
       font-size: 24rpx;
       margin-top: 10rpx;
       text-align: right;
     }
 
     :deep(.price-text) {
-      color: #F53F3F !important;
+      color: #f53f3f !important;
       font-size: 40rpx;
       font-weight: 700;
     }
@@ -593,18 +638,18 @@
       .discounts-title {
         font-size: 28rpx;
         line-height: normal;
-        color: #3D3D3C;
+        color: #3d3d3c;
       }
 
       .discounts-money {
         font-size: 28rpx;
         line-height: normal;
-        color: #3D3D3C;
+        color: #3d3d3c;
         font-weight: 600;
       }
 
       .pay-color {
-        color: #3D3D3C;
+        color: #3d3d3c;
       }
     }
 
@@ -640,11 +685,11 @@
   .tool-btn {
     width: 160rpx;
     height: 60rpx;
-    background: #FFFFFF;
+    background: #ffffff;
     font-size: 28rpx;
     border-radius: 30rpx;
-    border: 2rpx solid #1E3F1C;
-    color: #1E3F1C;
+    border: 2rpx solid #1e3f1c;
+    color: #1e3f1c;
     margin-right: 10rpx;
     line-height: 56rpx;
 
@@ -656,10 +701,10 @@
   .pay-btn {
     width: 160rpx;
     height: 60rpx;
-    background: #1E3F1C;
+    background: #1e3f1c;
     font-size: 28rpx;
     border-radius: 30rpx;
-    color: #FFFFFF;
+    color: #ffffff;
     line-height: 60rpx;
     margin-right: 10rpx;
 

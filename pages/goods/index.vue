@@ -40,14 +40,11 @@
                 <view class="price-value count-font">{{
                   fen2yuan(state.selectedSku.price || state.goodsInfo.price)
                 }}</view>
-                <!-- 原价/会员价标签（可选） -->
-                <view
-                  class="group_51 ss-flex ss-row-between ss-col-center"
-                  v-if="state.goodsInfo.marketPrice > state.goodsInfo.price"
-                >
+                <!-- 会员价标签 -->
+                <view class="group_51 ss-flex ss-row-between ss-col-center">
                   <text class="text_66"
                     >¥{{
-                      fen2yuan(state.selectedSku.marketPrice || state.goodsInfo.marketPrice)
+                      fen2yuan((state.selectedSku.price || state.goodsInfo.price) * vipDiscount)
                     }}</text
                   >
                   <view class="text-wrapper_21 ss-flex-col ss-row-center ss-col-center">
@@ -70,7 +67,7 @@
         <view class="title-card detail-card ss-p-y-30 ss-p-x-20">
           <view
             v-if="!isVipOpened"
-            class="vip-card ss-flex ss-row-between ss-col-center  ss-m-b-20 ss-p-x-20"
+            class="vip-card ss-flex ss-row-between ss-col-center ss-m-b-20 ss-p-x-20"
             :style="{
               backgroundImage: 'url(' + sheep.$url.static('/static/vipBg.png') + ')',
               backgroundSize: '100% 100%',
@@ -157,10 +154,7 @@
         </view>
 
         <!-- 详情 -->
-        <detail-content-card
-          class="detail-content-selector"
-          :content="parsedDescription"
-        />
+        <detail-content-card class="detail-content-selector" :content="parsedDescription" />
 
         <!-- 活动跳转：拼团/秒杀/砍价活动 -->
         <detail-activity-tip
@@ -236,17 +230,44 @@
     const levelValue =
       typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
     const normalizedLevel =
-      levelValue === null || levelValue === undefined || levelValue === '' ? null : Number(levelValue);
-    
+      levelValue === null || levelValue === undefined || levelValue === ''
+        ? null
+        : Number(levelValue);
+
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return true;
-    
+
     const rawLevelName = userInfo.value?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
-    if (levelName && (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))) {
+    if (
+      levelName &&
+      (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))
+    ) {
       return true;
     }
-    
+
     return false;
+  });
+
+  // 获取当前会员折扣（未开通或普通用户默认为 0.95，即展示给未开通用户的黄金会员价）
+  const vipDiscount = computed(() => {
+    const rawLevel = userInfo.value?.level;
+    const levelValue =
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      levelValue === null || levelValue === undefined || levelValue === ''
+        ? null
+        : Number(levelValue);
+
+    // 如果开通了会员，根据会员等级名称或级别进行折扣判断
+    const rawLevelName = userInfo.value?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+
+    if (normalizedLevel === 3 || levelName.includes('钻石')) return 0.85;
+    if (normalizedLevel === 2 || levelName.includes('铂金')) return 0.9;
+    if (normalizedLevel === 1 || levelName.includes('黄金')) return 0.95;
+
+    // 如果没有开通或者是普通用户，则依然显示最低门槛（黄金）的会员价（0.95），以吸引开通
+    return 0.95;
   });
 
   let state = reactive({
@@ -267,7 +288,7 @@
   const parsedDescription = computed(() => {
     let html = state.goodsInfo.description || '';
     if (!html) return html;
-    
+
     // 使用正则匹配出 img 的 src 并追加 OSS 参数，同时将 http 强制升级为 https
     html = html.replace(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi, (match, src) => {
       let newSrc = src;
@@ -520,7 +541,7 @@
         border-radius: 8rpx;
         min-width: 148rpx;
         padding-left: 10rpx;
-        margin-left: 10rpx;
+        margin-left: 14rpx;
         margin-bottom: 12rpx;
       }
       .text_66 {
@@ -713,7 +734,7 @@
         color: #fff;
       }
       .check-tag {
-        background: linear-gradient( 127deg, #F5EBD9 0%, #FFD6AD 100%);
+        background: linear-gradient(127deg, #f5ebd9 0%, #ffd6ad 100%);
         color: #855422;
         font-size: 20rpx;
         padding: 2rpx 10rpx;
@@ -752,7 +773,7 @@
 
   // 购买
   .buy-box {
-    padding:  20rpx;
+    padding: 20rpx;
     flex: 1;
     justify-content: flex-end;
     .add-btn {

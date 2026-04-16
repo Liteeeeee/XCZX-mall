@@ -1,5 +1,9 @@
 <template>
-  <s-layout navbar="clear" :bgStyle="{ color: 'rgba(248, 249, 243, 1.0)' }" :onShareAppMessage="state.shareInfo">
+  <s-layout
+    navbar="clear"
+    :bgStyle="{ color: 'rgba(248, 249, 243, 1.0)' }"
+    :onShareAppMessage="state.shareInfo"
+  >
     <view class="page flex-col">
       <view class="fixed-header">
         <su-status-bar />
@@ -21,13 +25,21 @@
               width: '100%',
             }"
           >
-            <uni-icons type="left" size="22" color="#000" @tap="sheep.$router.back()" class="nav-back" />
+            <uni-icons
+              type="left"
+              size="22"
+              color="#000"
+              @tap="sheep.$router.back()"
+              class="nav-back"
+            />
             <text class="nav-title">推广分销</text>
-            
           </view>
         </view>
       </view>
-      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+      <view
+        class="header-placeholder"
+        :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
+      ></view>
 
       <view class="box_13 flex-col">
         <view class="box_28 flex-row">
@@ -43,14 +55,19 @@
 
         <view class="box_15 flex-col">
           <view class="stats-row flex-row justify-around">
-            <view class="stat-col flex-col" @tap="sheep.$router.go('/pages/commission/index.lanhu.backup')">
+            <view
+              class="stat-col flex-col"
+              @tap="sheep.$router.go('/pages/commission/index.lanhu.backup')"
+            >
               <view class="stat-value-row flex-row align-center justify-center">
                 <text class="text_5 count-font">{{ totalBrokerageYuan }}</text>
-                <text :style="{right:'-54rpx'}" class="text_6 count-font stat-plus stat-plus-income">+{{ todayBrokerageYuan }}</text>
+                <text
+                  :style="{ right: '-54rpx' }"
+                  class="text_6 count-font stat-plus stat-plus-income"
+                  >+{{ todayBrokerageYuan }}</text
+                >
               </view>
-              <text class="text_11" 
-                >推广收益</text
-              >
+              <text class="text_11">推广收益</text>
             </view>
             <view
               class="stat-col flex-col"
@@ -75,28 +92,41 @@
 
       <view class="block_13 flex-col">
         <view class="list_2 flex-col">
-          <view class="list-items_1 flex-row justify-between" v-for="item in state.pagination.list" :key="item.id">
+          <view
+            class="list-items_1 flex-row justify-between"
+            v-for="item in state.pagination.list"
+            :key="item.id"
+          >
             <image
               class="box_17 flex-col"
-              :src="sheep.$url.cdn(item.picUrl)"
+              :src="sheep.$url.cdn(item.spuPicUrl)"
               mode="aspectFill"
               @tap="onGoGoods(item)"
             />
             <view class="section_13 flex-col">
-              <text class="text_14">{{ item.name }}</text>
+              <text class="text_14">{{ item.spuName }}</text>
               <view class="text-wrapper_7 justify-between">
-                <text class="text_15">{{ item.introduction }}</text>
-                <view :style="{marginRight:'40rpx'}"><text class="text_16">¥</text>
-                <text class="text_17 count-font">{{ fen2yuan(item.price) }}</text>
-             </view> </view>
+                <text class="text_15">{{ item.name }}</text>
+                <view :style="{ marginRight: '40rpx' }"
+                  ><text class="text_16">¥</text>
+                  <text class="text_17 count-font">{{ fen2yuan(item.price) }}</text>
+                </view>
+              </view>
               <view class="group_6 flex-row justify-between">
                 <view class="profit-tag flex-row align-center">
                   <text class="text_18">{{ formatBrokerage(item) }}</text>
                 </view>
-                <button class="ss-reset-button block_5 flex-row justify-between" @tap.stop="onShareGoods(item)">
+                <button
+                  class="ss-reset-button block_5 flex-row justify-between"
+                  @tap.stop="onShareGoods(item)"
+                >
                   <text class="text_19">立即推广</text>
                   <view class="box_19 flex-col">
-                    <image class="box_20" :src="sheep.$url.cdn('/mp/static/arrow.webp')" mode="aspectFit" />
+                    <image
+                      class="box_20"
+                      :src="sheep.$url.cdn('/mp/static/arrow.webp')"
+                      mode="aspectFit"
+                    />
                   </view>
                 </button>
               </view>
@@ -211,20 +241,27 @@
   }
 
   function onGoGoods(item) {
-    sheep.$router.go('/pages/goods/index', { id: item.id });
+    sheep.$router.go('/pages/goods/index', { id: item.spuId });
   }
 
   function formatBrokerage(item) {
-    if (item?.brokerageMinPrice === undefined) {
-      return '可赚计算中';
-    }
     const toYuanInt = (fen) => {
       const n = Number(fen || 0);
       if (!Number.isFinite(n)) {
-        return '0';
+        return '0.00';
       }
-      return String(Math.floor(n / 100));
+      return (n / 100).toFixed(2);
     };
+
+    if (item.brokeragePercent !== undefined && item.brokeragePercent > 0) {
+      const commissionPrice = (item.price * item.brokeragePercent) / 100;
+      return `推广可赚${toYuanInt(commissionPrice)}元`;
+    }
+
+    if (item?.brokerageMinPrice === undefined) {
+      return '可赚计算中';
+    }
+
     if (item.brokerageMinPrice === item.brokerageMaxPrice) {
       return `推广可赚${toYuanInt(item.brokerageMinPrice)}元`;
     }
@@ -234,17 +271,17 @@
   function onShareGoods(goodsInfo) {
     state.shareInfo = $share.getShareInfo(
       {
-        title: goodsInfo.name,
+        title: goodsInfo.spuName,
         image: sheep.$url.cdn(goodsInfo.picUrl),
-        desc: goodsInfo.introduction,
+        desc: goodsInfo.name,
         params: {
           page: SharePageEnum.GOODS.value,
-          query: goodsInfo.id,
+          query: goodsInfo.spuId,
         },
       },
       {
         type: 'goods',
-        title: goodsInfo.name,
+        title: goodsInfo.spuName,
         picUrl: sheep.$url.cdn(goodsInfo.picUrl),
         image: sheep.$url.cdn(goodsInfo.picUrl),
         price: fen2yuan(goodsInfo.price),
@@ -275,9 +312,10 @@
 
   async function getGoodsList() {
     state.loadStatus = 'loading';
-    const res = await SpuApi.getSpuPage({
+    const res = await SpuApi.getSkuPage({
       pageSize: state.pagination.pageSize,
       pageNo: state.pagination.pageNo,
+      brokerageEnabled: true,
     });
     if (!res || typeof res !== 'object') {
       state.loadStatus = 'error';
@@ -292,7 +330,7 @@
     await Promise.all(
       (data.list || []).map(async (item) => {
         try {
-          const res = await BrokerageApi.getProductBrokeragePrice(item.id);
+          const res = await BrokerageApi.getProductBrokeragePrice(item.spuId);
           item.brokerageMinPrice = res.data.brokerageMinPrice;
           item.brokerageMaxPrice = res.data.brokerageMaxPrice;
         } catch (e) {}
