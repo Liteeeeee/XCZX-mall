@@ -3,7 +3,10 @@
   <s-layout :bgStyle="{ color: '#F5F5F5' }" navbar="clear">
     <su-fixed alway :noNav="true" placeholder :bgStyles="{ background: '#F5F5F5' }" :index="100">
       <su-status-bar />
-      <view class="custom-nav-bar" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+      <view
+        class="custom-nav-bar"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
         <view class="nav-content ss-flex ss-col-center">
           <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
             <text class="sicon-back"></text>
@@ -12,7 +15,7 @@
         </view>
       </view>
     </su-fixed>
-    
+
     <view v-if="state.list.length">
       <s-address-item
         hasBorderBottom
@@ -20,6 +23,7 @@
         :key="item.id"
         :item="item"
         @tap="onSelect(item)"
+        @set-default="onSetDefault"
       >
         <template #action>
           <view class="action-btn ss-flex ss-col-center">
@@ -40,10 +44,7 @@
         >
           微信导入
         </button>
-        <button
-          class="add-btn ss-reset-button"
-          @tap="sheep.$router.go('/pages/user/address/edit')"
-        >
+        <button class="add-btn ss-reset-button" @tap="sheep.$router.go('/pages/user/address/edit')">
           新增收货地址
         </button>
       </view>
@@ -72,8 +73,9 @@
 
   // 选择收货地址
   const onSelect = (addressInfo) => {
-    if (state.openType !== 'select'){ // 不作为选择组件时阻断操作
-      return
+    if (state.openType !== 'select') {
+      // 不作为选择组件时阻断操作
+      return;
     }
     uni.$emit('SELECT_ADDRESS', {
       addressInfo,
@@ -101,6 +103,23 @@
     sheep.$router.go('/pages/user/address/edit', {
       id,
     });
+  };
+
+  const onSetDefault = async (item) => {
+    if (!item?.id) return;
+    if (item.defaultStatus) return;
+    const payload = {
+      id: item.id,
+      name: item.name,
+      mobile: item.mobile,
+      areaId: item.areaId,
+      detailAddress: item.detailAddress,
+      defaultStatus: true,
+    };
+    const { code } = await AddressApi.updateAddress(payload);
+    if (code === 0) {
+      state.list = (await AddressApi.getAddressList()).data;
+    }
   };
 
   // 导入微信地址
@@ -189,14 +208,14 @@
       left: 20rpx;
       height: 100%;
     }
-    
+
     .back-btn {
       width: 60rpx;
       height: 60rpx;
       margin-right: 10rpx;
       .sicon-back {
         font-size: 36rpx;
-        color: #1E3F1C;
+        color: #1e3f1c;
         font-weight: bold;
       }
     }
@@ -213,7 +232,7 @@
     .delete-btn {
       width: 100rpx;
       height: 50rpx;
-      background: #F5F5F5;
+      background: #f5f5f5;
       border-radius: 6rpx;
       font-size: 24rpx;
       font-weight: 500;
@@ -221,7 +240,7 @@
       text-align: center;
       line-height: 50rpx;
     }
-    
+
     .delete-btn {
       margin-right: 20rpx;
     }
@@ -235,7 +254,7 @@
     .add-btn {
       flex: 1;
       height: 80rpx;
-      background: #1E3F1C;
+      background: #1e3f1c;
       border-radius: 16rpx;
       font-size: 30rpx;
       font-weight: 500;
@@ -249,11 +268,11 @@
       height: 80rpx;
       line-height: 76rpx;
       background: #fff;
-      border: 2rpx solid #1E3F1C;
+      border: 2rpx solid #1e3f1c;
       border-radius: 16rpx;
       font-size: 30rpx;
       font-weight: 500;
-      color: #1E3F1C;
+      color: #1e3f1c;
       margin-right: 20rpx;
       text-align: center;
       box-sizing: border-box;

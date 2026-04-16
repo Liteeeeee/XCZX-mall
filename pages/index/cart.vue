@@ -6,41 +6,79 @@
     title="购物车"
     :navbarStyle="navbarStyle"
   >
-    <s-empty
+    <view class="cart-header ss-flex ss-col-center ss-row-between ss-p-x-30">
+      <view class="header-left ss-flex ss-col-center ss-font-32">
+        购物车
+        <text v-if="state.list.length" class="goods-number ss-flex ss-m-l-10"
+          >({{ state.list.length }})</text
+        >
+      </view>
+      <view class="header-right ss-flex ss-col-center" v-if="state.list.length">
+        <button class="ss-reset-button" v-show="cart.editMode" @tap.stop="onChangeEditMode(false)">
+          完成
+        </button>
+        <button class="ss-reset-button" v-show="!cart.editMode" @tap.stop="onChangeEditMode(true)">
+          管理
+        </button>
+      </view>
+    </view>
+
+    <scroll-view
       v-if="state.list.length === 0"
-      :icon="sheep.$url.static('/static/cart-empty.webp')"
-      text="购物车空空如也,快去逛逛吧~"
-    />
+      scroll-y
+      class="empty-scroll"
+      :style="{
+        paddingTop: (sys_capsule.bottom || 80) + 20 + 'px',
+      }"
+    >
+      <s-empty
+        :icon="sheep.$url.static('/static/cart-empty.webp')"
+        text="购物车空空如也,快去逛逛吧~"
+        paddingTop="160"
+      />
+      <view v-if="state.recommend.list.length" class="recommend-section">
+        <view class="recommend-title-row">
+          <view class="recommend-line"></view>
+          <text class="recommend-title">为你推荐</text>
+          <view class="recommend-line recommend-line-right"></view>
+        </view>
+        <view class="recommend-grid">
+          <view
+            v-for="item in state.recommend.list"
+            :key="item.id"
+            class="recommend-card"
+            @tap="onTapRecommend(item)"
+          >
+            <image class="recommend-img" :src="getRecommendPicUrl(item)" mode="aspectFill" />
+            <text class="recommend-name ss-line-1">{{ getRecommendName(item) }}</text>
+            <view class="recommend-bottom ss-flex ss-row-between ss-col-center">
+              <view class="recommend-price">
+                <text class="recommend-price-unit">¥</text>
+                <text class="recommend-price-value">{{
+                  fen2yuan(getRecommendPriceFen(item))
+                }}</text>
+              </view>
+              <text class="recommend-sold" v-if="getRecommendSalesCount(item) > 0"
+                >已售{{ getRecommendSalesCount(item) }}</text
+              >
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
 
     <!-- 头部占位 -->
     <view
       v-if="state.list.length"
       class="cart-box ss-flex ss-flex-col"
-      :style="[{ paddingTop: (sys_capsule.bottom || 80) + 20 + 'px',paddingLeft: '30rpx' ,paddingRight: '30rpx' }]"
+      :style="[
+        {
+          paddingTop: (sys_capsule.bottom || 80) + 20 + 'px',
+          paddingLeft: '30rpx',
+          paddingRight: '30rpx',
+        },
+      ]"
     >
-      <view class="cart-header ss-flex ss-col-center ss-row-between ss-p-x-30">
-        <view class="header-left ss-flex ss-col-center ss-font-32">
-          购物车
-          <text class="goods-number ss-flex ss-m-l-10">({{ state.list.length }})</text>
-        </view>
-        <view class="header-right ss-flex ss-col-center">
-          <button
-            class="ss-reset-button"
-            v-show="cart.editMode"
-            @tap.stop="onChangeEditMode(false)"
-          >
-            完成
-          </button>
-          <button
-            class="ss-reset-button"
-            v-show="!cart.editMode"
-            @tap.stop="onChangeEditMode(true)"
-          >
-            管理
-          </button>
-        </view>
-      </view>
-
       <!-- 会员卡片 -->
       <view v-if="showVipCard" class="ss-m-20 ss-w-100">
         <s-cart-vip-card />
@@ -83,7 +121,10 @@
               <view v-if="item.spu?.status !== 1 && !state.editMode" class="down-box">
                 该商品已下架
               </view>
-              <view v-else-if="(item.sku?.stock <= 0 || item.spu?.stock <= 0) && !state.editMode" class="down-box">
+              <view
+                v-else-if="(item.sku?.stock <= 0 || item.spu?.stock <= 0) && !state.editMode"
+                class="down-box"
+              >
                 该商品无库存
               </view>
               <s-goods-item
@@ -116,17 +157,58 @@
           </view>
         </view>
       </view>
+
+      <view v-if="showRecommend && state.recommend.list.length" class="recommend-section">
+        <view class="recommend-title-row">
+          <view class="recommend-line"></view>
+          <text class="recommend-title">为你推荐</text>
+          <view class="recommend-line recommend-line-right"></view>
+        </view>
+        <view class="recommend-grid">
+          <view
+            v-for="item in state.recommend.list"
+            :key="item.id"
+            class="recommend-card"
+            @tap="onTapRecommend(item)"
+          >
+            <image class="recommend-img" :src="getRecommendPicUrl(item)" mode="aspectFill" />
+            <text class="recommend-name ss-line-1">{{ getRecommendName(item) }}</text>
+            <view class="recommend-bottom ss-flex ss-row-between ss-col-center">
+              <view class="recommend-price">
+                <text class="recommend-price-unit">¥</text>
+                <text class="recommend-price-value">{{
+                  fen2yuan(getRecommendPriceFen(item))
+                }}</text>
+              </view>
+              <text class="recommend-sold" v-if="getRecommendSalesCount(item) > 0"
+                >已售{{ getRecommendSalesCount(item) }}</text
+              >
+            </view>
+          </view>
+        </view>
+      </view>
       <!-- 底部 -->
       <su-fixed v-if="state.list.length > 0" :isInset="false" :val="50" bottom placeholder>
         <view class="footer-wrapper">
           <!-- 金额明细弹窗 (相对底部定位) -->
-          <view v-if="state.showDetailPopup" class="detail-popup-mask" @tap="state.showDetailPopup = false"></view>
-          <view class="detail-popup-container" :class="{ 'show': state.showDetailPopup }">
+          <view
+            v-if="state.showDetailPopup"
+            class="detail-popup-mask"
+            @tap="state.showDetailPopup = false"
+          ></view>
+          <view class="detail-popup-container" :class="{ show: state.showDetailPopup }">
             <view class="detail-popup-box">
               <view class="popup-header ss-flex ss-row-center ss-col-center">
                 <text class="popup-title">金额明细</text>
-                <view class="close-btn ss-flex ss-row-center ss-col-center" @tap="state.showDetailPopup = false">
-                  <image class="close-icon" :src="sheep.$url.static('/static/close.webp')" mode="aspectFit" />
+                <view
+                  class="close-btn ss-flex ss-row-center ss-col-center"
+                  @tap="state.showDetailPopup = false"
+                >
+                  <image
+                    class="close-icon"
+                    :src="sheep.$url.static('/static/close.webp')"
+                    mode="aspectFit"
+                  />
                 </view>
               </view>
               <view class="popup-content">
@@ -163,44 +245,53 @@
               </view>
             </view>
           </view>
-          
+
           <view class="cart-footer ss-flex ss-col-center ss-row-between ss-p-x-30 border-bottom">
             <view class="footer-left ss-flex ss-col-center">
-            <view class="check-box ss-flex ss-col-center" @tap="onSelectAll">
-              <image
-                class="check-icon"
-                :src="
-                  sheep.$url.static(
-                    state.isAllSelected ? '/static/cart/checked.webp' : '/static/cart/unCheck.webp',
-                  )
-                "
-                mode="aspectFit"
-              />
-              <view class="ss-m-l-8 ss-font-26"> 全选</view>
-            </view>
-          </view>
-          <view class="footer-center ss-flex-col ss-col-bottom ss-m-r-20" v-if="!state.editMode">
-            <view class="ss-flex ss-col-bottom">
-              <text class="total-label ss-m-r-10">合计:</text>
-              <view class="text-price price-text">
-                {{ fen2yuan(state.totalPriceSelected) }}
+              <view class="check-box ss-flex ss-col-center" @tap="onSelectAll">
+                <image
+                  class="check-icon"
+                  :src="
+                    sheep.$url.static(
+                      state.isAllSelected
+                        ? '/static/cart/checked.webp'
+                        : '/static/cart/unCheck.webp',
+                    )
+                  "
+                  mode="aspectFit"
+                />
+                <view class="ss-m-l-8 ss-font-26"> 全选</view>
               </view>
             </view>
-            <view class="promo-pill ss-flex ss-col-center" v-if="state.totalPriceSelected > 0" @tap="openDetailPopup">
-              <text class="promo-text">{{ promoText }}</text>
-              <text class="cicon-forward ss-m-l-4" style="transform: rotate(90deg); display: inline-block; font-size: 20rpx;"></text>
+            <view class="footer-center ss-flex-col ss-col-bottom ss-m-r-20" v-if="!state.editMode">
+              <view class="ss-flex ss-col-bottom">
+                <text class="total-label ss-m-r-10">合计:</text>
+                <view class="text-price price-text">
+                  {{ fen2yuan(state.totalPriceSelected) }}
+                </view>
+              </view>
+              <view
+                class="promo-pill ss-flex ss-col-center"
+                v-if="state.totalPriceSelected > 0"
+                @tap="openDetailPopup"
+              >
+                <text class="promo-text">{{ promoText }}</text>
+                <text
+                  class="cicon-forward ss-m-l-4"
+                  style="transform: rotate(90deg); display: inline-block; font-size: 20rpx"
+                ></text>
+              </view>
+            </view>
+            <view class="footer-right ss-flex ss-col-center">
+              <button v-if="state.editMode" class="ss-reset-button pay-btn" @tap="onDelete">
+                删除
+              </button>
+              <button v-else class="ss-reset-button pay-btn" @tap="onConfirm">
+                去结算
+                {{ state.selectedIds?.length ? `(${state.selectedIds.length})` : '' }}
+              </button>
             </view>
           </view>
-          <view class="footer-right ss-flex ss-col-center">
-            <button v-if="state.editMode" class="ss-reset-button pay-btn" @tap="onDelete">
-              删除
-            </button>
-            <button v-else class="ss-reset-button pay-btn" @tap="onConfirm">
-              去结算
-              {{ state.selectedIds?.length ? `(${state.selectedIds.length})` : '' }}
-            </button>
-          </view>
-        </view>
         </view>
       </su-fixed>
     </view>
@@ -211,6 +302,7 @@
   import sheep from '@/sheep';
   import { onShow } from '@dcloudio/uni-app';
   import SpuApi from '@/sheep/api/product/spu';
+  import AppProductApi from '@/sheep/api/app/product';
   import { computed, reactive, watch } from 'vue';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import { isEmpty } from '@/sheep/helper/utils';
@@ -241,16 +333,63 @@
     if (!userStore.isLogin) return true;
     const rawLevel = userStore.userInfo?.level;
     const level =
-      typeof rawLevel === 'object' && rawLevel
-        ? rawLevel.level ?? rawLevel.id ?? null
-        : rawLevel;
-    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      level === null || level === undefined || level === '' ? null : Number(level);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return false;
     const rawLevelName = userStore.userInfo?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
-    if (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石')) return false;
+    if (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))
+      return false;
     return true;
   });
+
+  const showRecommend = computed(() => Number(state.list.length || 0) <= 2);
+
+  async function loadRecommend() {
+    if (state.recommend.loaded) return;
+    const { code, data } = await AppProductApi.getRecommendPage({
+      pageNo: state.recommend.pageNo,
+      pageSize: state.recommend.pageSize,
+    });
+    if (code !== 0) return;
+    const list = Array.isArray(data?.list)
+      ? data.list
+      : Array.isArray(data?.records)
+      ? data.records
+      : [];
+    state.recommend.list = list;
+    state.recommend.total = Number(data?.total ?? data?.totalCount ?? 0);
+    state.recommend.loaded = true;
+  }
+
+  function getRecommendPicUrl(item) {
+    const raw =
+      item?.picUrl ||
+      item?.skuPicUrl ||
+      item?.spuPicUrl ||
+      item?.imageUrl ||
+      item?.imgUrl ||
+      item?.cover ||
+      '';
+    return sheep.$url.cdn(raw);
+  }
+
+  function getRecommendName(item) {
+    return item?.name || item?.spuName || item?.title || '';
+  }
+
+  function getRecommendPriceFen(item) {
+    const raw = item?.price ?? item?.skuPrice ?? item?.spuPrice ?? item?.salePrice ?? 0;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function getRecommendSalesCount(item) {
+    const raw = item?.salesCount ?? item?.soldCount ?? item?.sales ?? item?.sold ?? 0;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : 0;
+  }
 
   const state = reactive({
     editMode: computed(() => cart.editMode),
@@ -258,6 +397,13 @@
     selectedList: [],
     selectedIds: computed(() => cart.selectedIds),
     isAllSelected: computed(() => cart.isAllSelected),
+    recommend: {
+      pageNo: 1,
+      pageSize: 4,
+      list: [],
+      total: 0,
+      loaded: false,
+    },
     totalPriceSelected: computed(() => cart.totalPriceSelected),
     activeId: 0,
     startX: 0,
@@ -270,7 +416,9 @@
   const selectedItemsKey = computed(() => {
     const ids = Array.isArray(state.selectedIds) ? state.selectedIds : [];
     if (ids.length === 0) return '';
-    const selected = Array.isArray(state.list) ? state.list.filter((it) => ids.includes(it.id)) : [];
+    const selected = Array.isArray(state.list)
+      ? state.list.filter((it) => ids.includes(it.id))
+      : [];
     const parts = selected
       .map((it) => {
         const cartId = it?.id ?? '';
@@ -283,7 +431,9 @@
   });
 
   const settlePrice = computed(() => state.settleInfo?.price || {});
-  const detailTotalPriceFen = computed(() => Number(settlePrice.value?.totalPrice) || state.totalPriceSelected || 0);
+  const detailTotalPriceFen = computed(
+    () => Number(settlePrice.value?.totalPrice) || state.totalPriceSelected || 0,
+  );
   const detailCouponPriceFen = computed(() => Number(settlePrice.value?.couponPrice) || 0);
   const detailDiscountPriceFen = computed(() => Number(settlePrice.value?.discountPrice) || 0);
   const detailVipPriceFen = computed(() => Number(settlePrice.value?.vipPrice) || 0);
@@ -313,7 +463,9 @@
 
   function buildSettleItems() {
     const ids = Array.isArray(state.selectedIds) ? state.selectedIds : [];
-    const selected = Array.isArray(state.list) ? state.list.filter((it) => ids.includes(it.id)) : [];
+    const selected = Array.isArray(state.list)
+      ? state.list.filter((it) => ids.includes(it.id))
+      : [];
     return selected
       .map((item) => ({
         skuId: item.sku?.id,
@@ -560,7 +712,19 @@
 
   onShow(() => {
     getCartList();
+    if (showRecommend.value) {
+      loadRecommend();
+    }
   });
+
+  watch(
+    () => state.list.length,
+    (len) => {
+      if (Number(len || 0) <= 2) {
+        loadRecommend();
+      }
+    },
+  );
 </script>
 
 <style lang="scss" scoped>
@@ -568,49 +732,53 @@
     height: 120rpx;
   }
 
-  .cart-box {
-    width: calc(100% - 60rpx);
+  .empty-scroll {
+    height: 100vh;
+  }
 
-    .cart-header {
-      height: v-bind('sys_capsule.height + "px"');
-      width: 100%;
-      position: fixed;
-      left: 0;
-      top: v-bind('sys_capsule.top + "px"');
-      z-index: 10000;
-      box-sizing: border-box;
+  .cart-header {
+    height: v-bind('sys_capsule.height + "px"');
+    width: 100%;
+    position: fixed;
+    left: 0;
+    top: v-bind('sys_capsule.top + "px"');
+    z-index: 10000;
+    box-sizing: border-box;
+    pointer-events: auto;
+    padding-right: v-bind(
+      'sys_capsule.width + (sheep.$platform.device.windowWidth - sys_capsule.right) + "px"'
+    );
+
+    .header-left {
+      font-weight: bold;
+      color: rgba(30, 63, 28, 1);
+      font-size: 36rpx;
+      pointer-events: none;
+    }
+    .goods-number {
+      color: rgba(30, 63, 28, 1);
+      font-size: 28rpx;
+    }
+    .header-right {
+      height: 100%;
+      display: flex;
+      align-items: center;
       pointer-events: auto;
-      padding-right: v-bind(
-        'sys_capsule.width + (sheep.$platform.device.windowWidth - sys_capsule.right) + "px"'
-      );
 
-      .header-left {
-        font-weight: bold;
-        color: rgba(30, 63, 28, 1);
-        font-size: 36rpx;
-        pointer-events: none;
-      }
-      .goods-number {
-        color: rgba(30, 63, 28, 1);
-        font-size: 28rpx;
-      }
-      .header-right {
+      .ss-reset-button {
         height: 100%;
         display: flex;
         align-items: center;
-        pointer-events: auto;
-
-        .ss-reset-button {
-          height: 100%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 28rpx;
-          color: rgba(30, 63, 28, 1);
-          padding: 0 40rpx;
-        }
+        justify-content: center;
+        font-size: 28rpx;
+        color: rgba(30, 63, 28, 1);
+        padding: 0 40rpx;
       }
     }
+  }
+
+  .cart-box {
+    width: calc(100% - 60rpx);
 
     .cart-footer {
       height: 120rpx;
@@ -876,7 +1044,7 @@
         background: #f5f5f5;
         border-radius: 50%;
         .close-icon {
-          width:40rpx;
+          width: 40rpx;
           height: 40rpx;
         }
       }
@@ -905,5 +1073,115 @@
         }
       }
     }
+  }
+
+  .recommend-section {
+    align-self: center;
+    margin-top: 42rpx;
+    padding-bottom: 30rpx;
+    padding-right: 30rpx;
+    padding-left: 30rpx;
+  }
+
+  .recommend-title-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 20rpx 0;
+  }
+
+  .recommend-line {
+    width: 48rpx;
+    height: 1rpx;
+    border: 2rpx solid rgba(61, 61, 60, 1);
+    box-sizing: border-box;
+  }
+
+  .recommend-line-right {
+    margin-left: 14rpx;
+  }
+
+  .recommend-title {
+    overflow-wrap: break-word;
+    color: rgba(61, 61, 60, 1);
+    font-size: 32rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 45rpx;
+    margin-left: 15rpx;
+    margin-right: 0;
+  }
+
+  .recommend-grid {
+    width: 686rpx;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .recommend-card {
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 10rpx;
+    padding-bottom: 19rpx;
+    width: 331rpx;
+    margin-bottom: 20rpx;
+  }
+
+  .recommend-img {
+    border-radius: 10rpx 10rpx 0 0;
+    width: 331rpx;
+    height: 331rpx;
+  }
+
+  .recommend-name {
+    overflow-wrap: break-word;
+    color: rgba(0, 0, 0, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 40rpx;
+    margin: 19rpx 27rpx 0 24rpx;
+  }
+
+  .recommend-bottom {
+    width: 284rpx;
+    margin: 22rpx 23rpx 0 24rpx;
+  }
+
+  .recommend-price {
+    height: 32rpx;
+    line-height: 32rpx;
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .recommend-price-unit {
+    color: rgba(245, 63, 63, 1);
+    font-size: 28rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    line-height: 32rpx;
+  }
+
+  .recommend-price-value {
+    color: rgba(245, 63, 63, 1);
+    font-size: 40rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
+    line-height: 32rpx;
+  }
+
+  .recommend-sold {
+    color: rgba(157, 156, 150, 1);
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 33rpx;
   }
 </style>

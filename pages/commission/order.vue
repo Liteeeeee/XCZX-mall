@@ -21,18 +21,31 @@
               width: '100%',
             }"
           >
-            <uni-icons type="left" size="22" color="rgba(0, 0, 0, 0.9)" @tap="sheep.$router.back()" class="nav-back" />
+            <uni-icons
+              type="left"
+              size="22"
+              color="rgba(0, 0, 0, 0.9)"
+              @tap="sheep.$router.back()"
+              class="nav-back"
+            />
             <text class="nav-title">订单</text>
-            
           </view>
         </view>
       </view>
-      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+      <view
+        class="header-placeholder"
+        :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
+      ></view>
 
       <view class="group_23 flex-col">
         <view class="box_6 flex-col">
           <view class="text-wrapper_7 flex-row">
-            <view class="tab" v-for="(tab, index) in tabMaps" :key="index" @tap="onTabChange(index)">
+            <view
+              class="tab"
+              v-for="(tab, index) in tabMaps"
+              :key="index"
+              @tap="onTabChange(index)"
+            >
               <view class="tab-inner flex-col align-center">
                 <text class="text_2" v-if="state.currentTab === index">{{ tab.name }}</text>
                 <text class="text_3" v-else>{{ tab.name }}</text>
@@ -51,25 +64,38 @@
             v-for="item in state.pagination.list"
             :key="item.id || item.bizId || item.orderId || item._orderNo"
           >
-            <view class="order-head flex-row justify-between" :class="{ 'order-head-multi': isMultiItems(item) }">
+            <view
+              class="order-head flex-row justify-between"
+              :class="{ 'order-head-multi': isMultiItems(item) }"
+            >
               <view class="order-no-wrap">
                 <text class="order-no">订单编号：{{ item._orderNo || item.bizId || '' }}</text>
               </view>
-              <text class="order-status" :class="commissionStatusClass(item)">{{ commissionStatusText(item) }}</text>
+              <text class="order-status" :class="commissionStatusClass(item)">{{
+                commissionStatusText(item)
+              }}</text>
             </view>
 
             <view class="order-divider"></view>
             <view v-if="!isMultiItems(item)" class="order-body flex-row justify-between">
-              <image class="box_12 flex-col" :src="sheep.$url.cdn(item._picUrl || '')" mode="aspectFill" />
+              <image
+                class="box_12 flex-col"
+                :src="sheep.$url.cdn(item._picUrl || '')"
+                mode="aspectFill"
+              />
               <view class="group_26 flex-col">
                 <view class="text-group_2 flex-col">
                   <text class="text_7 ss-ellipsis-1">{{ item._spuName || item.title || '' }}</text>
-                  <text class="text_8">下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text>
+                  <text class="text_8"
+                    >下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text
+                  >
                   <text class="text_9">付款金额：¥{{ fen2yuan(item._payPrice) }}</text>
                 </view>
                 <view class="order-meta flex-row justify-between">
                   <text class="order-qty">数量*{{ item._totalCount || item._count || 1 }}</text>
-                  <text class="order-earn">预估收益{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text>
+                  <text class="order-earn"
+                    >预估收益{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text
+                  >
                 </view>
               </view>
             </view>
@@ -81,7 +107,11 @@
                 :key="goods.id || goods.spuId || goods.skuId || idx"
                 :class="{ 'multi-item-fade': shouldGrayGoods(goods) }"
               >
-                <image class="box_12 flex-col" :src="sheep.$url.cdn(goods.picUrl || '')" mode="aspectFill" />
+                <image
+                  class="box_12 flex-col"
+                  :src="sheep.$url.cdn(goods.picUrl || '')"
+                  mode="aspectFill"
+                />
                 <view class="group_26 flex-col">
                   <text class="text_7 ss-ellipsis-1">{{ goods.spuName || '' }}</text>
                   <text class="text_8">商品原价：¥{{ fen2yuan(goods.originalPrice) }}</text>
@@ -93,13 +123,22 @@
                 </view>
               </view>
               <view class="multi-footer flex-col">
-                <text class="multi-time">下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text>
-                <text class="multi-total-earn">预估总收益{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text>
+                <text class="multi-time"
+                  >下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text
+                >
+                <text class="multi-total-earn"
+                  >预估总收益{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text
+                >
               </view>
             </view>
           </view>
 
-          <s-empty v-if="state.pagination.total === 0 && state.loadStatus !== 'loading'" :icon="sheep.$url.static('/static/order-empty.webp')" text="暂无订单" />
+          <image
+            v-if="state.pagination.total === 0 && state.loadStatus !== 'loading'"
+            src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/tgddBg.png"
+            mode="widthFix"
+            class="empty-img"
+          />
           <uni-load-more
             v-if="state.pagination.total > 0"
             :status="state.loadStatus"
@@ -249,9 +288,11 @@
     const payPrice = Number(
       data.payPrice ?? data.orderPayPrice ?? data._payPrice ?? data.payAmount ?? 0,
     );
-    const orderCreateTime = data.orderCreateTime || data.orderTime || data._orderCreateTime || data.createTime;
+    const orderCreateTime =
+      data.orderCreateTime || data.orderTime || data._orderCreateTime || data.createTime;
     const firstItem = normalizedItems[0] || {};
-    const spuName = firstItem.spuName || data.spuName || data.productName || data._spuName || data.title || '';
+    const spuName =
+      firstItem.spuName || data.spuName || data.productName || data._spuName || data.title || '';
     const picUrl = firstItem.picUrl || data.picUrl || data.productPicUrl || data._picUrl || '';
     const count = Number(firstItem.count ?? data.count ?? data.productCount ?? data._count ?? 0);
     const totalCount = normalizedItems.reduce((sum, it) => sum + Number(it?.count || 0), 0);
@@ -502,7 +543,7 @@
 
   .order-no {
     overflow-wrap: break-word;
-    color: #87919D;
+    color: #87919d;
     font-size: 24rpx;
     font-family: PingFangSC-Regular;
     font-weight: normal;
@@ -671,5 +712,10 @@
   .align-center {
     display: flex;
     align-items: center;
+  }
+
+  .empty-img {
+    width: 100%;
+    margin-top: 40rpx;
   }
 </style>

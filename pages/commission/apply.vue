@@ -21,16 +21,25 @@
               width: '100%',
             }"
           >
-            <uni-icons type="left" size="22" color="rgba(0, 0, 0, 0.9)" @tap="sheep.$router.back()" class="nav-back" />
+            <uni-icons
+              type="left"
+              size="22"
+              color="rgba(0, 0, 0, 0.9)"
+              @tap="sheep.$router.back()"
+              class="nav-back"
+            />
             <text class="nav-title">分销</text>
-           
           </view>
         </view>
       </view>
-      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+      <view
+        class="header-placeholder"
+        :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
+      ></view>
 
       <audit-reject
         v-if="state.showReject"
+        :refuseReason="state.rejectApplyData?.refuseReason || ''"
         @contact="onRejectContact"
         @reapply="onRejectReapply"
       />
@@ -57,7 +66,7 @@
         </view>
         <view class="divider"></view>
 
-        <view class="row flex-row">
+        <!-- <view class="row flex-row">
           <text class="row-label">身份证号</text>
           <input
             class="row-input"
@@ -102,29 +111,88 @@
               </s-uploader>
             </view>
           </view>
-        </view>
-        <view class="divider"></view>
+        </view> -->
 
-        <view class="row flex-row" @tap="onChooseCareer">
+        <view class="row flex-row">
           <text class="row-label">职业</text>
-          <text class="row-select" :class="state.careerName ? '' : 'row-select-placeholder'">{{
+          <!-- <text class="row-select" :class="state.careerName ? '' : 'row-select-placeholder'">{{
             state.careerName || '请选择'
-          }}</text>
-          <uni-icons type="right" size="18" color="rgba(212, 212, 213, 1)" class="row-right" />
+          }}</text> -->
         </view>
+        <view class="career-box">
+          <view
+            class="chip"
+            v-for="item in state.careerOptions"
+            :key="item.value"
+            :class="
+              String(state.careerValue) === String(item.value) ? 'chip-active' : 'chip-normal'
+            "
+            @tap="onSelectCareer(item)"
+          >
+            <text
+              :class="
+                String(state.careerValue) === String(item.value)
+                  ? 'chip-text-active'
+                  : 'chip-text-normal'
+              "
+              >{{ item.label }}</text
+            >
+          </view>
+        </view>
+        <text class="text_12">您的资质</text>
+
+        <view class="box_21">
+          <s-uploader
+            v-model:url="state.images"
+            fileMediatype="image"
+            limit="3"
+            mode="grid"
+            :imageStyles="{
+              width: '210rpx',
+              height: '210rpx',
+              border: {
+                radius: '20rpx',
+                color: 'rgba(157,156,150,1)',
+                style: 'solid',
+                width: '1rpx',
+              },
+            }"
+          >
+            <view class="upload-box-inner">
+              <image
+                class="upload-img"
+                :src="sheep.$url.cdn('/mp/static/upload.webp')"
+                mode="aspectFit"
+              />
+              <text class="upload-text">添加图片</text>
+            </view>
+          </s-uploader>
+        </view>
+
+        <text class="text_16">{{ careerDescription }}</text>
+
         <view class="divider"></view>
 
         <view class="row flex-row">
           <text class="row-label">性别</text>
           <view class="gender-group flex-row align-center">
             <view class="gender-option flex-row align-center" @tap="state.gender = 1">
-              <view class="gender-check flex-col" :class="state.gender === 1 ? 'gender-check-on' : ''">
+              <view
+                class="gender-check flex-col"
+                :class="state.gender === 1 ? 'gender-check-on' : ''"
+              >
                 <view v-if="state.gender === 1" class="gender-check-tick"></view>
               </view>
               <text class="gender-text">先生</text>
             </view>
-            <view class="gender-option flex-row align-center gender-option-right" @tap="state.gender = 2">
-              <view class="gender-check flex-col" :class="state.gender === 2 ? 'gender-check-on' : ''">
+            <view
+              class="gender-option flex-row align-center gender-option-right"
+              @tap="state.gender = 2"
+            >
+              <view
+                class="gender-check flex-col"
+                :class="state.gender === 2 ? 'gender-check-on' : ''"
+              >
                 <view v-if="state.gender === 2" class="gender-check-tick"></view>
               </view>
               <text class="gender-text">女士</text>
@@ -159,10 +227,14 @@
   import { computed, reactive } from 'vue';
   import { onLoad, onShow } from '@dcloudio/uni-app';
   import BrokerageApplyApi from '@/sheep/api/trade/brokerageApply';
+  import DictApi from '@/sheep/api/system/dict';
   import SUploader from '@/sheep/components/s-uploader/s-uploader.vue';
   import auditReject from '@/sheep/components/s-audit-reject/s-audit-reject.vue';
 
   const userInfo = computed(() => sheep.$store('user').userInfo || {});
+  function fallbackOptions() {
+    return ['自由职业', '上班族', '个体经营', '宝妈', '学生', '公务员', '医生', '教师', '其他'];
+  }
 
   const state = reactive({
     mobile: '',
@@ -170,14 +242,56 @@
     idCardFrontUrl: '',
     idCardBackUrl: '',
     careerName: '',
+    careerValue: '',
+    careerOptions: [],
+    images: [],
     gender: 1,
     reason: '',
     showReject: false,
     rejectApplyData: null,
   });
 
-  function onChooseCareer() {
-    sheep.$router.go('/pages/commission/career', { current: state.careerName });
+  function syncCareerNameByValue() {
+    if (!state.careerValue) return;
+    const hit = state.careerOptions.find((it) => String(it.value) === String(state.careerValue));
+    if (hit) state.careerName = hit.label;
+  }
+
+  const careerDescription = computed(() => {
+    const hit = state.careerOptions.find((it) => String(it.value) === String(state.careerValue));
+    return hit?.description || '上传您的相关资质照片，可以帮助平台更快帮您通过审核。';
+  });
+
+  async function loadCareerOptions() {
+    try {
+      const { code, data } = await DictApi.getDictDataListByType('occupation');
+      if (code !== 0 || !Array.isArray(data) || data.length === 0) {
+        state.careerOptions = fallbackOptions().map((label) => ({ label, value: label }));
+        syncCareerNameByValue();
+        return;
+      }
+      state.careerOptions = [...data]
+        .sort((a, b) => Number(a?.sort ?? 0) - Number(b?.sort ?? 0))
+        .map((it) => ({
+          label: it?.label ?? it?.name ?? it?.value,
+          value: it?.value ?? it?.label ?? it?.name,
+          description: it?.description ?? it?.remark ?? '',
+        }))
+        .filter((it) => it.label && it.value);
+      if (state.careerOptions.length === 0) {
+        state.careerOptions = fallbackOptions().map((label) => ({ label, value: label }));
+      }
+      syncCareerNameByValue();
+    } catch (e) {
+      state.careerOptions = fallbackOptions().map((label) => ({ label, value: label }));
+      syncCareerNameByValue();
+    }
+  }
+
+  function onSelectCareer(opt) {
+    if (!opt) return;
+    state.careerName = opt.label;
+    state.careerValue = opt.value;
   }
 
   function onRejectContact() {
@@ -216,7 +330,11 @@
     state.idCardNo = data.idCardNo || '';
     state.idCardFrontUrl = normalizeUploadUrl(data.idCardFrontUrl);
     state.idCardBackUrl = normalizeUploadUrl(data.idCardBackUrl);
-    state.careerName = data.occupation || '';
+    state.careerValue = data.occupation || '';
+    state.careerName = '';
+    syncCareerNameByValue();
+    const imgs = additionalInfo.qualificationImages || additionalInfo.images;
+    state.images = Array.isArray(imgs) ? imgs.map(normalizeUploadUrl).filter(Boolean) : [];
     state.gender = Number(data.gender) === 2 ? 2 : 1;
     state.reason = data.reason || additionalInfo.reason || additionalInfo.applyReason || '';
   }
@@ -271,7 +389,7 @@
       uni.showToast({ title: '请上传身份证国徽面', icon: 'none' });
       return;
     }
-    if (!state.careerName) {
+    if (!state.careerValue) {
       uni.showToast({ title: '请选择职业', icon: 'none' });
       return;
     }
@@ -289,7 +407,7 @@
       idCardNo,
       idCardFrontUrl: extractKey(state.idCardFrontUrl),
       idCardBackUrl: extractKey(state.idCardBackUrl),
-      occupation: state.careerName,
+      occupation: state.careerValue,
       gender: state.gender,
     };
 
@@ -297,6 +415,9 @@
     const additionalInfo = {
       reason: state.reason,
     };
+    if (Array.isArray(state.images) && state.images.length > 0) {
+      additionalInfo.qualificationImages = state.images.map(extractKey).filter(Boolean);
+    }
     uni.getLocation({
       type: 'gcj02',
       success: (res) => {
@@ -316,6 +437,7 @@
 
   onLoad(async () => {
     state.mobile = userInfo.value?.mobile || '';
+    loadCareerOptions();
 
     // 检查是否有审核中的申请
     const { code, data } = await BrokerageApplyApi.getApply();
@@ -334,13 +456,7 @@
     }
   });
 
-  onShow(() => {
-    const careerName = uni.getStorageSync('brokerageApplyCareerName');
-    if (careerName) {
-      state.careerName = careerName;
-      uni.removeStorageSync('brokerageApplyCareerName');
-    }
-  });
+  onShow(() => {});
 </script>
 
 <style lang="scss" scoped>
@@ -526,6 +642,70 @@
     margin-left: auto;
   }
 
+  .text_12 {
+    color: rgba(0, 0, 0, 1);
+    font-size: 32rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    line-height: 45rpx;
+    margin: 40rpx 0 0 0;
+  }
+
+  .box_21 {
+    width: 639rpx;
+    margin: 24rpx 0 0 0;
+  }
+
+  .text_16 {
+    color: rgba(181, 158, 109, 1);
+    font-size: 24rpx;
+    font-family: PingFangSC-Regular;
+    line-height: 33rpx;
+    margin: 24rpx 0 0 0;
+  }
+
+  .career-box {
+    width: 639rpx;
+    margin: 24rpx 0 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28rpx;
+  }
+
+  .chip {
+    width: 210rpx;
+    height: 88rpx;
+    border-radius: 44rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+
+  .chip-active {
+    background-color: rgba(248, 249, 243, 1);
+    border: 2rpx solid rgba(30, 63, 28, 1);
+  }
+
+  .chip-normal {
+    background-color: rgba(255, 254, 250, 1);
+    border: 1rpx solid rgba(157, 156, 150, 1);
+  }
+
+  .chip-text-active {
+    color: rgba(30, 63, 28, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular;
+    line-height: 40rpx;
+  }
+
+  .chip-text-normal {
+    color: rgba(159, 158, 152, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular;
+    line-height: 40rpx;
+  }
+
   .gender-group {
     flex: 1;
     justify-content: flex-end;
@@ -660,16 +840,22 @@
     width: 100%;
     height: 100%;
     background-color: rgba(255, 254, 250, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
 
-  .upload-icon {
-    margin-bottom: 12rpx;
+  .upload-img {
+    width: 64rpx;
+    height: 64rpx;
   }
 
   .upload-text {
     color: rgba(157, 156, 150, 1);
-    font-size: 24rpx;
+    font-size: 28rpx;
     font-family: PingFangSC-Regular;
-    line-height: 34rpx;
+    line-height: 40rpx;
+    margin-top: 12rpx;
   }
 </style>

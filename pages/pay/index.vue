@@ -7,7 +7,7 @@
         class="nav-bar-container"
         :style="{
           position: 'relative',
-          height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px',
+          height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px',
         }"
       >
         <view
@@ -98,24 +98,13 @@
     </view>
 
     <view class="page-footer">
-      <button v-if="state.payStatus === 0" class="ss-reset-button pay-btn disabled-state">
-        检测支付环境中
-      </button>
       <button
-        v-else-if="state.payStatus === -1"
-        class="ss-reset-button pay-btn disabled-state"
-        disabled
-      >
-        支付已过期
-      </button>
-      <button
-        v-else
         class="ss-reset-button pay-btn"
         @tap="onPay"
-        :disabled="state.payStatus !== 1"
-        :class="{ 'disabled-state': state.payStatus !== 1 }"
+        :disabled="isPayBtnDisabled"
+        :class="{ 'disabled-state': isPayBtnDisabled }"
       >
-        立即支付
+        {{ payBtnText }}
       </button>
       <view class="safe-box" />
     </view>
@@ -151,9 +140,30 @@
   const amountInt = computed(() => (amountYuan.value || '0.00').split('.')[0] || '0');
   const amountDec = computed(() => (amountYuan.value || '0.00').split('.')[1] || '00');
 
+  const isWalletNotEnough = computed(() => {
+    if (state.payment !== 'wallet') return false;
+    const balance = Number(userWallet.value?.balance || 0);
+    const price = Number(state.orderInfo.price || 0);
+    return balance < price;
+  });
+
+  const isPayBtnDisabled = computed(() => state.payStatus !== 1 || isWalletNotEnough.value);
+
+  const payBtnText = computed(() => {
+    if (state.payStatus === 0) return '检测支付环境中';
+    if (state.payStatus === -1) return '支付已过期';
+    if (state.payStatus === -2) return '未查询到支付单信息';
+    if (isWalletNotEnough.value) return '余额不足';
+    return '立即支付';
+  });
+
   const onPay = () => {
     if (state.payment === '') {
       sheep.$helper.toast('请选择支付方式');
+      return;
+    }
+    if (isWalletNotEnough.value) {
+      sheep.$helper.toast('余额不足');
       return;
     }
     if (state.payment === 'wallet') {
@@ -213,7 +223,6 @@
 
   // 设置支付订单信息
   async function setOrder(id) {
-    
     // 获得支付订单信息
     const { data, code } = await PayOrderApi.getOrder(id, true);
     if (code !== 0 || !data) {
@@ -258,11 +267,11 @@
     if (state.orderInfo?.expireTime) {
       expireMs = parseTimeMs(state.orderInfo.expireTime);
     }
-    
+
     // 如果没有获取到合法的过期时间（后端未返回或解析失败），且是 VIP 升级订单，给个默认的兜底时间（如创建时间 + 30 分钟）
     if (expireMs <= 0 && state.orderType === 'vip_upgrade') {
       const createMs = parseTimeMs(state.orderInfo?.createTime) || Date.now();
-      expireMs = createMs + 30 * 60 * 1000; 
+      expireMs = createMs + 30 * 60 * 1000;
     }
 
     if (expireMs <= 0) {
@@ -346,7 +355,9 @@
     if (options.orderType) {
       state.orderType = options.orderType;
     }
-    state.payMethods = getPayMethods([]).filter((item) => allowPayMethodValues.value.includes(item.value));
+    state.payMethods = getPayMethods([]).filter((item) =>
+      allowPayMethodValues.value.includes(item.value),
+    );
     setOrder(id);
     // 刷新钱包的缓存
     sheep.$store('user').getWallet();

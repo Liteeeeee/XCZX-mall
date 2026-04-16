@@ -1,32 +1,31 @@
 <!-- 地址卡片 -->
 <template>
-  <view
-    class="address-item"
-    :class="[{ 'border-bottom': props.hasBorderBottom }]"
-  >
+  <view class="address-item" :class="[{ 'border-bottom': props.hasBorderBottom }]">
     <view v-if="!isEmpty(props.item)">
       <view class="person-text ss-flex ss-col-center">
         <text class="name">{{ props.item.name }}</text>
         <text class="mobile">{{ props.item.mobile }}</text>
       </view>
-      <view class="area-text">
-        {{ props.item.areaName }} {{ props.item.detailAddress }}
-      </view>
+      <view class="area-text"> {{ props.item.areaName }} {{ props.item.detailAddress }} </view>
       <view class="address-footer ss-flex ss-row-between ss-col-center">
-         <view class="default-status ss-flex ss-col-center" v-if="props.item.defaultStatus">
-         <view class="checkbox-icon is-checked ss-flex ss-row-center ss-col-center">
+        <view
+          class="default-status ss-flex ss-col-center"
+          v-if="props.item.defaultStatus"
+          @tap.stop="onTapDefault"
+        >
+          <view class="checkbox-icon is-checked ss-flex ss-row-center ss-col-center">
             <text class="cicon-check"></text>
-         </view>
-         <text class="default-text">设为默认</text>
-      </view>
-         <view class="default-status ss-flex ss-col-center" v-else>
-            <view class="checkbox-icon ss-flex ss-row-center ss-col-center"></view>
-            <text class="default-text" style="color: #999;">设为默认</text>
-         </view>
-         
-         <view class="item-right">
-            <slot name="action"></slot>
-         </view>
+          </view>
+          <text class="default-text">设为默认</text>
+        </view>
+        <view class="default-status ss-flex ss-col-center" v-else @tap.stop="onTapDefault">
+          <view class="checkbox-icon ss-flex ss-row-center ss-col-center"></view>
+          <text class="default-text" style="color: #999">设为默认</text>
+        </view>
+
+        <view class="item-right">
+          <slot name="action"></slot>
+        </view>
       </view>
     </view>
     <view v-else>
@@ -58,6 +57,14 @@
       defult: true,
     },
   });
+
+  const emits = defineEmits(['set-default']);
+
+  const onTapDefault = () => {
+    if (!props.item || !props.item.id) return;
+    if (props.item.defaultStatus) return;
+    emits('set-default', props.item);
+  };
 
   const onEdit = () => {
     sheep.$router.go('/pages/user/address/edit', {
@@ -97,7 +104,7 @@
     }
 
     .address-footer {
-       margin-top: 20rpx;
+      margin-top: 20rpx;
     }
 
     .default-status {
@@ -113,7 +120,7 @@
           background-color: #202020;
           border-color: #202020;
           position: relative;
-          
+
           .cicon-check {
             color: #fff !important;
             font-size: 24rpx;
@@ -131,10 +138,10 @@
         color: #333;
       }
     }
-    
+
     .item-right {
-       display: flex;
-       align-items: center;
+      display: flex;
+      align-items: center;
     }
   }
 </style>

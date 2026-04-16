@@ -6,12 +6,18 @@
     </view>
     <view class="header-box">
       <su-status-bar />
-      <view class="custom-nav" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+      <view
+        class="custom-nav"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
         <view class="nav-inner ss-flex ss-col-center">
-          <view class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20" @tap="sheep.$router.back()">
+          <view
+            class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20"
+            @tap="sheep.$router.back()"
+          >
             <text class="sicon-back"></text>
           </view>
-          <view class="title">佣金明细</view>
+          <view class="title">收益明细</view>
         </view>
       </view>
 
@@ -19,21 +25,29 @@
         <view class="score-box ss-flex ss-row-between ss-col-center">
           <view class="ss-flex-col">
             <view class="ss-m-b-10 ss-flex ss-col-center">
-              <text class="all-title">当前佣金(元)</text>
+              <text class="all-title">当前收益(元)</text>
               <view
                 @tap="state.showMoney = !state.showMoney"
                 class="ss-eye-icon ss-m-l-10"
                 :class="state.showMoney ? 'cicon-eye' : 'cicon-eye-off'"
               />
             </view>
-            <text class="all-num">{{ state.showMoney ? fen2yuan(state.summary.withdrawPrice || 0) : '*****' }}</text>
+            <text class="all-num">{{
+              state.showMoney ? fen2yuan(state.summary.withdrawPrice || 0) : '*****'
+            }}</text>
           </view>
-          
+
           <view class="ss-flex">
-            <view class="use-btn ss-flex ss-row-center ss-col-center ss-m-r-20" @tap="sheep.$router.go('/pages/commission/withdraw')">
+            <view
+              class="use-btn ss-flex ss-row-center ss-col-center ss-m-r-20"
+              @tap="sheep.$router.go('/pages/commission/withdraw')"
+            >
               提现
             </view>
-            <view class="use-btn-outline ss-flex ss-row-center ss-col-center" @tap="state.showModal = true">
+            <view
+              class="use-btn-outline ss-flex ss-row-center ss-col-center"
+              @tap="state.showModal = true"
+            >
               转余额
             </view>
           </view>
@@ -41,12 +55,16 @@
 
         <view class="ss-flex ss-m-t-40 sub-info-box">
           <view class="ss-flex-col ss-flex-1">
-            <view class="sub-title">冻结佣金</view>
-            <view class="sub-num">{{ state.showMoney ? fen2yuan(state.summary.frozenPrice || 0) : '*****' }}</view>
+            <view class="sub-title">冻结收益</view>
+            <view class="sub-num">{{
+              state.showMoney ? fen2yuan(state.summary.frozenPrice || 0) : '*****'
+            }}</view>
           </view>
           <view class="ss-flex-col ss-flex-1">
-            <view class="sub-title">可提现佣金</view>
-            <view class="sub-num">{{ state.showMoney ? fen2yuan(state.summary.brokeragePrice || 0) : '*****' }}</view>
+            <view class="sub-title">可提现收益</view>
+            <view class="sub-num">{{
+              state.showMoney ? fen2yuan(state.summary.brokeragePrice || 0) : '*****'
+            }}</view>
           </view>
         </view>
       </view>
@@ -55,12 +73,12 @@
     <!-- tab -->
     <su-sticky :customNavHeight="sys_navBar">
       <view class="section_2 flex-col">
-        <view class="text-wrapper_4 flex-row justify-between" style="width: 350rpx; margin: 0 auto;">
+        <view class="text-wrapper_4 flex-row justify-between" style="width: 350rpx; margin: 0 auto">
           <text
             class="tab-item"
             :class="state.currentTab === 0 ? 'text_6' : 'text_7'"
             @tap="onChangeTab(0)"
-            >分佣</text
+            >获得收益</text
           >
           <text
             class="tab-item"
@@ -69,7 +87,7 @@
             >提现</text
           >
         </view>
-        <view class="group_39 flex-row" style="width: 350rpx; margin: 27rpx auto 0;">
+        <view class="group_39 flex-row" style="width: 350rpx; margin: 27rpx auto 0">
           <view
             class="block_12 flex-col"
             :style="{ transform: `translateX(${state.currentTab * 286}rpx)` }"
@@ -98,11 +116,7 @@
       <view v-if="state.pagination.total > 0">
         <!-- 分佣列表 -->
         <view v-if="state.currentTab === 0">
-          <view
-            class="list-item ss-flex-col"
-            v-for="item in state.pagination.list"
-            :key="item.id"
-          >
+          <view class="list-item ss-flex-col" v-for="item in state.pagination.list" :key="item.id">
             <view class="ss-flex ss-col-center ss-row-between ss-m-b-20">
               <view class="name ss-line-1">{{ item.title }}</view>
               <view class="money">
@@ -111,18 +125,16 @@
               </view>
             </view>
             <view class="ss-flex ss-row-between ss-col-center">
-              <view class="time">{{ sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd hh:MM') }}</view>
+              <view class="time">{{
+                sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd hh:MM')
+              }}</view>
               <view class="status" :class="'status-' + item.status">{{ item.statusName }}</view>
             </view>
           </view>
         </view>
         <!-- 提现列表 -->
         <view v-else>
-          <view
-            class="list-item ss-flex-col"
-            v-for="item in state.pagination.list"
-            :key="item.id"
-          >
+          <view class="list-item ss-flex-col" v-for="item in state.pagination.list" :key="item.id">
             <view class="ss-flex ss-col-center ss-row-between ss-m-b-20">
               <view class="name ss-line-1">{{ item.typeName }}</view>
               <view class="money">
@@ -130,7 +142,9 @@
               </view>
             </view>
             <view class="ss-flex ss-row-between ss-col-center">
-              <view class="time">{{ sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd hh:MM') }}</view>
+              <view class="time">{{
+                sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd hh:MM')
+              }}</view>
               <button
                 v-if="item.status === 10 && item.type === 5 && item.payTransferId > 0"
                 class="ss-reset-button confirm-btn"
@@ -138,7 +152,9 @@
               >
                 确认收款
               </button>
-              <view v-else class="status" :class="'status-' + item.status">{{ item.statusName }}</view>
+              <view v-else class="status" :class="'status-' + item.status">{{
+                item.statusName
+              }}</view>
             </view>
           </view>
         </view>
@@ -164,7 +180,7 @@
     >
       <view class="ss-p-x-20 ss-p-y-30">
         <view class="model-title ss-m-b-30 ss-m-l-20">转余额</view>
-        <view class="model-subtitle ss-m-b-100 ss-m-l-20">将您的佣金转到余额中继续消费</view>
+        <view class="model-subtitle ss-m-b-100 ss-m-l-20">将您的收益转到余额中继续消费</view>
         <view class="input-box ss-flex ss-col-center border-bottom ss-m-b-70 ss-m-x-20">
           <view class="unit">￥</view>
           <uni-easyinput
@@ -175,12 +191,7 @@
             placeholder="请输入金额"
           />
         </view>
-        <button
-          class="ss-reset-button model-btn"
-          @tap="onConfirm"
-        >
-          确定
-        </button>
+        <button class="ss-reset-button model-btn" @tap="onConfirm"> 确定 </button>
       </view>
     </su-popup>
   </s-layout>
@@ -385,21 +396,21 @@
   .custom-nav {
     position: relative;
     width: 100%;
-    
+
     .nav-inner {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
       height: 100%;
       width: 100%;
-      
+
       .left-box {
         .sicon-back {
           font-size: 32rpx;
           color: #1e3f1c;
         }
       }
-      
+
       .title {
         font-size: 32rpx;
         font-weight: 500;
@@ -410,7 +421,8 @@
 
   .header-box {
     width: 100%;
-    background: url('https://file.sheepjs.com/storage/img/2024/11/12/3df8a9a4b8784d1ab1b83d81f2113f8c.webp') no-repeat;
+    background: url('https://file.sheepjs.com/storage/img/2024/11/12/3df8a9a4b8784d1ab1b83d81f2113f8c.webp')
+      no-repeat;
     background-size: 100% 100%;
     padding: 0 0 120rpx 0;
     box-sizing: border-box;
@@ -438,7 +450,7 @@
         color: #9d9c96;
       }
     }
-    
+
     .use-btn {
       background: linear-gradient(270deg, #0f5c31 0%, #06943f 100%);
       border-radius: 34rpx;
@@ -545,7 +557,7 @@
         }
       }
     }
-    
+
     .list-item {
       border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
       padding: 30rpx 0;

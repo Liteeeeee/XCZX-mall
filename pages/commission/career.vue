@@ -21,12 +21,21 @@
               width: '100%',
             }"
           >
-            <uni-icons type="left" size="22" color="rgba(0, 0, 0, 0.9)" @tap="sheep.$router.back()" class="nav-back" />
+            <uni-icons
+              type="left"
+              size="22"
+              color="rgba(0, 0, 0, 0.9)"
+              @tap="sheep.$router.back()"
+              class="nav-back"
+            />
             <text class="nav-title">选择职业</text>
           </view>
         </view>
       </view>
-      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+      <view
+        class="header-placeholder"
+        :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
+      ></view>
 
       <text class="text_3">您的职业</text>
 
@@ -38,22 +47,38 @@
           :class="state.current === item ? 'chip-active' : 'chip-normal'"
           @tap="onSelect(item)"
         >
-          <text :class="state.current === item ? 'chip-text-active' : 'chip-text-normal'">{{ item }}</text>
+          <text :class="state.current === item ? 'chip-text-active' : 'chip-text-normal'">{{
+            item
+          }}</text>
         </view>
       </view>
 
       <text class="text_12">您的资质</text>
-      
+
       <view class="box_21">
         <s-uploader
           v-model:url="state.images"
           fileMediatype="image"
           limit="3"
           mode="grid"
-          :imageStyles="{ width: '210rpx', height: '210rpx', border: { radius: '20rpx', color: 'rgba(157,156,150,1)', style: 'solid', width: '1rpx' } }"
+          :imageStyles="{
+            width: '210rpx',
+            height: '210rpx',
+            border: {
+              radius: '20rpx',
+              color: 'rgba(157,156,150,1)',
+              style: 'solid',
+              width: '1rpx',
+            },
+          }"
         >
           <view class="upload-box-inner">
-            <uni-icons type="camera-filled" size="32" color="rgba(157, 156, 150, 1)" class="upload-icon" />
+            <uni-icons
+              type="camera-filled"
+              size="32"
+              color="rgba(157, 156, 150, 1)"
+              class="upload-icon"
+            />
             <text class="upload-text">添加图片</text>
           </view>
         </s-uploader>
@@ -107,20 +132,22 @@
   }
 
   async function loadOptions() {
-    const types = ['brokerage_apply_career', 'brokerage_apply_profession', 'brokerage_apply_job', 'member_profession'];
-    for (const t of types) {
-      try {
-        const { code, data } = await DictApi.getDictDataListByType(t);
-        if (code !== 0 || !Array.isArray(data) || data.length === 0) {
-          continue;
-        }
-        state.options = data.map((it) => it.label).filter(Boolean);
-        if (state.options.length > 0) {
-          return;
-        }
-      } catch (e) {}
+    try {
+      const { code, data } = await DictApi.getDictDataListByType('occupation');
+      if (code !== 0 || !Array.isArray(data) || data.length === 0) {
+        state.options = fallbackOptions();
+        return;
+      }
+      state.options = [...data]
+        .sort((a, b) => Number(a?.sort ?? 0) - Number(b?.sort ?? 0))
+        .map((it) => it?.label ?? it?.name ?? it?.value)
+        .filter(Boolean);
+      if (state.options.length === 0) {
+        state.options = fallbackOptions();
+      }
+    } catch (e) {
+      state.options = fallbackOptions();
     }
-    state.options = fallbackOptions();
   }
 
   onLoad((options) => {
