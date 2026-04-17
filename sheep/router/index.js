@@ -56,8 +56,8 @@ const _go = (
       path: '/pages/user/vip-result',
       meta: {
         auth: true,
-        title: '开通结果'
-      }
+        title: '开通结果',
+      },
     };
   }
   if (!nextRoute && page === '/pages/user/wallet/vip-recharge') {
@@ -65,8 +65,8 @@ const _go = (
       path: '/pages/user/wallet/vip-recharge',
       meta: {
         auth: true,
-        title: '会员卡充值'
-      }
+        title: '会员卡充值',
+      },
     };
   }
   if (!nextRoute && page === '/pages/user/wallet/money') {
@@ -74,8 +74,8 @@ const _go = (
       path: '/pages/user/wallet/money',
       meta: {
         auth: true,
-        title: '消费明细'
-      }
+        title: '消费明细',
+      },
     };
   }
   if (!nextRoute && page === '/pages/commission/apply') {
@@ -83,8 +83,8 @@ const _go = (
       path: '/pages/commission/apply',
       meta: {
         auth: true,
-        title: '分销申请'
-      }
+        title: '分销申请',
+      },
     };
   }
   if (!nextRoute && page === '/pages/commission/apply-success') {
@@ -92,8 +92,8 @@ const _go = (
       path: '/pages/commission/apply-success',
       meta: {
         auth: true,
-        title: '分销申请成功'
-      }
+        title: '分销申请成功',
+      },
     };
   }
   if (!nextRoute && page === '/pages/commission/career') {
@@ -101,8 +101,8 @@ const _go = (
       path: '/pages/commission/career',
       meta: {
         auth: true,
-        title: '选择职业'
-      }
+        title: '选择职业',
+      },
     };
   }
 

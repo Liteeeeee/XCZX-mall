@@ -9,15 +9,37 @@
     onShareAppMessage
   >
     <!-- 调试层：只有在没有渲染列表时显示 -->
-    <view v-if="renderList.length === 0" style="padding: 200rpx 40rpx; text-align: center; background: #fff; border: 2px dashed #ccc; margin: 20rpx;">
-      <view style="color: #ff4d4f; font-size: 32rpx; font-weight: bold; margin-bottom: 20rpx;">[DEBUG] 装修数据未就绪</view>
-      <view style="color: #999; font-size: 24rpx; margin-bottom: 20rpx; white-space: pre-wrap; text-align: left;">
-        Template: {{ template ? '已加载' : '未加载' }}
-        Components: {{ template?.components?.length || 0 }}
-        Data: {{ template?.data?.length || 0 }}
-        Full Template JSON: {{ JSON.stringify(template || {}).substring(0, 200) }}...
+    <view
+      v-if="renderList.length === 0"
+      style="
+        padding: 200rpx 40rpx;
+        text-align: center;
+        background: #fff;
+        border: 2px dashed #ccc;
+        margin: 20rpx;
+      "
+    >
+      <view style="color: #ff4d4f; font-size: 32rpx; font-weight: bold; margin-bottom: 20rpx"
+        >[DEBUG] 装修数据未就绪</view
+      >
+      <view
+        style="
+          color: #999;
+          font-size: 24rpx;
+          margin-bottom: 20rpx;
+          white-space: pre-wrap;
+          text-align: left;
+        "
+      >
+        Template: {{ template ? '已加载' : '未加载' }} Components:
+        {{ template?.components?.length || 0 }} Data: {{ template?.data?.length || 0 }} Full
+        Template JSON: {{ JSON.stringify(template || {}).substring(0, 200) }}...
       </view>
-      <button style="width: 200rpx; height: 60rpx; line-height: 60rpx; font-size: 24rpx;" @tap="sheep.$router.go('/pages/index/index')">刷新首页</button>
+      <button
+        style="width: 200rpx; height: 60rpx; line-height: 60rpx; font-size: 24rpx"
+        @tap="sheep.$router.go('/pages/index/index')"
+        >刷新首页</button
+      >
     </view>
 
     <!-- 上半部分：用户卡片 (UserCardPro) -->
@@ -25,7 +47,9 @@
       class="user-top-bg"
       :style="[
         {
-          background: `url(${sheep.$url.static('/static/user/userBg.webp')}) no-repeat top center / 100% auto`,
+          background: `url(${sheep.$url.static(
+            '/static/user/userBg.webp',
+          )}) no-repeat top center / 100% auto`,
         },
       ]"
     >
@@ -37,7 +61,11 @@
     </view>
 
     <!-- 下半部分：大盒子包裹订单和信息 (UserOrder & UserInfo) -->
-    <view class="user-bottom-content" :style="{ 'margin-top': marginTop }" v-if="orderCardList.length > 0 || userInfoList.length > 0">
+    <view
+      class="user-bottom-content"
+      :style="{ 'margin-top': marginTop }"
+      v-if="orderCardList.length > 0 || userInfoList.length > 0"
+    >
       <view v-for="(item, index) in orderCardList" :key="'order-' + index">
         <s-block-item :type="item.id" :data="item.property" :styles="item.property.style || {}" />
       </view>
@@ -64,7 +92,7 @@
   uni.hideTabBar({
     fail: () => {},
   });
-// 获取个人中心模板
+  // 获取个人中心模板
   const template = computed(() => {
     return sheep.$store('app').template.user;
   });
@@ -85,9 +113,7 @@
 
   // 其他组件
   const otherList = computed(() =>
-    renderList.value.filter(
-      (item) => !['UserCardPro', 'UserOrder', 'UserInfo'].includes(item.id),
-    ),
+    renderList.value.filter((item) => !['UserCardPro', 'UserOrder', 'UserInfo'].includes(item.id)),
   );
 
   // 计算 margin-top
@@ -96,12 +122,12 @@
     const isLogin = user.isLogin;
     const userInfo = user.userInfo;
     // 判断是否为VIP：已登录 且 levelName存在 且 不等于'普通会员'
-    const isVip = !isLogin || userInfo && userInfo.levelName && userInfo.levelName === '普通会员';
-    
+    const isVip = !isLogin || (userInfo && userInfo.levelName && userInfo.levelName === '普通会员');
+
     // 根据你的需求，默认是 -139rpx，VIP 是 -169rpx (即 -139 - 30)
-    const value = isVip ? '-100rpx' : '-139rpx'; 
+    const value = isVip ? '-100rpx' : '-139rpx';
     console.log('当前是否为VIP:', !!isVip, ' | 期望的 rpx 值为:', value);
-    
+
     return value;
   });
 
@@ -135,8 +161,8 @@
     background: radial-gradient(
       circle at 50% -4450rpx,
       transparent 4485rpx,
-      rgba(248, 249, 243, 0.5) 4486rpx, /* 增加 1rpx 的半透明过渡缓冲区 */
-      rgba(248, 249, 243, 1) 4487rpx /* 平滑过渡到实色 */
+      rgba(248, 249, 243, 0.5) 4486rpx,
+      /* 增加 1rpx 的半透明过渡缓冲区 */ rgba(248, 249, 243, 1) 4487rpx /* 平滑过渡到实色 */
     );
   }
 </style>

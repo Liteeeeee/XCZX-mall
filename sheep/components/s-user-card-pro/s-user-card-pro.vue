@@ -13,7 +13,11 @@
     <!-- 未登录时的背景装饰 -->
 
     <!-- 顶部用户信息区域 -->
-    <view class="user-info-section ss-flex ss-col-center ss-row-between" :class="{ 'unlogin-section': !isLogin }" style="position: relative; z-index: 2;">
+    <view
+      class="user-info-section ss-flex ss-col-center ss-row-between"
+      :class="{ 'unlogin-section': !isLogin }"
+      style="position: relative; z-index: 2"
+    >
       <view class="ss-flex ss-col-center">
         <!-- 头像 -->
         <view class="avatar-box ss-m-r-30" :class="{ 'unlogin-avatar': !isLogin }">
@@ -28,46 +32,56 @@
         <view class="info-content" @tap="onUserClick">
           <view class="nickname-row ss-flex ss-col-center ss-m-b-8">
             <view class="nickname" :class="{ 'unlogin-nickname': !isLogin }">
-              {{ isLogin ? (userInfo.nickname || '未设置昵称') : '登录/注册' }}
+              {{ isLogin ? userInfo.nickname || '未设置昵称' : '登录/注册' }}
             </view>
-           
           </view>
-          <view v-if="!isLogin" class="unlogin-prompt" style="color: #666; font-size: 26rpx;">
+          <view v-if="!isLogin" class="unlogin-prompt" style="color: #666; font-size: 26rpx">
             登录体验更多功能哦~
           </view>
           <view v-else-if="userInfo.mobile" class="mobile-text ss-flex ss-col-center">
             <text class="cicon-mobile-o ss-m-r-8"></text>
             {{ formatMobile(userInfo.mobile) }}
           </view>
-          <view v-else class="mobile-text" @tap.stop="onBindMobile">
-            点击绑定手机号
-          </view>
+          <view v-else class="mobile-text" @tap.stop="onBindMobile"> 点击绑定手机号 </view>
         </view>
       </view>
 
       <!-- 登录按钮/会员等级图标 -->
       <view class="right-action">
-        <view v-if="isLogin && memberIcon" class="member-icon-box" @tap="sheep.$router.go('/pages/index/member')">
+        <view
+          v-if="isLogin && memberIcon"
+          class="member-icon-box"
+          @tap="sheep.$router.go('/pages/index/member')"
+        >
           <image class="member-icon" :src="sheep.$url.static(memberIcon)" mode="aspectFit" />
         </view>
       </view>
     </view>
 
     <!-- 底部统计数据区域 -->
-    <view class="stats-section ss-flex ss-row-around ss-m-t-40" style="position: relative; z-index: 2;">
+    <view
+      class="stats-section ss-flex ss-row-around ss-m-t-40"
+      style="position: relative; z-index: 2"
+    >
       <view
         v-for="(item, index) in statsList"
         :key="index"
         class="stats-item ss-flex-col ss-col-center"
         @tap="onStatsClick(item.type)"
       >
-        <view class="stats-value count-font" style="font-size:35rpx; font-weight: bold; color: rgba(30, 63, 28, 1);">{{ item.value }}</view>
-        <view class="stats-label" style="font-size: 26rpx; color: rgba(51, 51, 51, 1);">{{ item.label }}</view>
+        <view
+          class="stats-value count-font"
+          style="font-size: 35rpx; font-weight: bold; color: rgba(30, 63, 28, 1)"
+          >{{ item.value }}</view
+        >
+        <view class="stats-label" style="font-size: 26rpx; color: rgba(51, 51, 51, 1)">{{
+          item.label
+        }}</view>
       </view>
     </view>
 
     <!-- VIP 会员卡片 -->
-    <view v-if="isLogin && showVipCard" class="ss-p-b-30 ">
+    <view v-if="isLogin && showVipCard" class="ss-p-b-30">
       <s-vip-card />
     </view>
 
@@ -125,15 +139,18 @@
   });
 
   // 用户信息
-  const userInfo = computed(() => sheep.$store('user').userInfo || {
-    avatar: '',
-    nickname: '',
-    mobile: '',
-    point: 0,
-    balance: 0,
-    coupon: 0,
-    level: null
-  });
+  const userInfo = computed(
+    () =>
+      sheep.$store('user').userInfo || {
+        avatar: '',
+        nickname: '',
+        mobile: '',
+        point: 0,
+        balance: 0,
+        coupon: 0,
+        level: null,
+      },
+  );
   const userWallet = computed(() => sheep.$store('user').userWallet || { balance: 0 });
   const numData = computed(() => sheep.$store('user').numData || { coupon: 0, point: 0 });
   const isLogin = computed(() => sheep.$store('user').isLogin);
@@ -141,14 +158,14 @@
     if (!isLogin.value) return false;
     const rawLevel = userInfo.value?.level;
     const level =
-      typeof rawLevel === 'object' && rawLevel
-        ? rawLevel.level ?? rawLevel.id ?? null
-        : rawLevel;
-    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      level === null || level === undefined || level === '' ? null : Number(level);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return false;
     const rawLevelName = userInfo.value?.levelName;
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
-    if (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石')) return false;
+    if (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))
+      return false;
     return true;
   });
 
@@ -162,10 +179,9 @@
 
     const rawLevel = userInfo.value?.level;
     const level =
-      typeof rawLevel === 'object' && rawLevel
-        ? rawLevel.level ?? rawLevel.id ?? null
-        : rawLevel;
-    const normalizedLevel = level === null || level === undefined || level === '' ? null : Number(level);
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      level === null || level === undefined || level === '' ? null : Number(level);
     if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) {
       return iconsByLevel[normalizedLevel] || iconsByLevel[1];
     }
@@ -217,7 +233,10 @@
       return;
     }
     inviteLoading.value = true;
-    const { code, data } = await SocialApi.getWxaQrcode('pages/index/index', `inviterId=${inviterId}`);
+    const { code, data } = await SocialApi.getWxaQrcode(
+      'pages/index/index',
+      `inviterId=${inviterId}`,
+    );
     inviteLoading.value = false;
     if (code !== 0 || !data) {
       sheep.$helper.toast('生成二维码失败');
@@ -498,7 +517,7 @@
   .invite-popup-subtitle {
     margin-top: 10rpx;
     font-size: 24rpx;
-    color: #9D9C96;
+    color: #9d9c96;
     text-align: center;
   }
 
@@ -517,7 +536,7 @@
 
   .invite-popup-loading {
     font-size: 26rpx;
-    color: #9D9C96;
+    color: #9d9c96;
     text-align: center;
   }
 </style>

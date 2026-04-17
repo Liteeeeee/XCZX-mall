@@ -99,9 +99,7 @@
     <!-- 底部按钮 -->
     <su-fixed bottom placeholder bg="bg-white">
       <view class="footer-box ss-flex ss-col-center ss-row-right">
-        <button class="ss-reset-button cancel-btn" open-type="contact">
-          联系客服
-        </button>
+        <button class="ss-reset-button cancel-btn" open-type="contact"> 联系客服 </button>
         <button class="ss-reset-button pay-btn" @tap="submit">提交</button>
       </view>
     </su-fixed>
@@ -116,64 +114,84 @@
           <radio-group @change="onChange">
             <label class="radio ss-flex ss-col-center" v-for="item in state.reasonList" :key="item">
               <view class="ss-flex-1 ss-p-20">{{ item }}</view>
-              <radio
-                :value="item"
-                color="#1e3f1c"
-                :checked="item === state.currentValue"
-              />
+              <radio :value="item" color="#1e3f1c" :checked="item === state.currentValue" />
             </label>
           </radio-group>
         </view>
         <view class="modal-foot foot_box ss-flex ss-row-center ss-col-center">
-          <button class="ss-reset-button close-btn" @tap="onReason">
-            确定
-          </button>
+          <button class="ss-reset-button close-btn" @tap="onReason"> 确定 </button>
         </view>
       </view>
     </su-popup>
 
     <!-- 退货物流填写抽屉 -->
-    <su-popup :show="state.showDeliveryDrawer" type="bottom" round="20" :showClose="true" @close="state.showDeliveryDrawer = false">
+    <su-popup
+      :show="state.showDeliveryDrawer"
+      type="bottom"
+      round="20"
+      :showClose="true"
+      @close="state.showDeliveryDrawer = false"
+    >
       <view class="delivery-drawer-box flex-col">
         <view class="drawer-header flex-row align-center justify-center">
           <text class="drawer-title">填写退货信息</text>
         </view>
-        
+
         <view class="drawer-content flex-col">
           <view class="section-title">退货邮寄地址</view>
-          
+
           <view class="address-card flex-row align-center justify-between">
             <view class="address-info flex-col">
-              <text class="address-detail">{{ state.config.afterSaleReturnAddress || '朝阳区东城路15号西城科学园' }}</text>
-              <text class="address-contact">{{ state.config.afterSaleReturnMobile || '苏小三 180****8888' }}</text>
+              <text class="address-detail">{{
+                state.config.afterSaleReturnAddress || '朝阳区东城路15号西城科学园'
+              }}</text>
+              <text class="address-contact">{{
+                state.config.afterSaleReturnMobile || '苏小三 180****8888'
+              }}</text>
             </view>
             <view class="copy-action" @tap="copyReturnAddress">
               <text class="copy-text">复制地址信息</text>
             </view>
           </view>
-          
+
           <view class="form-row flex-row align-center">
             <text class="row-label">快递单号</text>
-            <input class="row-input" v-model="deliveryData.logisticsNo" placeholder="请输入快递单号" placeholder-class="placeholder-text" />
+            <input
+              class="row-input"
+              v-model="deliveryData.logisticsNo"
+              placeholder="请输入快递单号"
+              placeholder-class="placeholder-text"
+            />
           </view>
-          
+
           <view class="divider"></view>
-          
+
           <view class="form-row flex-row align-center">
             <text class="row-label">快递公司</text>
-            <picker mode="selector" class="row-input" @change="onExpressChange" :value="deliveryData.expressIndex" :range="state.expresses" range-key="name">
+            <picker
+              mode="selector"
+              class="row-input"
+              @change="onExpressChange"
+              :value="deliveryData.expressIndex"
+              :range="state.expresses"
+              range-key="name"
+            >
               <view class="picker-inner flex-row align-center justify-between">
                 <text :class="deliveryData.expressIndex !== -1 ? 'value-text' : 'placeholder-text'">
-                  {{ deliveryData.expressIndex !== -1 ? state.expresses[deliveryData.expressIndex].name : '请选择快递公司' }}
+                  {{
+                    deliveryData.expressIndex !== -1
+                      ? state.expresses[deliveryData.expressIndex].name
+                      : '请选择快递公司'
+                  }}
                 </text>
                 <uni-icons type="right" size="14" color="rgba(212, 212, 213, 1)"></uni-icons>
               </view>
             </picker>
           </view>
-          
+
           <view class="divider"></view>
         </view>
-        
+
         <view class="drawer-footer">
           <button class="ss-reset-button confirm-btn" @tap="submitDelivery">确定</button>
         </view>
@@ -241,7 +259,9 @@
 
   // 复制退货地址
   function copyReturnAddress() {
-    const address = `${state.config.afterSaleReturnAddress || '朝阳区东城路15号西城科学园'} ${state.config.afterSaleReturnMobile || '苏小三 180****8888'}`;
+    const address = `${state.config.afterSaleReturnAddress || '朝阳区东城路15号西城科学园'} ${
+      state.config.afterSaleReturnMobile || '苏小三 180****8888'
+    }`;
     sheep.$helper.copyText(address);
   }
 
@@ -266,7 +286,7 @@
       logisticsId: state.expresses[deliveryData.expressIndex].id,
       logisticsNo: deliveryData.logisticsNo,
     };
-    
+
     uni.showLoading({ title: '提交中' });
     const { code } = await AfterSaleApi.deliveryAfterSale(data);
     uni.hideLoading();
@@ -286,7 +306,7 @@
       refundPrice: state.item.payPrice,
       ...formData,
     };
-    
+
     // 【测试环境特殊处理】绕过接口直接弹窗
     // state.createdAfterSaleId = 1;
     // state.showDeliveryDrawer = true;

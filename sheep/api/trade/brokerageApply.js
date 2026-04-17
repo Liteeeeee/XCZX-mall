@@ -31,4 +31,3 @@ const BrokerageApplyApi = {
 };
 
 export default BrokerageApplyApi;
-

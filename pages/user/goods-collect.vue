@@ -94,7 +94,11 @@
       }"
       @tap="loadMore"
     />
-    <s-empty v-if="state.pagination.total === 0" text="暂无收藏" :icon="sheep.$url.static('/static/collect-empty.webp')" />
+    <s-empty
+      v-if="state.pagination.total === 0"
+      text="暂无收藏"
+      :icon="sheep.$url.static('/static/collect-empty.webp')"
+    />
   </s-layout>
 </template>
 

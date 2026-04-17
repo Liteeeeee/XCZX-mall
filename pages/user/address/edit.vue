@@ -3,7 +3,10 @@
   <s-layout :bgStyle="{ color: '#F5F5F5' }" navbar="clear">
     <su-fixed alway :noNav="true" placeholder :bgStyles="{ background: '#F5F5F5' }" :index="100">
       <su-status-bar />
-      <view class="custom-nav-bar" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
+      <view
+        class="custom-nav-bar"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
         <view class="nav-content ss-flex ss-col-center">
           <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
             <text class="sicon-back"></text>
@@ -12,7 +15,7 @@
         </view>
       </view>
     </su-fixed>
-    
+
     <uni-forms
       ref="addressFormRef"
       v-model="state.model"
@@ -84,9 +87,17 @@
         </uni-forms-item>
       </view>
       <view class="default-box">
-        <view class="default-box-inner ss-flex ss-col-center" @tap="state.model.defaultStatus = !state.model.defaultStatus">
+        <view
+          class="default-box-inner ss-flex ss-col-center"
+          @tap="state.model.defaultStatus = !state.model.defaultStatus"
+        >
           <view class="checkbox-icon" :class="{ 'is-checked': state.model.defaultStatus }">
-            <uni-icons v-if="state.model.defaultStatus" type="checkmarkempty" size="16" color="#fff" />
+            <uni-icons
+              v-if="state.model.defaultStatus"
+              type="checkmarkempty"
+              size="16"
+              color="#fff"
+            />
           </view>
           <view class="default-box-title">设置为默认地址</view>
         </view>
@@ -97,7 +108,12 @@
         <button v-if="state.model.id" class="ss-reset-button cancel-btn" @tap="onDelete">
           删除
         </button>
-        <button class="ss-reset-button save-btn" :class="{ 'full-width': !state.model.id }" @tap="onSave">确认</button>
+        <button
+          class="ss-reset-button save-btn"
+          :class="{ 'full-width': !state.model.id }"
+          @tap="onSave"
+          >确认</button
+        >
       </view>
     </su-fixed>
 
@@ -269,14 +285,14 @@
       left: 20rpx;
       height: 100%;
     }
-    
+
     .back-btn {
       width: 60rpx;
       height: 60rpx;
       margin-right: 10rpx;
       .sicon-back {
         font-size: 36rpx;
-        color: #1E3F1C;
+        color: #1e3f1c;
         font-weight: bold;
       }
     }
@@ -298,12 +314,12 @@
     width: 100%;
     .prefix {
       font-size: 30rpx;
-      color: #BBBBBB;
+      color: #bbbbbb;
       margin-right: 10rpx;
     }
     .sicon-down {
       font-size: 24rpx;
-      color: #BBBBBB;
+      color: #bbbbbb;
       margin-right: 20rpx;
     }
     .mobile-input {
@@ -315,8 +331,8 @@
     .uni-forms-item {
       padding: 30rpx 0;
       margin-bottom: 0 !important;
-      border-bottom: 2rpx solid #F5F5F5;
-      
+      border-bottom: 2rpx solid #f5f5f5;
+
       &:last-child {
         border-bottom: none;
       }
@@ -348,7 +364,7 @@
 
     .uni-icons {
       font-size: 32rpx !important;
-      color: #BBBBBB !important;
+      color: #bbbbbb !important;
     }
 
     .is-textarea-icon {
@@ -373,7 +389,7 @@
       width: 32rpx;
       height: 32rpx;
       border-radius: 50%;
-      background-color: #E5E5E5;
+      background-color: #e5e5e5;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -381,7 +397,7 @@
       transition: all 0.3s;
 
       &.is-checked {
-        background-color: #1E3F1C;
+        background-color: #1e3f1c;
       }
     }
 
@@ -401,13 +417,13 @@
       flex: 1;
       height: 80rpx;
       border-radius: 16rpx;
-      background: #1E3F1C;
+      background: #1e3f1c;
       color: $white;
       font-size: 30rpx;
       font-weight: 500;
       line-height: 80rpx;
       text-align: center;
-      
+
       &.full-width {
         width: 100%;
       }
@@ -419,8 +435,8 @@
       line-height: 76rpx;
       border-radius: 16rpx;
       background: #fff;
-      border: 2rpx solid #1E3F1C;
-      color: #1E3F1C;
+      border: 2rpx solid #1e3f1c;
+      color: #1e3f1c;
       font-size: 30rpx;
       font-weight: 500;
       margin-right: 20rpx;

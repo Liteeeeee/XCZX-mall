@@ -1,5 +1,5 @@
 <template>
-  <view class="s-member-level-rights-wrapper">
+  <view class="s-member-level-rights-wrapper" :style="{ marginTop: wrapperMarginTop }">
     <!-- 权益区域 -->
     <view class="block_14 flex-col">
       <!-- 会员统计数据 -->
@@ -19,7 +19,7 @@
         </view>
       </view> -->
       <view
-        v-if="isVipOpened"
+        v-if="isVipOpenedStatus"
         :style="{
           height: '151rpx',
           backgroundImage: 'url(' + sheep.$url.static('/static/member/chongzhiBg.png') + ')',
@@ -160,6 +160,10 @@
       type: Boolean,
       default: false,
     },
+    isVipOpened: {
+      type: Boolean,
+      default: false,
+    },
   });
 
   const rightsUnlockLoaded = computed(() => !!props.rightsUnlockLoaded);
@@ -233,7 +237,11 @@
   });
 
   // 判断用户是否已开通会员（用于控制充值入口占位图的显示）
-  const isVipOpened = computed(() => {
+  const isVipOpenedStatus = computed(() => {
+    // 优先使用传入的属性
+    if (props.isVipOpened !== undefined) {
+      return props.isVipOpened;
+    }
     const rawLevel = props.userInfo?.level;
     const levelValue =
       typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
@@ -331,6 +339,15 @@
     };
   });
 
+  // 根据是否为非会员或者当前展示的是否为钻石及以上会员
+  const wrapperMarginTop = computed(() => {
+    // 如果未开通会员，或者用户本身等级达到了钻石及以上，或者当前展示的卡片等级为钻石及以上
+    if (!isVipOpenedStatus.value || currentUserLevel.value >= 3 || currentCardLevel.value >= 3) {
+      return '-135rpx';
+    }
+    return '-85rpx';
+  });
+
   const inviteSuccessCount = computed(() => {
     const u = props.userInfo || {};
     const raw =
@@ -379,7 +396,7 @@
 <style lang="scss" scoped>
   .s-member-level-rights-wrapper {
     width: 100%;
-    margin-top: -85rpx; // 向上移动以覆盖在卡片下方
+    /* margin-top: -85rpx; 由内联样式接管动态计算 */
     position: relative;
     z-index: 1;
   }

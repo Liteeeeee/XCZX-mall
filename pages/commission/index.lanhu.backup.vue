@@ -100,7 +100,11 @@
         <view v-if="state.pagination.total === 0 && !state.loading" class="empty-text"
           >暂无数据</view
         >
-        <view v-for="item in state.pagination.list" :key="item._key" class="box_21 justify-between flex-row">
+        <view
+          v-for="item in state.pagination.list"
+          :key="item._key"
+          class="box_21 justify-between flex-row"
+        >
           <view class="text-group_16 flex-col">
             <text class="text_17">{{ rowTitle(item) }}</text>
             <text class="text_18"

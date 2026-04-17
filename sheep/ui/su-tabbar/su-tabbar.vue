@@ -156,7 +156,8 @@
       },
       getRect(selector, all) {
         return new Promise((resolve) => {
-          uni.createSelectorQuery()
+          uni
+            .createSelectorQuery()
             .in(this)
             [all ? 'selectAll' : 'select'](selector)
             .boundingClientRect((rect) => {
@@ -202,7 +203,7 @@
     &__content {
       display: flex;
       flex-direction: column;
-      background-color: #FFFFFA;
+      background-color: #fffffa;
       padding-top: 10rpx;
 
       &__item-wrapper {

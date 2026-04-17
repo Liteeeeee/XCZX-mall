@@ -113,7 +113,11 @@
       }"
       @tap="loadMore"
     />
-    <s-empty v-if="state.pagination.total === 0" :icon="sheep.$url.static('/static/soldout-empty.webp')" text="暂无商品" />
+    <s-empty
+      v-if="state.pagination.total === 0"
+      :icon="sheep.$url.static('/static/soldout-empty.webp')"
+      text="暂无商品"
+    />
   </s-layout>
 </template>
 

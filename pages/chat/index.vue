@@ -1,9 +1,5 @@
 <template>
-  <s-layout
-    class="chat-wrap"
-    navbar="clear"
-    :bgStyle="{ color: '#F8F9F3' }"
-  >
+  <s-layout class="chat-wrap" navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
     <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
       <su-status-bar />
       <view
@@ -17,7 +13,9 @@
           <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
             <text class="sicon-back"></text>
           </view>
-          <text class="nav-title ss-m-l-10">{{ !isReconnecting ? '连接客服成功' : '会话重连中' }}</text>
+          <text class="nav-title ss-m-l-10">{{
+            !isReconnecting ? '连接客服成功' : '会话重连中'
+          }}</text>
         </view>
       </view>
     </view>

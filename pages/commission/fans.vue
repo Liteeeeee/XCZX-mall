@@ -21,12 +21,21 @@
               width: '100%',
             }"
           >
-            <uni-icons type="left" size="22" color="rgba(0, 0, 0, 0.9)" @tap="sheep.$router.back()" class="nav-back" />
+            <uni-icons
+              type="left"
+              size="22"
+              color="rgba(0, 0, 0, 0.9)"
+              @tap="sheep.$router.back()"
+              class="nav-back"
+            />
             <text class="nav-title">粉丝</text>
           </view>
         </view>
       </view>
-      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+      <view
+        class="header-placeholder"
+        :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
+      ></view>
 
       <view class="page-body">
         <view class="section_7 flex-row justify-between">
@@ -49,7 +58,9 @@
             </view>
           </view>
 
-          <view v-if="state.pagination.total === 0 && !state.loading" class="empty-text">暂无数据</view>
+          <view v-if="state.pagination.total === 0 && !state.loading" class="empty-text"
+            >暂无数据</view
+          >
           <uni-load-more
             v-if="state.pagination.total > 0"
             :status="state.loadStatus"
@@ -120,8 +131,8 @@
     const list1 = Array.isArray(res?.data?.list)
       ? res.data.list
       : Array.isArray(res?.data?.records)
-        ? res.data.records
-        : [];
+      ? res.data.records
+      : [];
     const merged = list1
       .map((it, index) => ({
         ...it,
@@ -136,7 +147,9 @@
   }
 
   onLoad((options) => {
-    state.todayNewFansCount = Number(options?.todayFirstFansCount || options?.todayNewFansCount || 0);
+    state.todayNewFansCount = Number(
+      options?.todayFirstFansCount || options?.todayNewFansCount || 0,
+    );
     resetPagination();
     loadList();
   });

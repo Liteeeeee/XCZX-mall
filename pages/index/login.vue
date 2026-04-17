@@ -6,10 +6,7 @@
 
   <!-- #ifndef H5 -->
   <s-layout navbar="clear" :bgStyle="{ backgroundColor: 'rgba(248, 249, 243, 1.0)' }">
-    <view
-      class="login-page"
-      :style="{ backgroundImage: `url(${bgUrl})` }"
-    >
+    <view class="login-page" :style="{ backgroundImage: `url(${bgUrl})` }">
       <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
         <su-status-bar />
         <view
@@ -324,7 +321,7 @@
     margin-top: 5rpx;
     font-size: 28rpx;
     font-weight: 400;
-    color: #3D3D3C;
+    color: #3d3d3c;
     letter-spacing: 0.875rpx;
     line-height: 40rpx;
   }

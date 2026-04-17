@@ -40,7 +40,11 @@
             open-type="share"
             @tap="onShareByForward"
           >
-            <image class="share-icon" :src="sheep.$url.cdn('/mp/static/share/shareWechat.webp')" mode="aspectFit" />
+            <image
+              class="share-icon"
+              :src="sheep.$url.cdn('/mp/static/share/shareWechat.webp')"
+              mode="aspectFit"
+            />
             <text class="share-text">微信好友</text>
           </button>
 
@@ -58,7 +62,11 @@
             class="share-item"
             @tap="onShareByPoster"
           >
-            <image class="share-icon" :src="sheep.$url.cdn('/mp/static/share/shareImage.webp')" mode="aspectFit" />
+            <image
+              class="share-icon"
+              :src="sheep.$url.cdn('/mp/static/share/shareImage.webp')"
+              mode="aspectFit"
+            />
             <text class="share-text">生成海报</text>
           </button>
         </view>
@@ -251,13 +259,13 @@
   }
 
   .share-modal {
-    background-color: rgba(255, 255, 250, 1.0);
+    background-color: rgba(255, 255, 250, 1);
     border-radius: 20rpx 20rpx 0 0;
     width: 750rpx;
   }
 
   .share-header {
-    background-color: rgba(255, 255, 250, 1.0);
+    background-color: rgba(255, 255, 250, 1);
     border-radius: 20rpx 20rpx 0 0;
     position: relative;
     padding: 38rpx 37rpx 20rpx 107rpx;

@@ -135,12 +135,7 @@
         >
           填写退货
         </button>
-        <button
-          class="ss-reset-button contcat-btn btn"
-          open-type="contact"
-        >
-          联系客服
-        </button>
+        <button class="ss-reset-button contcat-btn btn" open-type="contact"> 联系客服 </button>
       </view>
     </su-fixed>
   </s-layout>

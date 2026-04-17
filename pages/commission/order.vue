@@ -94,7 +94,14 @@
                 <view class="order-meta flex-row justify-between">
                   <text class="order-qty">数量*{{ item._totalCount || item._count || 1 }}</text>
                   <text class="order-earn"
-                    >预估收益{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text
+                    >预估收益{{
+                      fen2yuan(
+                        item._itemsDisplay?.[0]?.brokeragePrice ??
+                          item.brokeragePrice ??
+                          item.price ??
+                          0,
+                      )
+                    }}元</text
                   >
                 </view>
               </view>
@@ -118,7 +125,9 @@
                   <text class="text_8">实付金额：¥{{ fen2yuan(goods.payPrice) }}</text>
                   <view class="order-meta flex-row justify-between">
                     <text class="order-qty">数量*{{ goods.count || 1 }}</text>
-                    <text class="order-earn">预估收益{{ toYuanInt(goods.brokeragePrice) }}元</text>
+                    <text class="order-earn"
+                      >预估收益{{ fen2yuan(goods.brokeragePrice ?? goods.price ?? 0) }}元</text
+                    >
                   </view>
                 </view>
               </view>
@@ -127,7 +136,17 @@
                   >下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text
                 >
                 <text class="multi-total-earn"
-                  >预估总收益{{ toYuanInt(item.brokeragePrice ?? item.price) }}元</text
+                  >预估总收益{{
+                    fen2yuan(
+                      item._itemsDisplay?.reduce(
+                        (sum, goods) => sum + (goods.brokeragePrice ?? 0),
+                        0,
+                      ) ??
+                        item.brokeragePrice ??
+                        item.price ??
+                        0,
+                    )
+                  }}元</text
                 >
               </view>
             </view>
@@ -208,14 +227,6 @@
     getOrderList();
   }
 
-  function toYuanInt(fen) {
-    const n = Number(fen || 0);
-    if (!Number.isFinite(n)) {
-      return '0';
-    }
-    return String(Math.floor(n / 100));
-  }
-
   function isMultiItems(item) {
     return Array.isArray(item?.items) && item.items.length >= 2;
   }
@@ -281,7 +292,7 @@
         originalPrice: Number(it?.originalPrice ?? it?.price ?? it?.spuPrice ?? 0),
         payPrice: Number(it?.payPrice ?? it?.orderPayPrice ?? it?.price ?? 0),
         count,
-        brokeragePrice: lineBrokerage,
+        brokeragePrice: Number(it?.brokeragePrice ?? lineBrokerage ?? 0),
       };
     });
     const orderNo = data.orderNo || data.no || data._orderNo || '';

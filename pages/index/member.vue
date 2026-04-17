@@ -34,6 +34,8 @@
             :experience="userInfo?.experience || 0"
             :currentLevel="currentLevel"
             :nextLevel="nextLevel"
+            :isVipOpened="isVipOpened"
+            :userInfo="userInfo"
           ></s-member-progress>
           <!-- 静态权益展示区域 -->
           <s-member-level-rights
@@ -42,6 +44,7 @@
             :rightsAll="state.rightsAll"
             :rightsUnlockedMap="state.rightsUnlockedMap"
             :rightsUnlockLoaded="state.rightsUnlockLoaded"
+            :isVipOpened="isVipOpened"
           />
         </view>
 
@@ -661,11 +664,11 @@
     const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
     if (
       levelName &&
+      !levelName.includes('无会员') &&
       (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))
     ) {
       return true;
     }
-
     return false;
   });
 
@@ -802,7 +805,6 @@
 
   /* 优势对比区域重构 */
   .text_4 {
-    width: 216rpx;
     height: 85rpx;
     font-family: Kingsoft_Cloud_Font;
     font-size: 60rpx;

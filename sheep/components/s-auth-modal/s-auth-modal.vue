@@ -267,7 +267,7 @@
   .agreement-text {
     color: $dark-9;
   }
-  
+
   .agreement-title {
     font-size: 28rpx;
     color: $dark-9;
@@ -275,13 +275,13 @@
     width: 100%;
     padding-left: 60rpx;
   }
-  
+
   .agreement-options-container {
     width: 100%;
     display: flex;
     justify-content: center;
   }
-  
+
   .agreement-option {
     width: 100%;
     display: flex;

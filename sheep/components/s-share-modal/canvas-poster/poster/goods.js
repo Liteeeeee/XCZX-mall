@@ -8,7 +8,7 @@ const goods = async (poster) => {
   const wxa_qrcode = await getWxaQrcode(poster.shareInfo.path, poster.shareInfo.query);
   const bg = sheep.$url.cdn('/mp/static/share/shareGuide.webp');
   const logo = sheep.$url.cdn('/mp/static/share/shareLogo.webp');
-  let posterImage = poster.shareInfo.poster.picUrl
+  let posterImage = poster.shareInfo.poster.picUrl;
   const priceText = Number(poster.shareInfo.poster.price || 0).toFixed(2);
   return [
     {

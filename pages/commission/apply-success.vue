@@ -21,18 +21,31 @@
               width: '100%',
             }"
           >
-            <uni-icons type="left" size="22" color="rgba(0, 0, 0, 0.9)" @tap="onBack" class="nav-back" />
+            <uni-icons
+              type="left"
+              size="22"
+              color="rgba(0, 0, 0, 0.9)"
+              @tap="onBack"
+              class="nav-back"
+            />
             <text class="nav-title">审核中</text>
           </view>
         </view>
       </view>
-      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+      <view
+        class="header-placeholder"
+        :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
+      ></view>
 
       <view class="content flex-col align-center">
-        <image class="success-img" :src="sheep.$url.cdn('/mp/static/success.webp')" mode="aspectFit" />
+        <image
+          class="success-img"
+          :src="sheep.$url.cdn('/mp/static/success.webp')"
+          mode="aspectFit"
+        />
         <text class="title">审核中</text>
         <text class="desc">您的分销申请正在审核中，请耐心等待</text>
-        
+
         <button class="back-btn" @tap="onBack">返回</button>
       </view>
     </view>

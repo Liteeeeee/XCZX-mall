@@ -7,15 +7,11 @@
     @tap="sheep.$router.go('/pages/index/member')"
   >
     <image class="vip-icon" :src="sheep.$url.static('/static/vipIcon.png')" mode="aspectFit" />
-    <view class="vip-text">
-      开通黄金会员购物享 <text class="vip-num">9</text> 折优惠哦～
-    </view>
+    <view class="vip-text"> 开通黄金会员购物享 <text class="vip-num">9</text> 折优惠哦～ </view>
     <view class="text-wrapper_8 flex-col">
       <text class="text_22">立即开通</text>
     </view>
   </view>
-
-
 </template>
 
 <script setup>
@@ -55,11 +51,7 @@
   }
 
   .text-wrapper_8 {
-    background-image: linear-gradient(
-      270deg,
-      rgba(17, 107, 106, 1) 0,
-      rgba(48, 155, 75, 1) 100%
-    );
+    background-image: linear-gradient(270deg, rgba(17, 107, 106, 1) 0, rgba(48, 155, 75, 1) 100%);
     border-radius: 68rpx;
     padding: 2rpx 16rpx 6rpx 16rpx;
     flex: none;

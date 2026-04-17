@@ -8,12 +8,8 @@
 
         <!-- 插入原有的会员名及省钱模块 -->
         <view class="text-group_1 flex-col">
-          <text
-            class="text_4"
-            :style="{ color: props.currentLevel?.mainColor || themeTextColor }"
-            >{{ currentLevelName }}</text
-          >
-          <view style="height: 14rpx"></view>
+          <text class="text_4" :style="levelNameStyle">{{ currentLevelName }}</text>
+          <view style="height: 36rpx"></view>
           <view
             v-if="showSavedMoney"
             class="saved-money-tip"
@@ -33,14 +29,19 @@
           <view
             class="upgrade-tip"
             :style="{
-              marginTop: '40rpx',
+              marginTop: '24rpx',
               marginBottom: '12rpx',
               fontSize: '24rpx',
               color: inactiveBtnStyle.color,
             }"
             v-if="!isHighestLevel"
           >
-            达到1个任意条件升级为<text :style="{ color: nextThemeColor }">{{ nextLevelName }}</text>
+            <text v-if="!isVipOpened">开通解锁更多权益</text>
+            <block v-else
+              >达到1个任意条件升级为<text :style="{ color: nextThemeColor }">{{
+                nextLevelName
+              }}</text></block
+            >
           </view>
           <view
             class="upgrade-tip"
@@ -69,6 +70,7 @@
           <text
             class="total-val"
             :style="{ color: valueColor, fontSize: '28rpx', fontWeight: 'bold' }"
+            v-if="isVipOpened"
           >
             / {{ totalVal }}</text
           >
@@ -87,12 +89,15 @@
           ></view>
         </view>
         <view class="progress-nodes ss-flex ss-row-between">
-          <view class="node start-node active" :style="{ background: themeBgColor }"></view>
+          <view
+            class="node start-node active"
+            :style="{ background: percent > 0 ? themeBgColor : '#fff' }"
+          ></view>
           <view
             class="node end-node"
             :class="{ active: percent >= 100 }"
             :style="{ background: percent >= 100 ? themeBgColor : '#fff' }"
-            v-if="!isHighestLevel"
+            v-if="!isHighestLevel && isVipOpened"
           ></view>
         </view>
       </view>
@@ -100,13 +105,19 @@
       <!-- 节点文案 -->
       <view class="node-labels ss-flex ss-row-between">
         <text :style="{ color: themeTextColor }" class="label-text">{{ currentLevelName }}</text>
-        <text :style="{ color: themeTextColor }" class="label-text" v-if="!isHighestLevel">{{
-          nextLevelName
-        }}</text>
+        <text
+          :style="{ color: themeTextColor }"
+          class="label-text"
+          v-if="!isHighestLevel && isVipOpened"
+          >{{ nextLevelName }}</text
+        >
       </view>
 
       <!-- 底部切换按钮及气泡 -->
-      <view class="action-box ss-flex ss-row-between ss-col-bottom">
+      <view
+        class="action-box ss-flex ss-row-between ss-col-bottom"
+        v-if="isVipOpened && !isHighestLevel"
+      >
         <view class="switch-btns ss-flex">
           <view
             class="switch-btn ss-flex ss-col-center ss-row-center"
@@ -165,7 +176,8 @@
 
 <script setup>
   import sheep from '@/sheep';
-  import { ref, computed } from 'vue';
+  import { ref, computed, watch, onMounted } from 'vue';
+  import TradeSummaryApi from '@/sheep/api/trade/summary';
 
   const props = defineProps({
     // 当前用户的成长值/经验值
@@ -183,6 +195,11 @@
       type: Object,
       default: () => ({ name: '铂金会员', experience: 10000 }),
     },
+    // 是否已开通会员
+    isVipOpened: {
+      type: Boolean,
+      default: false,
+    },
     // 用户信息，用于计算省钱逻辑
     userInfo: {
       type: Object,
@@ -190,15 +207,48 @@
     },
   });
 
-  // 控制是否显示已省金额逻辑
-  const showSavedMoney = computed(() => {
-    // 假设判断条件为：用户已登录且累计省钱金额 > 0
-    return props.userInfo?.id && Number(props.userInfo?.totalSavedMoney) > 0;
+  const summaryData = ref({});
+  const fetchSummary = async () => {
+    try {
+      if (!props.isVipOpened) return;
+      const { data } = await TradeSummaryApi.getSummary();
+      if (data) {
+        summaryData.value = data;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  watch(
+    () => props.isVipOpened,
+    (newVal) => {
+      if (newVal) {
+        fetchSummary();
+      }
+    },
+  );
+
+  onMounted(() => {
+    fetchSummary();
   });
 
-  // 格式化展示已省金额（示例）
+  // 控制是否显示已省金额逻辑
+  const showSavedMoney = computed(() => {
+    // 只要该值大于0就显示，如果是未开通会员则隐藏
+    if (!props.isVipOpened) return false;
+    const val = Number(summaryData.value?.totalSavedMoney || 0);
+    return val > 0;
+  });
+
+  // 格式化展示已省金额
   const totalSavedMoneyText = computed(() => {
-    return props.userInfo?.totalSavedMoney || '0.00';
+    const val = summaryData.value?.totalSavedMoney;
+    // 如果存在且为数字，通常需要除以100转为元，因为 trade/summary/get 的金额字段一般是以分为单位
+    if (val !== undefined && val !== null && !isNaN(Number(val))) {
+      return (Number(val) / 100).toFixed(2);
+    }
+    return '0.00';
   });
 
   // 判断是否为最高等级（钻石会员）
@@ -207,11 +257,17 @@
     return levelName.includes('钻石');
   });
   // 假设这里体验值等同于消费金额，而邀请人数则为其他逻辑，您可以根据实际业务调整
-  const currentVal = computed(() => props.experience);
+  const currentVal = computed(() => {
+    if (!props.isVipOpened) return 0;
+    return props.experience;
+  });
   const totalVal = computed(() => props.nextLevel?.experience || 10000);
 
   // 计算进度条百分比（将整体分为 110%：10% 用于左侧留白，100% 用于正常进度）
   const percent = computed(() => {
+    // 如果用户不是会员，或者当前经验值为 0，则进度条没有任何填充
+    if (!props.isVipOpened || currentVal.value === 0) return 0;
+
     if (totalVal.value <= 0) return 100;
     let actualProgress = (currentVal.value / totalVal.value) * 100;
     actualProgress = actualProgress > 100 ? 100 : actualProgress < 0 ? 0 : actualProgress;
@@ -225,42 +281,60 @@
     const levelName = props.currentLevel?.name || '';
     if (levelName.includes('钻石')) return '#692196';
     if (levelName.includes('铂金')) return '#8091C5';
-    if (levelName.includes('黄金')) return '#D9AF86';
-    return '#8490b8'; // 默认回退色
+    // 默认回退色（黄金会员色调）
+    return '#B06F2C';
+  });
+
+  // 获取当前等级名称的渐变色样式
+  const levelNameStyle = computed(() => {
+    const levelName = props.currentLevel?.name || '';
+
+    if (levelName.includes('钻石')) {
+      return { backgroundImage: 'linear-gradient(90deg, #904AB6 0%, #753E95 100%)' };
+    }
+    if (levelName.includes('铂金')) {
+      return { backgroundImage: 'linear-gradient(90deg, #8CA5DD 0%, #687CA7 100%)' };
+    }
+    // 默认回退（黄金会员或未开通状态的渐变）
+    return { backgroundImage: 'linear-gradient(90deg, #EA8D41 0%, #A95D31 100%)' };
   });
 
   // 获取会员等级装饰图片(VipArc)
   const arcImage = computed(() => {
-    const levelName = props.currentLevel?.name || '';
-    console.log('======>', levelName);
-    // 这里增加一个判断：如果用户不是会员（等级为空或特定的非会员标识），则使用未开通的图片
-    if (!levelName) {
+    // 优先根据用户的真实会员状态来决定装饰图
+    if (!props.isVipOpened) {
       return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipArc/weikaitong.png';
     }
 
+    const levelName = props.currentLevel?.name || '';
+    console.log('======>', levelName);
+
+    // 根据您的要求，钻石也是 bojin.png
     if (levelName.includes('钻石'))
-      return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipArc/bojin.png'; // 根据您的要求，钻石也是 bojin.png
+      return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipArc/zuanshi.png';
     if (levelName.includes('铂金'))
       return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipArc/bojin.png';
     if (levelName.includes('黄金'))
       return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipArc/huangjin.png';
 
-    // 如果存在未匹配到具体名称的情况，也视作未开通或默认情况处理
+    // 默认回退
     return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipArc/weikaitong.png';
   });
+
   const valueColor = computed(() => {
     const levelName = props.currentLevel?.name || '';
     if (levelName.includes('钻石')) return '#6E449F';
     if (levelName.includes('铂金')) return '#44579F';
-    if (levelName.includes('黄金')) return '#6F3F0F';
-    return '#4a567a'; // 默认回退色
+    // 默认回退色（黄金会员色调）
+    return '#6F3F0F';
   });
+
   const nextThemeColor = computed(() => {
     const levelName = props.nextLevel?.name || '';
     if (levelName.includes('钻石')) return '#692196';
     if (levelName.includes('铂金')) return '#8091C5';
-    if (levelName.includes('黄金')) return '#D9AF86';
-    return '#8490b8'; // 默认回退色
+    // 默认回退色（黄金会员色调）
+    return '#D9AF86';
   });
 
   // 获取等级专属徽章图标
@@ -270,34 +344,35 @@
       return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipBadge/zuanshiBadge.png';
     if (levelName.includes('铂金'))
       return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipBadge/bojinBadge.png';
-    if (levelName.includes('黄金'))
-      return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipBadge/huangjinBadge.png';
-    return '';
+    // 默认回退（黄金会员图标）
+    return 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipBadge/huangjinBadge.png';
   });
+
   const bgImage = computed(() => {
     const levelName = props.currentLevel?.name || '';
     if (levelName.includes('钻石'))
       return 'url("https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/progressBg/zuanshiBg.png")';
     if (levelName.includes('铂金'))
       return 'url("https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/progressBg/bojinBg.png")';
-    if (levelName.includes('黄金'))
-      return 'url("https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/progressBg/huangjinBg.png")';
-    return 'none'; // 默认无背景图
+    // 默认回退（黄金会员背景）
+    return 'url("https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/progressBg/huangjinBg.png")';
   });
+
   const inactiveBtnStyle = computed(() => {
     const levelName = props.currentLevel?.name || '';
     if (levelName.includes('钻石')) return { bg: '#C9A9EC', color: '#79409A' };
     if (levelName.includes('铂金')) return { bg: '#BAD0F7', color: '#3F5497' };
-    if (levelName.includes('黄金')) return { bg: '#F7DEBF', color: '#6F3F0F' };
-    return { bg: '#d5ddf2', color: '#7b88b2' }; // 默认回退
+    // 默认回退（黄金会员按钮色调）
+    return { bg: '#F7DEBF', color: '#6F3F0F' };
   });
+
   // 根据等级名称映射主题色（背景颜色，支持渐变）
   const themeBgColor = computed(() => {
     const levelName = props.currentLevel?.name || '';
     if (levelName.includes('钻石')) return 'linear-gradient(90deg, #7044A2 0%, #6C2CA0 100%)';
     if (levelName.includes('铂金')) return 'linear-gradient(90deg, #778CC3 0%, #455994 100%)';
-    if (levelName.includes('黄金')) return 'linear-gradient(90deg, #AB6E2D 0%, #895130 100%)';
-    return '#8490b8'; // 默认回退色
+    // 默认回退（黄金会员渐变）
+    return 'linear-gradient(90deg, #AB6E2D 0%, #895130 100%)';
   });
 
   // 等级名称
@@ -333,10 +408,15 @@
     width: auto;
     position: relative;
     .text_4 {
-      font-size: 52rpx;
+      font-size: 74rpx;
       font-family: Kingsoft_Cloud_Font;
-      font-weight: 700;
-      line-height: 52rpx;
+      font-weight: 500;
+      line-height: 1.2; /* 改为比例值或适当调大，避免截断 */
+      display: inline-block; /* 确保 text-fill-color 等属性生效 */
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
     }
     .text_5 {
       font-size: 24rpx;
@@ -349,11 +429,11 @@
       align-items: center;
       padding: 0 16rpx;
       height: 40rpx;
-      border-radius: 20rpx;
+      border-radius: 4rpx;
       background-size: 100% 100%;
       background-repeat: no-repeat;
       .saved-money-text {
-        font-size: 20rpx;
+        font-size: 24rpx;
         font-family: PingFangSC-Medium;
         font-weight: 500;
       }

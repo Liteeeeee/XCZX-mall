@@ -37,12 +37,32 @@ const app = defineStore({
       basic: {
         tabbar: {
           items: [
-            { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.webp', activeIconUrl: '/static/tabbar/home_active.webp' },
-            { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.webp', activeIconUrl: '/static/tabbar/member_active.webp' },
-            { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.webp', activeIconUrl: '/static/tabbar/cart_active.webp' },
-            { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.webp', activeIconUrl: '/static/tabbar/user_active.webp' }
+            {
+              text: '首页',
+              url: '/pages/index/index',
+              iconUrl: '/static/tabbar/home.webp',
+              activeIconUrl: '/static/tabbar/home_active.webp',
+            },
+            {
+              text: '会员',
+              url: '/pages/index/member',
+              iconUrl: '/static/tabbar/member.webp',
+              activeIconUrl: '/static/tabbar/member_active.webp',
+            },
+            {
+              text: '购物车',
+              url: '/pages/index/cart',
+              iconUrl: '/static/tabbar/cart.webp',
+              activeIconUrl: '/static/tabbar/cart_active.webp',
+            },
+            {
+              text: '我的',
+              url: '/pages/index/user',
+              iconUrl: '/static/tabbar/user.webp',
+              activeIconUrl: '/static/tabbar/user_active.webp',
+            },
           ],
-          style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#FFFFFA' }
+          style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#FFFFFA' },
         },
       }, // 基本信息
       home: {
@@ -205,35 +225,57 @@ const adaptTemplate = async (appTemplate, templateId) => {
   console.log('DIY template data:', diyTemplate);
   // 模板不存在
   if (!diyTemplate) {
-    console.error('Template not found or error occurred. Using default empty template to prevent redirect.');
+    console.error(
+      'Template not found or error occurred. Using default empty template to prevent redirect.',
+    );
     // 提供基础兜底数据，防止首页白屏
     appTemplate.basic.tabbar = {
       items: [
-        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.webp', activeIconUrl: '/static/tabbar/home_active.webp' },
-        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.webp', activeIconUrl: '/static/tabbar/member_active.webp' },
-        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.webp', activeIconUrl: '/static/tabbar/cart_active.webp' },
-        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.webp', activeIconUrl: '/static/tabbar/user_active.webp' }
+        {
+          text: '首页',
+          url: '/pages/index/index',
+          iconUrl: '/static/tabbar/home.webp',
+          activeIconUrl: '/static/tabbar/home_active.webp',
+        },
+        {
+          text: '会员',
+          url: '/pages/index/member',
+          iconUrl: '/static/tabbar/member.webp',
+          activeIconUrl: '/static/tabbar/member_active.webp',
+        },
+        {
+          text: '购物车',
+          url: '/pages/index/cart',
+          iconUrl: '/static/tabbar/cart.webp',
+          activeIconUrl: '/static/tabbar/cart_active.webp',
+        },
+        {
+          text: '我的',
+          url: '/pages/index/user',
+          iconUrl: '/static/tabbar/user.webp',
+          activeIconUrl: '/static/tabbar/user_active.webp',
+        },
       ],
-      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#FFFFFA' }
+      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#FFFFFA' },
     };
     appTemplate.home = {
-       style: { bgType: 'color', bgColor: '#fff' },
-       data: [],
-       components: [
-         {
-           id: 'TitleBar',
-           property: {
-             title: '装修加载失败',
-             description: '未获取到装修模板，请检查后端配置或网络',
-             style: {
-               textAlign: 'center',
-               color: '#ff4d4f',
-               fontSize: 20,
-             },
-           },
-         },
-       ],
-     };
+      style: { bgType: 'color', bgColor: '#fff' },
+      data: [],
+      components: [
+        {
+          id: 'TitleBar',
+          property: {
+            title: '装修加载失败',
+            description: '未获取到装修模板，请检查后端配置或网络',
+            style: {
+              textAlign: 'center',
+              color: '#ff4d4f',
+              fontSize: 20,
+            },
+          },
+        },
+      ],
+    };
     // $router.error('TemplateError'); // 暂时屏蔽重定向，让应用能进入首页
     return;
   }
@@ -250,12 +292,32 @@ const adaptTemplate = async (appTemplate, templateId) => {
     // 如果装修模板中没有配置 Tabbar，使用默认数据
     appTemplate.basic.tabbar = {
       items: [
-        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.webp', activeIconUrl: '/static/tabbar/home_active.webp' },
-        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.webp', activeIconUrl: '/static/tabbar/member_active.webp' },
-        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.webp', activeIconUrl: '/static/tabbar/cart_active.webp' },
-        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.webp', activeIconUrl: '/static/tabbar/user_active.webp' }
+        {
+          text: '首页',
+          url: '/pages/index/index',
+          iconUrl: '/static/tabbar/home.webp',
+          activeIconUrl: '/static/tabbar/home_active.webp',
+        },
+        {
+          text: '会员',
+          url: '/pages/index/member',
+          iconUrl: '/static/tabbar/member.webp',
+          activeIconUrl: '/static/tabbar/member_active.webp',
+        },
+        {
+          text: '购物车',
+          url: '/pages/index/cart',
+          iconUrl: '/static/tabbar/cart.webp',
+          activeIconUrl: '/static/tabbar/cart_active.webp',
+        },
+        {
+          text: '我的',
+          url: '/pages/index/user',
+          iconUrl: '/static/tabbar/user.webp',
+          activeIconUrl: '/static/tabbar/user_active.webp',
+        },
       ],
-      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#FFFFFA' }
+      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#FFFFFA' },
     };
   }
   appTemplate.home = diyTemplate?.home;
@@ -274,43 +336,97 @@ const adaptTemplate = async (appTemplate, templateId) => {
   // 临时：注入用户提供的“我的”页面装修数据
   // TODO: 后续应直接使用接口返回的 diyTemplate?.user
   const userDecoration = {
-    "page": { "description": "", "backgroundColor": "#f5f5f5", "backgroundImage": "" },
-    "navigationBar": { "bgType": "color", "bgColor": "transparent", "bgImg": "", "styleType": "inner", "alwaysShow": true, "mpCells": [{ "type": "text", "textColor": "#111111" }], "otherCells": [{ "type": "text", "textColor": "#111111" }], "_local": { "previewMp": true, "previewOther": false } },
-    "components": [
-      { 
-        "id": "UserCardPro", 
-        "property": { 
-          "nickname": "请先登录", 
-          "mobile": "", 
-          "levelName": "", 
-          "stats": [{ "label": "余额", "value": "0.00" }, { "label": "积分", "value": "0" }, { "label": "优惠券", "value": "0" }], 
-          "style": { "bgType": "color", "bgColor": "#e0fde0", "marginBottom": 8, "paddingTop": 20, "paddingRight": 20, "paddingBottom": 20, "paddingLeft": 20, "borderRadius": 12 } 
-        } 
+    page: { description: '', backgroundColor: '#f5f5f5', backgroundImage: '' },
+    navigationBar: {
+      bgType: 'color',
+      bgColor: 'transparent',
+      bgImg: '',
+      styleType: 'inner',
+      alwaysShow: true,
+      mpCells: [{ type: 'text', textColor: '#111111' }],
+      otherCells: [{ type: 'text', textColor: '#111111' }],
+      _local: { previewMp: true, previewOther: false },
+    },
+    components: [
+      {
+        id: 'UserCardPro',
+        property: {
+          nickname: '请先登录',
+          mobile: '',
+          levelName: '',
+          stats: [
+            { label: '余额', value: '0.00' },
+            { label: '积分', value: '0' },
+            { label: '优惠券', value: '0' },
+          ],
+          style: {
+            bgType: 'color',
+            bgColor: '#e0fde0',
+            marginBottom: 8,
+            paddingTop: 20,
+            paddingRight: 20,
+            paddingBottom: 20,
+            paddingLeft: 20,
+            borderRadius: 12,
+          },
+        },
       },
-      { 
-        "id": "UserOrder", 
-        "property": { 
-          "title": "我的订单", 
-          "items": [{ "icon": "ep:wallet", "name": "待付款", "url": "" }, { "icon": "ep:box", "name": "待发货", "url": "" }, { "icon": "ep:van", "name": "待收货", "url": "" }, { "icon": "ep:circle-check", "name": "已完成", "url": "" }], 
-          "style": { "bgType": "color", "bgColor": "#fff", "marginLeft": 8, "marginRight": 8, "marginBottom": 8, "paddingTop": 0, "paddingRight": 0, "paddingBottom": 0, "paddingLeft": 0, "borderRadius": 8 } 
-        } 
+      {
+        id: 'UserOrder',
+        property: {
+          title: '我的订单',
+          items: [
+            { icon: 'ep:wallet', name: '待付款', url: '' },
+            { icon: 'ep:box', name: '待发货', url: '' },
+            { icon: 'ep:van', name: '待收货', url: '' },
+            { icon: 'ep:circle-check', name: '已完成', url: '' },
+          ],
+          style: {
+            bgType: 'color',
+            bgColor: '#fff',
+            marginLeft: 8,
+            marginRight: 8,
+            marginBottom: 8,
+            paddingTop: 0,
+            paddingRight: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            borderRadius: 8,
+          },
+        },
       },
-      { 
-        "id": "UserInfo", 
-        "property": { 
-          "title": "我的信息", 
-          "items": [{ "icon": "ep:setting", "name": "我的设置", "url": "" }, { "icon": "ep:location", "name": "地址管理", "url": "" }, { "icon": "ep:user-filled", "name": "申请合伙人", "url": "" }], 
-          "style": { "bgType": "color", "bgColor": "#fff", "marginLeft": 8, "marginRight": 8, "marginBottom": 8, "paddingTop": 0, "paddingRight": 0, "paddingBottom": 0, "paddingLeft": 0, "borderRadius": 8 } 
-        } 
-      }
-    ]
+      {
+        id: 'UserInfo',
+        property: {
+          title: '我的信息',
+          items: [
+            { icon: 'ep:setting', name: '我的设置', url: '' },
+            { icon: 'ep:location', name: '地址管理', url: '' },
+            { icon: 'ep:user-filled', name: '申请合伙人', url: '' },
+          ],
+          style: {
+            bgType: 'color',
+            bgColor: '#fff',
+            marginLeft: 8,
+            marginRight: 8,
+            marginBottom: 8,
+            paddingTop: 0,
+            paddingRight: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            borderRadius: 8,
+          },
+        },
+      },
+    ],
   };
-  
+
   // 强制注入，避免被空接口结果覆盖
   const hasComponents = (template) => {
     if (!template) return false;
-    const hasC = (template.components && Array.isArray(template.components) && template.components.length > 0);
-    const hasD = (template.data && Array.isArray(template.data) && template.data.length > 0);
+    const hasC =
+      template.components && Array.isArray(template.components) && template.components.length > 0;
+    const hasD = template.data && Array.isArray(template.data) && template.data.length > 0;
     return hasC || hasD;
   };
 

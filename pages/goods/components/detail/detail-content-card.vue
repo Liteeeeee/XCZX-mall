@@ -37,15 +37,15 @@
         htmlContent.value = '';
         return;
       }
-      
+
       // 以图片标签或段落为界限粗略拆分长图 HTML，这里简单以 <img> 标签作为切割标识
       // 将多个相邻的图片拆分成几段
       const splitHtml = newVal.split(/(?=<img)/i).filter(Boolean);
-      
+
       if (splitHtml.length > 0) {
         // 先渲染第一段
         htmlContent.value = splitHtml[0];
-        
+
         // 延迟分批追加后续内容
         if (splitHtml.length > 1) {
           let currentIndex = 1;
@@ -69,7 +69,7 @@
         htmlContent.value = newVal;
       }
     },
-    { immediate: true }
+    { immediate: true },
   );
 
   // 监听并抛出图片加载失败原因
@@ -86,7 +86,6 @@
 <style lang="scss" scoped>
   .detail-content-card {
     .card-header {
-      
       .title {
         font-size: 30rpx;
         font-weight: bold;

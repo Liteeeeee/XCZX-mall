@@ -233,7 +233,7 @@
   // #endif
 
   // 组件中使用 onMounted 监听页面加载，不是页面组件不使用 onShow
-  onMounted(()=>{
+  onMounted(() => {
     try {
       const pages = typeof getCurrentPages === 'function' ? getCurrentPages() : [];
       const last = pages && pages.length ? pages[pages.length - 1] : null;
@@ -243,13 +243,13 @@
     }
     // #ifdef MP-ALIPAY
     uni.setNavigationBarTitle({
-      title: "",
+      title: '',
     });
     // #endif
     if (!isEmpty(shareInfo.value)) {
       sheep.$platform.share.updateShareInfo(shareInfo.value);
     }
-  })
+  });
   onMounted(() => {});
 
   const isCommissionPage = computed(() => {

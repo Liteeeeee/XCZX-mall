@@ -10,7 +10,7 @@ const MemberLevelApi = {
       },
     });
   },
-  
+
   // 创建会员开通/升级订单
   activateCreate: (data) => {
     return request({
@@ -25,4 +25,3 @@ const MemberLevelApi = {
 };
 
 export default MemberLevelApi;
-

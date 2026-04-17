@@ -98,7 +98,7 @@
 <style lang="scss" scoped>
   .ss-order-card {
     padding: 30rpx;
-    background: #FFFEFA;
+    background: #fffefa;
     border-radius: 20rpx;
 
     .order-header {
@@ -107,7 +107,7 @@
       .header-left {
         font-size: 32rpx;
         font-weight: bold;
-        color: #3D3D3C;
+        color: #3d3d3c;
       }
 
       .header-right {

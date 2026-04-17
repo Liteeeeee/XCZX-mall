@@ -6,7 +6,7 @@
         class="nav-bar-container"
         :style="{
           position: 'relative',
-          height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px',
+          height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px',
         }"
       >
         <view
@@ -67,17 +67,16 @@
           <view class="order-item ss-flex ss-col-center ss-row-between">
             <view class="item-title">商品金额</view>
             <view class="ss-flex ss-col-center">
-              <text class="item-value ss-m-r-24">￥{{ fen2yuan(state.orderInfo.price.totalPrice) }}</text>
+              <text class="item-value ss-m-r-24"
+                >￥{{ fen2yuan(state.orderInfo.price.totalPrice) }}</text
+              >
             </view>
           </view>
-           <view class="group_38 ss-flex-col" v-if="state.orderInfo.price.vipPrice > 0">
+          <view class="group_38 ss-flex-col" v-if="state.orderInfo.price.vipPrice > 0">
             <view class="box_79 ss-flex">
               <view class="box_80 ss-flex ss-col-center ss-row-between">
                 <view class="box_81 ss-flex ss-col-center ss-row-between">
-                  <image
-                    class="vip-badge-img"
-                    :src="vipLevelBadgeImg"
-                  />
+                  <image class="vip-badge-img" :src="vipLevelBadgeImg" />
                 </view>
                 <text class="text_33">{{ vipDiscountText }}</text>
               </view>
@@ -115,7 +114,7 @@
           >
             <view class="item-title">优惠券</view>
             <view class="ss-flex ss-col-center" @tap="state.showCoupon = true">
-              <text class="item-value text-red" v-if="state.orderPayload.couponId > 0">
+              <text class="item-value text-red" v-if="state.orderPayload.couponId">
                 -￥{{ fen2yuan(state.orderInfo.price.couponPrice) }}
               </text>
               <text
@@ -142,11 +141,12 @@
           >
             <view class="item-title">活动优惠</view>
             <view class="ss-flex ss-col-center" @tap="state.showDiscount = true">
-              <text class="item-value text-red">-￥{{ fen2yuan(state.orderInfo.price.discountPrice) }}</text>
+              <text class="item-value text-red"
+                >-￥{{ fen2yuan(state.orderInfo.price.discountPrice) }}</text
+              >
               <text class="_icon-forward item-icon" />
             </view>
           </view>
-         
         </view>
         <view class="total-box-footer ss-font-28 ss-flex ss-row-right ss-col-center ss-m-r-28">
           <view class="total-num ss-m-r-20">
@@ -282,7 +282,7 @@
     }
 
     // 跳转到支付页面
-    if (data.payOrderId && data.payOrderId > 0) {
+    if (data.payOrderId) {
       sheep.$router.redirect('/pages/pay/index', {
         id: data.payOrderId,
       });

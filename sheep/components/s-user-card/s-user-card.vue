@@ -4,8 +4,12 @@
     <view class="ss-flex ss-col-center ss-row-between ss-m-b-20 ss-p-t-30">
       <view class="left-box ss-flex ss-col-center ss-m-l-30">
         <view class="avatar-box ss-m-r-24">
-          <image class="avatar-img" :src="sheep.$url.avatar(isLogin ? userInfo.avatar : '')"
-                 mode="aspectFill" @tap="sheep.$router.go('/pages/user/info')">
+          <image
+            class="avatar-img"
+            :src="sheep.$url.avatar(isLogin ? userInfo.avatar : '')"
+            mode="aspectFill"
+            @tap="sheep.$router.go('/pages/user/info')"
+          >
           </image>
         </view>
         <view>
@@ -52,10 +56,7 @@
    */
   import { computed } from 'vue';
   import sheep from '@/sheep';
-  import {
-    showShareModal,
-    showAuthModal,
-  } from '@/sheep/hooks/useModal';
+  import { showShareModal, showAuthModal } from '@/sheep/hooks/useModal';
 
   // 用户信息
   const userInfo = computed(() => sheep.$store('user').userInfo);
@@ -104,9 +105,7 @@
 
     // 根据 bgType 返回相应的样式
     return {
-      background: bgType === 'img'
-        ? `url(${bgImg}) no-repeat top center / 100% 100%`
-        : bgColor,
+      background: bgType === 'img' ? `url(${bgImg}) no-repeat top center / 100% 100%` : bgColor,
     };
   });
 

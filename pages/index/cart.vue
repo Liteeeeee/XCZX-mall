@@ -610,6 +610,16 @@
     }
   }
 
+  // 跳转推荐商品详情
+  function onTapRecommend(item) {
+    const goodsId = item.spuId || item.id || item.goods_id;
+    if (goodsId) {
+      sheep.$router.go('/pages/goods/index', {
+        id: goodsId,
+      });
+    }
+  }
+
   // 结算
   async function onConfirm() {
     const items = [];

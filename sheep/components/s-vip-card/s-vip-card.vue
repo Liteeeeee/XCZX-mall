@@ -50,13 +50,13 @@
       .vip-title {
         font-size: 30rpx;
         font-weight: bold;
-        color: #FFECC9;
+        color: #ffecc9;
         line-height: 42rpx;
       }
 
       .vip-subtitle {
         font-size: 22rpx;
-        color: #FFECC9;
+        color: #ffecc9;
         line-height: 32rpx;
       }
     }
@@ -66,7 +66,7 @@
       z-index: 2;
       width: 152rpx;
       height: 52rpx;
-      background: linear-gradient( 270deg, #F7EDD6 0%, #F9D6B4 100%);
+      background: linear-gradient(270deg, #f7edd6 0%, #f9d6b4 100%);
       border-radius: 26rpx;
       font-size: 22rpx;
       font-family: PingFangSC, PingFang SC;

@@ -89,13 +89,13 @@
     .title-content {
       .title-text {
         font-size: 30rpx;
-        color: #1E3F1C;
+        color: #1e3f1c;
       }
 
       .sub-title-text {
         font-size: 22rpx;
         font-weight: 100 !important;
-        color: #1E3F1C;
+        color: #1e3f1c;
       }
     }
 

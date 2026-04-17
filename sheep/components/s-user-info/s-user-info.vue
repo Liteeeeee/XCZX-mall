@@ -10,9 +10,17 @@
     >
       <view class="ss-flex ss-col-center">
         <!-- 优先显示装修配置的图片图标 -->
-        <image v-if="getIcon(item)" class="item-icon ss-m-r-20" :src="getIcon(item)" mode="aspectFit" />
+        <image
+          v-if="getIcon(item)"
+          class="item-icon ss-m-r-20"
+          :src="getIcon(item)"
+          mode="aspectFit"
+        />
         <!-- 兼容 element-plus 等图标名 (ep:setting) -->
-        <text v-else-if="item.iconName" :class="[item.iconName, 'item-icon-name', 'ss-m-r-20']"></text>
+        <text
+          v-else-if="item.iconName"
+          :class="[item.iconName, 'item-icon-name', 'ss-m-r-20']"
+        ></text>
         <text class="item-title">{{ item.name }}</text>
       </view>
       <view class="ss-flex ss-col-center">
@@ -60,10 +68,10 @@
 
   const getIcon = (item) => {
     const iconMap = {
-      '我的设置': '/static/user/setting.webp',
-      '地址管理': '/static/user/address.webp',
-      '平台合伙人': '/static/user/friend.webp',
-      '申请合伙人': '/static/user/friend.webp',
+      我的设置: '/static/user/setting.webp',
+      地址管理: '/static/user/address.webp',
+      平台合伙人: '/static/user/friend.webp',
+      申请合伙人: '/static/user/friend.webp',
     };
     if (iconMap[item.name]) {
       return sheep.$url.static(iconMap[item.name]);
@@ -118,7 +126,6 @@
         background: #f9f9f9;
       }
 
-  
       .item-icon {
         width: 44rpx;
         height: 44rpx;

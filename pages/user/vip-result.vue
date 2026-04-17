@@ -9,32 +9,36 @@
         <view class="nav-title">开通会员</view>
       </view>
     </view>
-    
+
     <view class="page-container">
       <view class="result-card">
         <!-- 上半部分：状态展示（图片+文字） -->
         <view class="state-box flex-col flex-x-center">
           <!-- Success State -->
           <block v-if="state.payState === 'success'">
-            <image class="state-img" :src="sheep.$url.static('/static/kaitongchenggong.webp')" mode="aspectFit" />
+            <image
+              class="state-img"
+              :src="sheep.$url.static('/static/kaitongchenggong.webp')"
+              mode="aspectFit"
+            />
             <view class="state-title">会员开通成功</view>
           </block>
 
           <!-- Failure State -->
           <block v-else>
-            <image class="state-img" :src="sheep.$url.static('/static/reject.webp')" mode="aspectFit" />
+            <image
+              class="state-img"
+              :src="sheep.$url.static('/static/reject.webp')"
+              mode="aspectFit"
+            />
             <view class="state-title">会员开通失败</view>
           </block>
         </view>
 
         <!-- 下半部分：操作按钮（并排） -->
         <view class="btn-box flex-row">
-          <button class="ss-reset-button action-btn back-btn" @tap="onMyMember">
-            我的会员
-          </button>
-          <button class="ss-reset-button action-btn home-btn" @tap="onHome">
-            回到首页
-          </button>
+          <button class="ss-reset-button action-btn back-btn" @tap="onMyMember"> 我的会员 </button>
+          <button class="ss-reset-button action-btn home-btn" @tap="onHome"> 回到首页 </button>
         </view>
       </view>
     </view>
@@ -78,26 +82,26 @@
     width: 100%;
     background-color: transparent;
   }
-  
+
   .nav-bar {
     height: 88rpx;
     display: flex;
     align-items: center;
     padding: 0 30rpx;
-    
+
     .back-btn {
       display: flex;
       align-items: center;
       justify-content: center;
       padding-right: 20rpx;
       height: 100%;
-      
+
       .sicon-back {
         font-size: 32rpx;
         color: #000;
       }
     }
-    
+
     .nav-title {
       font-size: 32rpx;
       font-weight: 500;
@@ -114,14 +118,14 @@
 
   .result-card {
     width: 100%;
-    background-color: #FFFFFF; /* 白色背景卡片 */
+    background-color: #ffffff; /* 白色背景卡片 */
     border-radius: 20rpx; /* 圆角 */
     padding: 100rpx 0 80rpx 0; /* 上下内边距 */
     display: flex;
     flex-direction: column;
     align-items: center;
   }
-  
+
   /* 上半部分：状态展示 */
   .state-box {
     width: 100%;
@@ -129,13 +133,13 @@
     flex-direction: column;
     align-items: center;
     margin-bottom: 100rpx; /* 与按钮组的间距 */
-    
+
     .state-img {
       width: 200rpx; /* 根据设计图调整大小 */
       height: 200rpx;
       margin-bottom: 40rpx; /* 图片与文字间距 */
     }
-    
+
     .state-title {
       font-size: 36rpx;
       font-weight: 500;
@@ -143,11 +147,11 @@
       line-height: 50rpx;
       text-align: center;
     }
-    
+
     .state-desc {
       font-size: 28rpx;
       font-weight: normal;
-      color: #9D9C96;
+      color: #9d9c96;
       line-height: 40rpx;
       text-align: center;
       margin-top: 16rpx;
@@ -161,7 +165,7 @@
     flex-direction: row;
     justify-content: center; /* 居中排列 */
     align-items: center;
-    
+
     .action-btn {
       width: 280rpx; /* 设计图要求280rpx */
       height: 88rpx; /* 设计图要求88rpx */
@@ -176,16 +180,16 @@
     }
 
     .back-btn {
-      background-color: #FFFFFF;
-      border: 2rpx solid #1A4B2B; /* 绿色边框 */
-      color: #1A4B2B;
+      background-color: #ffffff;
+      border: 2rpx solid #1a4b2b; /* 绿色边框 */
+      color: #1a4b2b;
       margin-right: 40rpx; /* 按钮间距 40rpx */
     }
-    
+
     .home-btn {
-      background-color: #1A4B2B; /* 绿色背景 */
-      color: #FFFFFF;
-      border: 2rpx solid #1A4B2B;
+      background-color: #1a4b2b; /* 绿色背景 */
+      color: #ffffff;
+      border: 2rpx solid #1a4b2b;
     }
   }
 </style>

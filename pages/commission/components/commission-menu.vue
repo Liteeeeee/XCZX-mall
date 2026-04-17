@@ -2,7 +2,10 @@
 <template>
   <view class="menu-box ss-flex-col">
     <view class="header-box">
-      <image class="header-bg" :src="sheep.$url.static('/static/img/shop/commission/title1.webp')" />
+      <image
+        class="header-bg"
+        :src="sheep.$url.static('/static/img/shop/commission/title1.webp')"
+      />
       <view class="ss-flex header-title">
         <view class="title">功能专区</view>
         <text class="cicon-forward"></text>

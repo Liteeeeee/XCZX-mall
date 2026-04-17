@@ -1,5 +1,9 @@
 <template>
-  <view class="u-page__item" v-if="tabbar?.items?.length > 0" style="position: relative; z-index: 9999;">
+  <view
+    class="u-page__item"
+    v-if="tabbar?.items?.length > 0"
+    style="position: relative; z-index: 9999"
+  >
     <su-tabbar
       :value="path"
       :fixed="true"
@@ -42,21 +46,41 @@
     const appStore = sheep.$store('app');
     const tabbarData = appStore.template.basic?.tabbar;
     console.log('[s-tabbar] raw data from store:', tabbarData);
-    
+
     if (tabbarData && tabbarData.items && tabbarData.items.length > 0) {
       return tabbarData;
     }
-    
+
     console.log('[s-tabbar] items is empty, using hardcoded fallback');
     // 返回一个默认值作为最后一道防线
     return {
       items: [
-        { text: '首页', url: '/pages/index/index', iconUrl: '/static/tabbar/home.webp', activeIconUrl: '/static/tabbar/home_active.webp' },
-        { text: '会员', url: '/pages/index/member', iconUrl: '/static/tabbar/member.webp', activeIconUrl: '/static/tabbar/member_active.webp' },
-        { text: '购物车', url: '/pages/index/cart', iconUrl: '/static/tabbar/cart.webp', activeIconUrl: '/static/tabbar/cart_active.webp' },
-        { text: '我的', url: '/pages/index/user', iconUrl: '/static/tabbar/user.webp', activeIconUrl: '/static/tabbar/user_active.webp' }
+        {
+          text: '首页',
+          url: '/pages/index/index',
+          iconUrl: '/static/tabbar/home.webp',
+          activeIconUrl: '/static/tabbar/home_active.webp',
+        },
+        {
+          text: '会员',
+          url: '/pages/index/member',
+          iconUrl: '/static/tabbar/member.webp',
+          activeIconUrl: '/static/tabbar/member_active.webp',
+        },
+        {
+          text: '购物车',
+          url: '/pages/index/cart',
+          iconUrl: '/static/tabbar/cart.webp',
+          activeIconUrl: '/static/tabbar/cart_active.webp',
+        },
+        {
+          text: '我的',
+          url: '/pages/index/user',
+          iconUrl: '/static/tabbar/user.webp',
+          activeIconUrl: '/static/tabbar/user_active.webp',
+        },
       ],
-      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#FFFFFA' }
+      style: { color: '#333', activeColor: '#1E3F1C', bgType: 'color', bgColor: '#FFFFFA' },
     };
   });
 

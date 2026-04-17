@@ -57,7 +57,7 @@
       </view>
 
       <!-- #ifdef MP -->
-      
+
       <!-- #endif -->
     </view>
   </s-layout>
@@ -242,30 +242,30 @@
 </script>
 
 <style lang="scss" scoped>
-.custom-header {
+  .custom-header {
     width: 100%;
     background-color: transparent;
   }
-  
+
   .nav-bar {
     height: 88rpx;
     display: flex;
     align-items: center;
     padding: 0 30rpx;
-    
+
     .back-btn {
       display: flex;
       align-items: center;
       justify-content: center;
       padding-right: 20rpx;
       height: 100%;
-      
+
       .sicon-back {
         font-size: 32rpx;
         color: #000;
       }
     }
-    
+
     .nav-title {
       font-size: 32rpx;
       font-weight: 500;

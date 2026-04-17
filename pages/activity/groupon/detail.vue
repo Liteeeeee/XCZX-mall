@@ -98,7 +98,10 @@
         <view class="ss-m-t-60 ss-flex ss-flex-wrap ss-row-center">
           <!-- 团长 -->
           <view class="header-avatar ss-m-r-24 ss-m-b-20">
-            <image :src="sheep.$url.avatar(state.data.headRecord.avatar)" class="avatar-img"></image>
+            <image
+              :src="sheep.$url.avatar(state.data.headRecord.avatar)"
+              class="avatar-img"
+            ></image>
             <view class="header-tag ss-flex ss-col-center ss-row-center">团长</view>
           </view>
           <!-- 团员 -->
@@ -121,10 +124,7 @@
             v-for="item in state.remainNumber"
             :key="item"
           >
-            <image
-              :src="sheep.$url.avatar()"
-              class="avatar-img"
-            ></image>
+            <image :src="sheep.$url.avatar()" class="avatar-img"></image>
           </view>
         </view>
       </view>
@@ -195,7 +195,10 @@
       </view>
     </view>
 
-    <s-empty v-if="!state.data && !state.loading" :icon="sheep.$url.static('/static/goods-empty.webp')" />
+    <s-empty
+      v-if="!state.data && !state.loading"
+      :icon="sheep.$url.static('/static/goods-empty.webp')"
+    />
   </s-layout>
 </template>
 

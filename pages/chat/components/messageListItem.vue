@@ -36,12 +36,12 @@
       >
         <!-- 客服头像 -->
         <image
-            v-show="message.senderType === UserTypeEnum.ADMIN"
-            class="chat-avatar ss-m-r-24"
-            :src="sheep.$url.avatar(message.senderAvatar)"
-            mode="aspectFill"
-            lazy-load
-          />
+          v-show="message.senderType === UserTypeEnum.ADMIN"
+          class="chat-avatar ss-m-r-24"
+          :src="sheep.$url.avatar(message.senderAvatar)"
+          mode="aspectFill"
+          lazy-load
+        />
         <!-- 内容 -->
         <template v-if="message.contentType === KeFuMessageContentTypeEnum.TEXT">
           <view class="message-box" :class="{ admin: message.senderType === UserTypeEnum.ADMIN }">
@@ -84,12 +84,12 @@
         </template>
         <!-- user头像 -->
         <image
-            v-show="message.senderType === UserTypeEnum.MEMBER"
-            class="chat-avatar ss-m-l-24"
-            :src="sheep.$url.avatar(userInfo.avatar)"
-            mode="aspectFill"
-          >
-          </image>
+          v-show="message.senderType === UserTypeEnum.MEMBER"
+          class="chat-avatar ss-m-l-24"
+          :src="sheep.$url.avatar(userInfo.avatar)"
+          mode="aspectFill"
+        >
+        </image>
       </view>
     </view>
   </view>

@@ -35,7 +35,7 @@
           class="list-border"
           @tap="
             sheep.$router.go('/pages/public/richtext', {
-              title: '关于我们'
+              title: '关于我们',
             })
           "
         />
@@ -55,21 +55,11 @@
     <view class="set-footer ss-flex-col ss-row-center ss-col-center">
       <view class="agreement-box ss-flex ss-col-center ss-m-b-40">
         <view class="ss-flex ss-col-center ss-m-b-10">
-          <view
-            class="tcp-text"
-            @tap="
-              sheep.$router.go('/pages/index/userAgreement')
-            "
-          >
+          <view class="tcp-text" @tap="sheep.$router.go('/pages/index/userAgreement')">
             《用户协议》
           </view>
           <view class="agreement-text">与</view>
-          <view
-            class="tcp-text"
-            @tap="
-              sheep.$router.go('/pages/index/privacyPolicy')
-            "
-          >
+          <view class="tcp-text" @tap="sheep.$router.go('/pages/index/privacyPolicy')">
             《隐私协议》
           </view>
         </view>

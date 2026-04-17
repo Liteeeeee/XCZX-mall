@@ -22,8 +22,8 @@
           @tap="onCart"
         >
           <view class="icon-box">
-             <uni-icons type="cart" size="22" color="#666"></uni-icons>
-             <view class="badge" v-if="cartCount > 0">{{ cartCount }}</view>
+            <uni-icons type="cart" size="22" color="#666"></uni-icons>
+            <view class="badge" v-if="cartCount > 0">{{ cartCount }}</view>
           </view>
           <view class="item-title">购物车</view>
         </view>
@@ -107,15 +107,15 @@
     if (props.modelValue.favorite) {
       const { code } = await FavoriteApi.deleteFavorite(props.modelValue.id);
       if (code !== 0) {
-        return
+        return;
       }
       sheep.$helper.toast('取消收藏');
       props.modelValue.favorite = false;
-    // 情况二：添加收藏
+      // 情况二：添加收藏
     } else {
       const { code } = await FavoriteApi.createFavorite(props.modelValue.id);
       if (code !== 0) {
-        return
+        return;
       }
       sheep.$helper.toast('收藏成功');
       props.modelValue.favorite = true;
@@ -164,7 +164,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        
+
         .badge {
           position: absolute;
           top: -6rpx;

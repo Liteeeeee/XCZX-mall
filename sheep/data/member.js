@@ -17,10 +17,10 @@ export default {
 
   shape_1: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/形状@2x(1).webp',
   shape_2: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/形状@2x(2).webp',
-  
+
   // 示例：卡片背景
   // card_bg: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/card_bg.webp',
-  
+
   // 示例：图标
   // icon_gift: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/member/icon_gift.webp',
 };

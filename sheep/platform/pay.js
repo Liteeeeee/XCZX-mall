@@ -194,7 +194,7 @@ export default class SheepPay {
           const msg = err?.errMsg || '未知原因';
           sheep.$helper.toast('支付失败：' + msg);
           console.log('========>', msg);
-          
+
           this.payResult('fail');
         }
       },
@@ -252,7 +252,7 @@ export default class SheepPay {
           sheep.$helper.toast('支付已手动取消');
         } else {
           that.payResult('fail');
-          console.log('========>',err.errMsg)
+          console.log('========>', err.errMsg);
         }
       },
     });
@@ -270,13 +270,13 @@ export default class SheepPay {
 
     // 解析支付参数
     let payConfig = JSON.parse(data.displayContent);
-    if(typeof payConfig.appId === 'undefined'){
+    if (typeof payConfig.appId === 'undefined') {
       payConfig.appId = payConfig.appid;
     }
-    if(typeof payConfig.nonceStr === 'undefined'){
+    if (typeof payConfig.nonceStr === 'undefined') {
       payConfig.nonceStr = payConfig.noncestr;
     }
-    if(typeof payConfig.timeStamp === 'undefined'){
+    if (typeof payConfig.timeStamp === 'undefined') {
       payConfig.timeStamp = payConfig.timestamp;
     }
     // 调用微信支付
@@ -295,7 +295,7 @@ export default class SheepPay {
           sheep.$helper.toast('支付已手动取消');
         } else {
           sheep.$helper.toast('支付失败：' + err.errMsg);
-          console.log('========>',err.errMsg)
+          console.log('========>', err.errMsg);
           that.payResult('fail');
         }
       },

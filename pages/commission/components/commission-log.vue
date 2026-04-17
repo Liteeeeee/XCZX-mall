@@ -2,7 +2,10 @@
 <template>
   <view class="distribution-log-wrap">
     <view class="header-box">
-      <image class="header-bg" :src="sheep.$url.static('/static/img/shop/commission/title2.webp')" />
+      <image
+        class="header-bg"
+        :src="sheep.$url.static('/static/img/shop/commission/title2.webp')"
+      />
       <view class="ss-flex header-title">
         <view class="title">实时动态</view>
         <text class="cicon-forward" />

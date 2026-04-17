@@ -28,7 +28,7 @@ const login = () => {
       });
 
       if (res.error === 0) {
-        $share.bindBrokerageUser()
+        $share.bindBrokerageUser();
         resolve(true);
       }
     } else {
@@ -59,5 +59,5 @@ async function getInfo() {
 export default {
   load,
   login,
-  getInfo
+  getInfo,
 };

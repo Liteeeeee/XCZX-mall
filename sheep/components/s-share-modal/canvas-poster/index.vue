@@ -8,7 +8,7 @@
           class="poster-img"
           :src="painterImageUrl"
           :style="{
-            height: poster.css.height+ 'px',
+            height: poster.css.height + 'px',
             width: poster.css.width + 'px',
           }"
           :show-menu-by-longpress="true"
@@ -32,7 +32,10 @@
     <canvas
       canvas-id="sharePosterCanvas"
       class="poster-canvas"
-      :style="{ width: poster.css.width * pixelRatio + 'px', height: poster.css.height * pixelRatio + 'px' }"
+      :style="{
+        width: poster.css.width * pixelRatio + 'px',
+        height: poster.css.height * pixelRatio + 'px',
+      }"
     />
     <!-- #endif -->
     <!-- #ifndef MP-WEIXIN -->
@@ -44,7 +47,7 @@
       ref="painterRef"
     />
     <!-- #endif -->
-    </view>
+  </view>
 </template>
 
 <script setup>
@@ -58,7 +61,11 @@
    */
   import { reactive, ref, unref, nextTick, getCurrentInstance } from 'vue';
   import sheep from '@/sheep';
-  import { getPosterData, getWxaQrcode, formatImageUrlProtocol } from '@/sheep/components/s-share-modal/canvas-poster/poster';
+  import {
+    getPosterData,
+    getWxaQrcode,
+    formatImageUrlProtocol,
+  } from '@/sheep/components/s-share-modal/canvas-poster/poster';
 
   const props = defineProps({
     show: {
@@ -67,8 +74,7 @@
     },
     shareInfo: {
       type: Object,
-      default: () => {
-      },
+      default: () => {},
     },
   });
 
@@ -248,7 +254,7 @@
     const width = Math.round(poster.css.width);
     const scale = width / 750;
     const height = 1080 * scale;
-    
+
     // 先更新响应式高度，确保 template 中的 :height 得到更新
     if (poster.css.height !== height) {
       poster.css.height = height;
@@ -258,10 +264,10 @@
 
     // 传递当前组件实例的 proxy 以保证组件内 canvas 绑定正确
     const ctx = uni.createCanvasContext('sharePosterCanvas', currentInstance?.proxy);
-    
+
     const bgUrl = sheep.$url.cdn('/mp/static/share/shareGuide.webp');
     const logoUrl = sheep.$url.cdn('/mp/static/share/shareLogo.webp');
-    
+
     const sourcePicUrl =
       props.shareInfo?.poster?.picUrl || props.shareInfo?.image || props.shareInfo?.poster?.image;
     const goodsUrlCandidates = getGoodsUrlCandidates(sourcePicUrl);
@@ -285,10 +291,10 @@
     ctx.clearRect(0, 0, width, height);
     ctx.setFillStyle('#F8F9F3');
     ctx.fillRect(0, 0, width, height);
-    
+
     // Draw card background
     ctx.drawImage(bgPath, 32 * scale, 40 * scale, 686 * scale, 1000 * scale);
-    
+
     // Draw White Card
     ctx.save();
     ctx.beginPath();
@@ -332,7 +338,7 @@
     ctx.font = `500 ${Math.round(28 * scale)}px sans-serif`;
     const title = String(props.shareInfo?.poster?.title || '');
     const titleMaxWidth = 380 * scale;
-    
+
     // Simple text wrap for title (max 2 lines)
     let line1 = '';
     let line2 = '';
@@ -475,7 +481,7 @@
       border-radius: 35rpx;
       font-size: 28rpx;
       font-weight: 500;
-      background-color: #1E3F1C;
+      background-color: #1e3f1c;
       color: aliceblue;
     }
   }
@@ -490,5 +496,4 @@
     top: -9999px;
     pointer-events: none;
   }
-
 </style>

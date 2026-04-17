@@ -12,11 +12,7 @@
       <!-- 首页自定义导航左侧 -->
       <template #navbarLeft>
         <view class="navbar-left-box ss-flex ss-row-left ss-col-center">
-          <image
-            class="logo"
-            :src="sheep.$url.static('/static/log.webp')"
-            mode="aspectFit"
-          ></image>
+          <image class="logo" :src="sheep.$url.static('/static/log.webp')" mode="aspectFit"></image>
         </view>
       </template>
 
@@ -127,7 +123,7 @@
     }
   });
 
-  onShow(async() => {
+  onShow(async () => {
     // #ifdef APP-PLUS
     // ios首次授权网络，需要重新加载一次应用初始化
     // 可能需要考虑上uni.onNetworkStatusChange，uni.offNetworkStatusChange组合拳以及主动主动唤起权限申请

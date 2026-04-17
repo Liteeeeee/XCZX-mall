@@ -4,10 +4,19 @@
     <!-- 头部导航 -->
     <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
       <su-status-bar />
-      <view class="nav-bar-container" :style="{ height: (sheep.$platform.navbar - sheep.$platform.device.statusBarHeight) + 'px' }">
-        <view class="nav-bar-inner ss-flex ss-col-center" :style="{ height: '100%', paddingLeft: '20rpx' }">
+      <view
+        class="nav-bar-container"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{ height: '100%', paddingLeft: '20rpx' }"
+        >
           <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
-            <text class="sicon-back" style="font-size: 40rpx; color: #1E3F1C; font-weight: 600;"></text>
+            <text
+              class="sicon-back"
+              style="font-size: 40rpx; color: #1e3f1c; font-weight: 600"
+            ></text>
           </view>
           <text class="nav-title ss-m-l-10">设置</text>
         </view>
@@ -23,9 +32,17 @@
         <view class="form-item ss-flex ss-row-between ss-col-center">
           <text class="item-label">头像</text>
           <view class="avatar-box">
-            <image class="avatar-img" :src="sheep.$url.avatar(state.model?.avatar)" mode="aspectFill" />
+            <image
+              class="avatar-img"
+              :src="sheep.$url.avatar(state.model?.avatar)"
+              mode="aspectFill"
+            />
             <!-- #ifdef MP -->
-            <button class="ss-reset-button avatar-action-btn" open-type="chooseAvatar" @chooseavatar="onChooseAvatar"></button>
+            <button
+              class="ss-reset-button avatar-action-btn"
+              open-type="chooseAvatar"
+              @chooseavatar="onChooseAvatar"
+            ></button>
             <!-- #endif -->
             <!-- #ifndef MP -->
             <button class="ss-reset-button avatar-action-btn" @tap="onChangeAvatar"></button>
@@ -39,7 +56,7 @@
           <view class="item-value-box ss-flex ss-col-center">
             <input
               class="nickname-input"
-              :class="{'has-value': state.model.nickname}"
+              :class="{ 'has-value': state.model.nickname }"
               v-model="state.model.nickname"
               type="nickname"
               placeholder="未填写"
@@ -50,10 +67,15 @@
         </view>
 
         <!-- 手机号 -->
-        <view class="form-item ss-flex ss-row-between ss-col-center ss-m-t-70" @tap="onChangeMobile">
+        <view
+          class="form-item ss-flex ss-row-between ss-col-center ss-m-t-70"
+          @tap="onChangeMobile"
+        >
           <text class="item-label">手机号</text>
           <view class="item-value-box ss-flex ss-col-center">
-            <text class="item-value" :class="{'is-empty': !userInfo.mobile}">{{ maskMobile(userInfo.mobile) || '未绑定' }}</text>
+            <text class="item-value" :class="{ 'is-empty': !userInfo.mobile }">{{
+              maskMobile(userInfo.mobile) || '未绑定'
+            }}</text>
             <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
           </view>
         </view>
@@ -64,7 +86,9 @@
           <view class="item-value-box ss-flex ss-col-center">
             <picker mode="date" :value="state.model.birthday" @change="onChangeBirthday">
               <view class="ss-flex ss-col-center">
-                <text class="item-value" :class="{'is-empty': !state.model.birthday}">{{ formatBirthday(state.model.birthday) || '未设置' }}</text>
+                <text class="item-value" :class="{ 'is-empty': !state.model.birthday }">{{
+                  formatBirthday(state.model.birthday) || '未设置'
+                }}</text>
                 <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
               </view>
             </picker>
@@ -77,12 +101,26 @@
           <view class="item-value-box ss-flex ss-col-center">
             <radio-group @change="onChangeGender" class="ss-flex ss-col-center">
               <label class="radio ss-flex ss-col-center">
-                <radio value="1" color="#6DD400" style="transform: scale(0.8)" :checked="state.model.sex === 1" />
-                <text class="gender-text ss-m-l-10" :class="{'is-checked': state.model.sex === 1}">先生</text>
+                <radio
+                  value="1"
+                  color="#6DD400"
+                  style="transform: scale(0.8)"
+                  :checked="state.model.sex === 1"
+                />
+                <text class="gender-text ss-m-l-10" :class="{ 'is-checked': state.model.sex === 1 }"
+                  >先生</text
+                >
               </label>
               <label class="radio ss-flex ss-col-center ss-m-l-40">
-                <radio value="2" color="#6DD400" style="transform: scale(0.8)" :checked="state.model.sex === 2" />
-                <text class="gender-text ss-m-l-10" :class="{'is-checked': state.model.sex === 2}">女士</text>
+                <radio
+                  value="2"
+                  color="#6DD400"
+                  style="transform: scale(0.8)"
+                  :checked="state.model.sex === 2"
+                />
+                <text class="gender-text ss-m-l-10" :class="{ 'is-checked': state.model.sex === 2 }"
+                  >女士</text
+                >
               </label>
             </radio-group>
           </view>
@@ -91,7 +129,9 @@
         <view class="form-item ss-flex ss-row-between ss-col-center ss-m-t-70" @tap="onBindWechat">
           <text class="item-label">绑定微信</text>
           <view class="item-value-box ss-flex ss-col-center">
-            <text class="item-value" :class="{'is-empty': !state.isBindWechat}">{{ state.isBindWechat ? '已绑定' : '未绑定' }}</text>
+            <text class="item-value" :class="{ 'is-empty': !state.isBindWechat }">{{
+              state.isBindWechat ? '已绑定' : '未绑定'
+            }}</text>
             <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
           </view>
         </view>
@@ -255,7 +295,7 @@
     if (userInfo.birthday) {
       state.model.birthday = sheep.$helper.timeFormat(userInfo.birthday, 'yyyy-mm-dd');
     }
-    
+
     // 获取微信绑定状态
     const type = sheep.$platform.name === 'WechatOfficialAccount' ? 31 : 34; // 31公众号，34小程序
     const { code, data } = await SocialApi.getSocialUser(type);

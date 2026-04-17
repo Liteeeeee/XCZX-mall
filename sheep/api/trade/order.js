@@ -8,13 +8,13 @@ const OrderApi = {
       ...data,
     };
     // 移除多余字段
-    if (!(data.couponId > 0)) {
+    if (!data.couponId) {
       delete data2.couponId;
     }
-    if (!(data.addressId > 0)) {
+    if (!data.addressId) {
       delete data2.addressId;
     }
-    if (!(data.pickUpStoreId > 0)) {
+    if (!data.pickUpStoreId) {
       delete data2.pickUpStoreId;
     }
     if (isEmpty(data.receiverName)) {
@@ -23,16 +23,16 @@ const OrderApi = {
     if (isEmpty(data.receiverMobile)) {
       delete data2.receiverMobile;
     }
-    if (!(data.combinationActivityId > 0)) {
+    if (!data.combinationActivityId) {
       delete data2.combinationActivityId;
     }
-    if (!(data.combinationHeadId > 0)) {
+    if (!data.combinationHeadId) {
       delete data2.combinationHeadId;
     }
-    if (!(data.seckillActivityId > 0)) {
+    if (!data.seckillActivityId) {
       delete data2.seckillActivityId;
     }
-    if (!(data.pointActivityId > 0)) {
+    if (!data.pointActivityId) {
       delete data2.pointActivityId;
     }
     if (!(data.deliveryType > 0)) {
