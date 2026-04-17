@@ -411,24 +411,24 @@
       uni.showToast({ title: '请输入手机号', icon: 'none' });
       return;
     }
-    const idCardNo = (state.idCardNo || '').trim();
-    if (!idCardNo) {
-      uni.showToast({ title: '请输入身份证号', icon: 'none' });
-      return;
-    }
-    // 简单的身份证格式校验（18位，最后一位可以是数字或Xx）
-    if (!/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(idCardNo)) {
-      uni.showToast({ title: '请输入正确的身份证号', icon: 'none' });
-      return;
-    }
-    if (!state.idCardFrontUrl) {
-      uni.showToast({ title: '请上传身份证人像面', icon: 'none' });
-      return;
-    }
-    if (!state.idCardBackUrl) {
-      uni.showToast({ title: '请上传身份证国徽面', icon: 'none' });
-      return;
-    }
+    // const idCardNo = (state.idCardNo || '').trim();
+    // if (!idCardNo) {
+    //   uni.showToast({ title: '请输入身份证号', icon: 'none' });
+    //   return;
+    // }
+    // // 简单的身份证格式校验（18位，最后一位可以是数字或Xx）
+    // if (!/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(idCardNo)) {
+    //   uni.showToast({ title: '请输入正确的身份证号', icon: 'none' });
+    //   return;
+    // }
+    // if (!state.idCardFrontUrl) {
+    //   uni.showToast({ title: '请上传身份证人像面', icon: 'none' });
+    //   return;
+    // }
+    // if (!state.idCardBackUrl) {
+    //   uni.showToast({ title: '请上传身份证国徽面', icon: 'none' });
+    //   return;
+    // }
     if (!state.careerValue) {
       uni.showToast({ title: '请选择职业', icon: 'none' });
       return;
@@ -444,9 +444,9 @@
 
     const payload = {
       mobile,
-      idCardNo,
-      idCardFrontUrl: extractKey(state.idCardFrontUrl),
-      idCardBackUrl: extractKey(state.idCardBackUrl),
+      idCardNo: '',
+      idCardFrontUrl: '',
+      idCardBackUrl: '',
       occupation: state.careerValue,
       gender: state.gender,
     };

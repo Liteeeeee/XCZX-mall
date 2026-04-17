@@ -1,5 +1,38 @@
 <template>
-  <s-layout title="用户协议" class="set-wrap">
+  <s-layout title="用户协议" class="set-wrap" navbar="clear">
+    <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
+      <su-status-bar />
+      <view
+        class="nav-bar-container"
+        :style="{
+          height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px',
+        }"
+      >
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{ height: '100%', paddingLeft: '20rpx' }"
+        >
+          <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
+            <text
+              class="sicon-back"
+              style="font-size: 40rpx; color: rgba(61, 61, 60, 1); font-weight: 600"
+            ></text>
+          </view>
+          <view
+            class="nav-title"
+            style="
+              margin-left: 10rpx;
+              font-size: 34rpx;
+              font-weight: 600;
+              color: rgba(61, 61, 60, 1);
+            "
+            >用户协议</view
+          >
+        </view>
+      </view>
+    </view>
+    <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }" />
+
     <view class="box_10 flex-col">
       <view class="text-wrapper_1">
         <text class="text_3">一、总则</text>
@@ -89,6 +122,7 @@
 </template>
 
 <script setup>
+  import sheep from '@/sheep';
   import { onLoad } from '@dcloudio/uni-app';
 
   onLoad(() => {
@@ -99,6 +133,25 @@
 </script>
 
 <style lang="scss" scoped>
+  .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    background-color: rgba(255, 255, 250, 1);
+  }
+
+  .nav-bar-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .back-btn {
+    width: 60rpx;
+    height: 100%;
+  }
+
   .box_10 {
     background-color: rgba(255, 255, 250, 1);
     padding: 40rpx 32rpx;

@@ -153,7 +153,7 @@
   const pageHeight = computed(() => safeArea.height - 50);
   const windowWidth =
     sheep.$platform.device.windowWidth || uni.getSystemInfoSync().windowWidth || 375;
-  const searchBlockHeightPx = Math.ceil((142 / 750) * windowWidth);
+  const searchBlockHeightPx = 0;
   const menuTop = computed(() => Number(sheep.$platform.navbar || 0) + searchBlockHeightPx + 'px');
   const menuScrollHeight = computed(() =>
     Math.max(0, pageHeight.value - Number(sheep.$platform.navbar || 0) - searchBlockHeightPx),

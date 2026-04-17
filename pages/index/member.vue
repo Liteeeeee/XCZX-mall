@@ -129,16 +129,12 @@
               </view>
               <view class="text-wrapper_5">
                 <text class="text_25">开通即代表同意</text>
-                <text
-                  class="text_26"
-                  @tap="sheep.$router.go('/pages/public/richtext', { id: 'service-protocol' })"
+                <text class="text_26" @tap="sheep.$router.go('/pages/index/userAgreement')"
                   >《服务协议》</text
                 >
                 <text class="text_27">和</text>
-                <text
-                  class="text_28"
-                  @tap="sheep.$router.go('/pages/public/richtext', { id: 'payment-protocol' })"
-                  >《支付协议》</text
+                <text class="text_28" @tap="sheep.$router.go('/pages/index/privacyPolicy')"
+                  >《隐私协议》</text
                 >
               </view>
             </view>
