@@ -38,7 +38,13 @@
           <view class="no-box ss-flex ss-col-center ss-row-between">
             <text class="order-code">订单编号：{{ item.bizId }}</text>
             <text class="order-state">
-              {{ item.status === 0 ? '待结算' : item.status === 1 ? '已结算' : '已取消' }}
+              {{
+                item.brokerageStatus === 10
+                  ? '待结算'
+                  : item.brokerageStatus === 20
+                  ? '已结算'
+                  : '已取消'
+              }}
               ( 佣金 {{ fen2yuan(item.price) }} 元 )
             </text>
           </view>

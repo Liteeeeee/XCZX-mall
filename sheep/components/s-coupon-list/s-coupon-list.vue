@@ -1,5 +1,5 @@
 <template>
-  <view class="coupon-item-wrap" @tap="$emit('tap')">
+  <view class="coupon-item-wrap" @tap="onCouponTap">
     <view
       class="coupon-item ss-flex ss-row-between"
       :class="{ 'is-disabled': disabled || isDisable }"
@@ -127,11 +127,22 @@
     },
   });
 
-  defineEmits(['tap']);
+  const emit = defineEmits(['tap']);
 
   const isDisable = computed(() => {
     return props.disabled;
   });
+
+  function onCouponTap() {
+    if (isDisable.value && props.data?.mismatchReason) {
+      uni.showToast({
+        title: props.data.mismatchReason,
+        icon: 'none',
+      });
+    } else {
+      emit('tap');
+    }
+  }
 </script>
 
 <style lang="scss" scoped>

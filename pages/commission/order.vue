@@ -246,14 +246,14 @@
   }
 
   function commissionStatusText(item) {
-    if (item?.status === 40) return '已取消';
-    if (item?.status === 30) return '已结算';
+    if (item?.brokerageStatus === 40) return '已取消';
+    if (item?.brokerageStatus === 20) return '已结算';
     return '待结算';
   }
 
   function commissionStatusClass(item) {
-    if (item?.status === 40) return 'status-cancel';
-    if (item?.status === 30) return 'status-settled';
+    if (item?.brokerageStatus === 40) return 'status-cancel';
+    if (item?.brokerageStatus === 20) return 'status-settled';
     return 'status-pending';
   }
 
@@ -322,10 +322,10 @@
     const queryParams = {
       pageSize: state.pagination.pageSize,
       pageNo: state.pagination.pageNo,
-      status: tab.value,
+      brokerageStatus: tab.value,
     };
     if (tab.value === undefined) {
-      delete queryParams.status;
+      delete queryParams.brokerageStatus;
     }
     const { code, data } = await BrokerageApi.getBrokerageRecordOrderPage(queryParams);
     if (code !== 0) {

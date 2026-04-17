@@ -73,6 +73,7 @@
               backgroundSize: '100% 100%',
               backgroundRepeat: 'no-repeat',
             }"
+            @tap="sheep.$router.go('/pages/index/member')"
           >
             <view class="vip-left ss-flex ss-col-center">
               <image
