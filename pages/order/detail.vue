@@ -231,7 +231,7 @@
       <view class="footer-box ss-flex ss-col-center ss-row-right">
         <!-- 售后相关按钮（统一只显示一个） -->
         <template v-if="state.orderInfo.items">
-          <button
+          <!-- <button
             class="ss-reset-button apply-btn"
             v-if="
               state.orderInfo.items.find(
@@ -242,7 +242,7 @@
             @tap.stop="onApplyAfterSale"
           >
             {{ state.orderInfo.status === 10 ? '申请退款' : '申请售后' }}
-          </button>
+          </button> -->
           <button
             class="ss-reset-button apply-btn"
             v-if="state.orderInfo.items.find((item) => item.afterSaleStatus === 10)"

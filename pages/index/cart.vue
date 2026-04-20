@@ -294,7 +294,6 @@
               <button
                 v-else
                 class="ss-reset-button pay-btn"
-                :class="{ 'ui-BG-Main-Gradient': state.selectedIds.length > 0 }"
                 :disabled="state.selectedIds.length === 0"
                 @tap="onConfirm"
               >
