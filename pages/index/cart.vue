@@ -283,10 +283,21 @@
               </view>
             </view>
             <view class="footer-right ss-flex ss-col-center">
-              <button v-if="state.editMode" class="ss-reset-button pay-btn" @tap="onDelete">
+              <button
+                v-if="state.editMode"
+                class="ss-reset-button pay-btn"
+                :disabled="state.selectedIds.length === 0"
+                @tap="onDelete"
+              >
                 删除
               </button>
-              <button v-else class="ss-reset-button pay-btn" @tap="onConfirm">
+              <button
+                v-else
+                class="ss-reset-button pay-btn"
+                :class="{ 'ui-BG-Main-Gradient': state.selectedIds.length > 0 }"
+                :disabled="state.selectedIds.length === 0"
+                @tap="onConfirm"
+              >
                 去结算
                 {{ state.selectedIds?.length ? `(${state.selectedIds.length})` : '' }}
               </button>
@@ -859,6 +870,12 @@
         border-radius: 40rpx;
         background: rgba(30, 63, 28, 1);
         color: #fff;
+
+        &[disabled] {
+          background: #cccccc;
+          color: #fff;
+          opacity: 0.6;
+        }
       }
     }
 
