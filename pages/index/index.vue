@@ -135,6 +135,30 @@
       }
     }
     // #endif
+
+    // 首次进入上滑引导逻辑
+    const hasShownSwipeUp = uni.getStorageSync('hasShownSwipeUpGuide');
+    if (!hasShownSwipeUp) {
+      // 标记为已展示
+      uni.setStorageSync('hasShownSwipeUpGuide', true);
+      // 页面渲染完成后，延迟一会儿进行滑动
+      setTimeout(() => {
+        // 1. 缓慢向下滑动一段距离（比如200像素），耗时400ms
+        uni.pageScrollTo({
+          scrollTop: 200,
+          duration: 400,
+          success: () => {
+            // 2. 停顿一会儿(200ms)后，再缓慢滑回到顶部，耗时400ms
+            setTimeout(() => {
+              uni.pageScrollTo({
+                scrollTop: 0,
+                duration: 400,
+              });
+            }, 200);
+          },
+        });
+      }, 800);
+    }
   });
 
   // 下拉刷新
@@ -180,9 +204,9 @@
     }
   }
 
-  // 首页专属的轮播图指示器样式
+  // 首页专属的轮播图指示器样式：隐藏指示器
   :deep(.ui-swiper-dot) {
-    width: 100%;
+    display: none !important;
   }
 
   // 强制首页的轮播图按 1282rpx 比例显示

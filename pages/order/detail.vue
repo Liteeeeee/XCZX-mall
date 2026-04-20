@@ -229,26 +229,26 @@
       "
     >
       <view class="footer-box ss-flex ss-col-center ss-row-right">
-        <!-- 售后相关按钮 -->
-        <template v-for="item in state.orderInfo.items" :key="item.id">
+        <!-- 售后相关按钮（统一只显示一个） -->
+        <template v-if="state.orderInfo.items">
           <button
             class="ss-reset-button apply-btn"
-            v-if="[10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0"
-            @tap.stop="
-              sheep.$router.go('/pages/order/aftersale/apply', {
-                orderId: state.orderInfo.id,
-                itemId: item.id,
-              })
+            v-if="
+              state.orderInfo.items.find(
+                (item) =>
+                  [10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0,
+              )
             "
+            @tap.stop="onApplyAfterSale"
           >
             {{ state.orderInfo.status === 10 ? '申请退款' : '申请售后' }}
           </button>
           <button
             class="ss-reset-button apply-btn"
-            v-if="item.afterSaleStatus === 10"
+            v-if="state.orderInfo.items.find((item) => item.afterSaleStatus === 10)"
             @tap.stop="
               sheep.$router.go('/pages/order/aftersale/detail', {
-                id: item.afterSaleId,
+                id: state.orderInfo.items.find((item) => item.afterSaleStatus === 10).afterSaleId,
               })
             "
           >
@@ -256,10 +256,10 @@
           </button>
           <button
             class="ss-reset-button apply-btn"
-            v-if="item.afterSaleStatus === 20"
+            v-if="state.orderInfo.items.find((item) => item.afterSaleStatus === 20)"
             @tap.stop="
               sheep.$router.go('/pages/order/aftersale/detail', {
-                id: item.afterSaleId,
+                id: state.orderInfo.items.find((item) => item.afterSaleStatus === 20).afterSaleId,
               })
             "
           >
@@ -321,6 +321,48 @@
         </button>
       </view>
     </su-fixed>
+    <!-- 订单选择商品售后抽屉 -->
+    <su-popup
+      :show="state.showSelectGoodsDrawer"
+      type="bottom"
+      round="20"
+      :showClose="true"
+      @close="state.showSelectGoodsDrawer = false"
+    >
+      <view class="select-goods-drawer flex-col">
+        <view class="drawer-header flex-row align-center justify-center">
+          <text class="drawer-title">请选择需要售后的商品</text>
+        </view>
+
+        <scroll-view class="drawer-content" scroll-y>
+          <view
+            v-for="item in state.orderInfo.items.filter(
+              (i) => [10, 20, 30].includes(state.orderInfo.status) && i.afterSaleStatus === 0,
+            )"
+            :key="item.id"
+            class="goods-item-card flex-row align-center justify-between"
+            @tap="onSelectGoodsForAfterSale(item.id)"
+          >
+            <view class="flex-row align-center" style="flex: 1">
+              <image class="goods-img" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
+              <view class="goods-info flex-col justify-between">
+                <text class="goods-name ss-line-2">{{ item.spuName }}</text>
+                <text class="goods-sku" v-if="item.properties">{{
+                  item.properties.map((p) => p.valueName).join(' ')
+                }}</text>
+                <view class="flex-row justify-between" style="width: 100%">
+                  <text class="goods-price">￥{{ fen2yuan(item.price) }}</text>
+                  <text class="goods-count">x{{ item.count }}</text>
+                </view>
+              </view>
+            </view>
+            <view class="action-btn">
+              <button class="ss-reset-button apply-btn-small">申请</button>
+            </view>
+          </view>
+        </scroll-view>
+      </view>
+    </su-popup>
   </s-layout>
 </template>
 
@@ -342,6 +384,7 @@
   const state = reactive({
     orderInfo: {},
     now: dayjs(), // 当前时间用于倒计时
+    showSelectGoodsDrawer: false, // 是否显示多商品退款选择抽屉
   });
 
   let timer = null;
@@ -550,6 +593,32 @@
 
   const pickUpVerifyRef = ref();
   const skipNextOnShowRefresh = ref(false);
+
+  // 点击申请退款/售后按钮
+  function onApplyAfterSale() {
+    const availableItems = state.orderInfo.items.filter(
+      (item) => [10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0,
+    );
+    if (availableItems.length === 1) {
+      // 只有一个商品可退，直接跳转
+      sheep.$router.go('/pages/order/aftersale/apply', {
+        orderId: state.orderInfo.id,
+        itemId: availableItems[0].id,
+      });
+    } else if (availableItems.length > 1) {
+      // 有多个商品可退，弹出抽屉让用户选择
+      state.showSelectGoodsDrawer = true;
+    }
+  }
+
+  // 选中某个商品进行退款
+  function onSelectGoodsForAfterSale(itemId) {
+    state.showSelectGoodsDrawer = false;
+    sheep.$router.go('/pages/order/aftersale/apply', {
+      orderId: state.orderInfo.id,
+      itemId,
+    });
+  }
 
   async function getOrderDetail(id) {
     // 对详情数据进行适配
@@ -943,6 +1012,86 @@
       color: #fff;
       background: #1e3f1c;
       line-height: 60rpx;
+    }
+    .apply-btn-small {
+      width: 120rpx;
+      height: 50rpx;
+      background: rgba(255, 255, 250, 1);
+      border-radius: 25rpx;
+      border: 2rpx solid rgba(30, 63, 28, 1);
+      font-size: 24rpx;
+      font-weight: 500;
+      color: rgba(30, 63, 28, 1);
+      line-height: 46rpx;
+    }
+
+    // 抽屉样式
+    .select-goods-drawer {
+      width: 750rpx;
+      background-color: #f8f9f3;
+      border-radius: 20rpx 20rpx 0 0;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .drawer-header {
+      height: 100rpx;
+      background-color: #fff;
+      border-bottom: 1rpx solid #f5f5f5;
+    }
+
+    .drawer-title {
+      font-size: 32rpx;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .drawer-content {
+      max-height: 60vh;
+      padding: 20rpx 30rpx;
+      box-sizing: border-box;
+    }
+
+    .goods-item-card {
+      background-color: #fff;
+      border-radius: 10rpx;
+      padding: 20rpx;
+      margin-bottom: 20rpx;
+
+      .goods-img {
+        width: 140rpx;
+        height: 140rpx;
+        border-radius: 10rpx;
+        margin-right: 20rpx;
+        background-color: #f5f5f5;
+      }
+
+      .goods-info {
+        flex: 1;
+        height: 140rpx;
+        padding-right: 20rpx;
+
+        .goods-name {
+          font-size: 26rpx;
+          color: #333;
+          line-height: 36rpx;
+        }
+
+        .goods-sku {
+          font-size: 22rpx;
+          color: #999;
+        }
+
+        .goods-price {
+          font-size: 28rpx;
+          color: #f53f3f;
+          font-weight: bold;
+        }
+
+        .goods-count {
+          font-size: 24rpx;
+          color: #999;
+        }
+      }
     }
   }
 </style>
