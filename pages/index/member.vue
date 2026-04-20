@@ -102,14 +102,16 @@
         <view class="block_27 flex-col" v-if="currentLevel && !isVipOpened">
           <view class="box_19 flex-col">
             <view class="box_20">
-              <view>
-                <text class="text_20">¥</text>
-                <text class="text_21">{{ currentLevel.price }}</text>
-              </view>
-              <view class="group_45">
-                <view class="box_21 flex-col">
-                  <view class="block_28 flex-col">
-                    <text class="text_22">会员费将全额存入余额哦～</text>
+              <view class="box_20_left">
+                <view class="price-wrap">
+                  <text class="text_20">¥</text>
+                  <text class="text_21">{{ currentLevel.price }}</text>
+                </view>
+                <view class="group_45">
+                  <view class="box_21 flex-col">
+                    <view class="block_28 flex-col">
+                      <text class="text_22">会员费将全额存入余额哦～</text>
+                    </view>
                   </view>
                 </view>
                 <text class="text_23">/{{ currentLevel.upgradeName }}</text>
@@ -1029,7 +1031,7 @@
         rgba(229, 202, 162, 1) 100%
       );
       position: absolute;
-      left: 24rpx;
+      left: 214rpx;
       top: 441rpx;
       width: 22rpx;
       height: 32rpx;
@@ -1084,6 +1086,24 @@
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+
+    .box_20_left {
+      display: flex;
+      align-items: baseline;
+      position: relative;
+    }
+
+    .price-wrap {
+      display: flex;
+      align-items: baseline;
+    }
+
+    .group_45 {
+      position: absolute;
+      top: -28rpx;
+      left: 150rpx;
+      white-space: nowrap;
+    }
   }
 
   .agreement-checkbox-wrapper {
@@ -1174,8 +1194,6 @@
     line-height: 28rpx;
     white-space: nowrap;
   }
-
-  /* 隐藏原有的装饰盒子 */
   .box_22 {
     display: none;
   }
