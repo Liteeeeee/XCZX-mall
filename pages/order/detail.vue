@@ -413,7 +413,7 @@
   function formatPayCountdown(createTime) {
     if (!createTime) return '';
     const create = dayjs(createTime);
-    const expire = create.add(2, 'hour');
+    const expire = create.add(24, 'hour');
     const diff = expire.diff(state.now, 'second');
     if (diff <= 0) return '已过期';
     const hours = Math.floor(diff / 3600);
