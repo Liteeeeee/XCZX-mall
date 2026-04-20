@@ -61,7 +61,7 @@
           v-if="badgeImage"
           style="position: relative; top: 40rpx; right: -40rpx"
         ></image>
-        <view class="current-total-box ss-flex ss-col-bottom">
+        <view v-if="isVipOpened" class="current-total-box ss-flex ss-col-bottom">
           <text
             class="current-val"
             :style="{ color: valueColor, fontSize: '28rpx', fontWeight: 'bold' }"
