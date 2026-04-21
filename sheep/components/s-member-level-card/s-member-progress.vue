@@ -31,12 +31,12 @@
             :style="{
               marginTop: '24rpx',
               marginBottom: '12rpx',
-              fontSize: '28rpx',
+              fontSize: '24rpx',
               color: inactiveBtnStyle.color,
             }"
             v-if="!isHighestLevel"
           >
-            <text v-if="!isVipOpened">开通解锁更多权益</text>
+            <text :style="{ fontSize: '28rpx' }" v-if="!isVipOpened">开通解锁更多权益</text>
             <block v-else
               >达到1个任意条件升级为<text :style="{ color: nextThemeColor }">{{
                 nextLevelName
@@ -386,8 +386,37 @@
     const diff = totalVal.value - currentVal.value;
     return diff > 0 ? diff : 0;
   });
-  // 假设每邀请 1 人获得 2500 经验值（模拟数据）
-  const remainInvite = computed(() => Math.ceil(remainConsume.value / 2500));
+
+  // 获取真实邀请人数（兼容不同字段名）
+  const inviteSuccessCount = computed(() => {
+    const u = props.userInfo || {};
+    const raw =
+      u.inviteSuccessCount ??
+      u.inviteCount ??
+      u.inviteUserCount ??
+      u.inviteMemberCount ??
+      u.invitedCount ??
+      0;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : 0;
+  });
+
+  // 剩余差值（邀请升级）
+  const remainInvite = computed(() => {
+    if (isHighestLevel.value) return 0;
+
+    let target = 0;
+    // 从黄金升级到铂金，总共需要邀请 1 人；
+    // 从铂金升级到钻石，总共需要邀请 3 人。
+    if (nextLevelName.value.includes('铂金')) {
+      target = 1;
+    } else if (nextLevelName.value.includes('钻石')) {
+      target = 3;
+    }
+
+    const diff = target - inviteSuccessCount.value;
+    return diff > 0 ? diff : 0;
+  });
 
   const activeTab = ref('consume'); // 默认激活消费
 </script>

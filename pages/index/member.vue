@@ -279,6 +279,7 @@
       {
         title: '加入会员，开启专属权益',
         desc: '更多优惠等你来领',
+        image: sheep.$url.cdn('/mp/static/sharePage.png'),
         params: {
           page: SharePageEnum.MEMBER.value,
         },

@@ -349,6 +349,6 @@
 
   .disabled-btn {
     background: #d9d9d9;
-    color: #ffffff !important;
+    color: #333333 !important;
   }
 </style>
