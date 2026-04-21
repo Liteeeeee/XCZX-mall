@@ -80,7 +80,7 @@
                 </view>
               </view>
             </view>
-            <text class="text_57">邀请{{ platinumItem.needInvite }}人开通到铂金会员</text>
+            <text class="text_57">邀请{{ platinumItem.needInvite }}人开通会员升级到铂金会员</text>
           </view>
           <view class="achieve-check" v-if="platinumItem.achieved">
             <text class="achieve-check-icon">✓</text>
@@ -114,7 +114,7 @@
                 </view>
               </view>
             </view>
-            <text class="text_60">再邀请{{ diamondItem.needInvite }}人成功升级到钻石会员</text>
+            <text class="text_60">再邀请{{ diamondItem.needInvite }}人开通会员升级到钻石会员</text>
             <view class="group_110 flex-col" v-if="!diamondItem.achieved">
               <view
                 class="box_100 flex-col"
