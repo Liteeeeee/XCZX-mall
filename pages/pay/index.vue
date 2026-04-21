@@ -596,7 +596,7 @@
     bottom: 0;
     box-shadow: 0px -6rpx 10rpx 0px rgba(0, 0, 0, 0.02);
     background-color: rgba(255, 255, 250, 1);
-    padding: 24rpx 32rpx 0 32rpx;
+    padding: 24rpx 32rpx 32rpx 32rpx;
     display: flex;
     flex-direction: column;
     align-items: center;

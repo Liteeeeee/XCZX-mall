@@ -1,6 +1,25 @@
 <!-- 物流追踪 -->
 <template>
-  <s-layout title="物流追踪">
+  <s-layout navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
+    <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
+      <su-status-bar />
+      <view
+        class="nav-bar-container"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{ height: '100%', paddingLeft: '20rpx' }"
+        >
+          <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
+            <text class="sicon-back"></text>
+          </view>
+          <text class="nav-title ss-m-l-10">物流追踪</text>
+        </view>
+      </view>
+    </view>
+    <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+
     <view class="log-wrap">
       <!-- 商品信息 -->
       <view class="log-card ss-flex ss-m-20 ss-r-10" v-if="goodsImages.length > 0">
@@ -27,21 +46,18 @@
         <view
           class="log-content-box ss-flex"
           v-for="(item, index) in state.tracks"
-          :key="item.title"
+          :key="index"
         >
           <view class="log-icon ss-flex-col ss-col-center ss-m-r-20">
-            <text class="cicon-title" />
+            <text class="cicon-title" :class="index === 0 ? 'activity-color' : 'info-color'" />
             <view v-if="state.tracks.length - 1 !== index" class="line" />
           </view>
           <view class="log-content-msg">
-            <!-- TODO 芋艿：【物流】优化点：展示状态 -->
-            <!--            <view class="log-msg-title ss-m-b-20">-->
-            <!--              {{ item.status_text }}-->
-            <!--            </view>-->
-            <!--            <view class="log-msg-desc ss-m-b-16">{{ item.content }}</view>-->
+            <view class="log-msg-title ss-m-b-20" v-if="item.title">
+              {{ item.title }}
+            </view>
             <view class="log-msg-desc ss-m-b-16">
               <highlight-number :content="item.content" @phone-click="handlePhoneClick" />
-              <!--              <rich-text :nodes="item.content"></rich-text>-->
             </view>
             <view class="log-msg-date ss-m-b-40">
               {{ sheep.$helper.timeFormat(item.time, 'yyyy-mm-dd hh:MM:ss') }}
@@ -61,7 +77,7 @@
   import HighlightNumber from '@/pages/components/HighlightNumberText.vue';
 
   const state = reactive({
-    info: [],
+    info: {},
     tracks: [],
   });
 
@@ -142,6 +158,39 @@
 </script>
 
 <style lang="scss" scoped>
+  .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background: #f8f9f3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* #ifdef H5 */
+    max-width: 750rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    /* #endif */
+  }
+  .nav-bar-container {
+    background: #f8f9f3;
+    display: flex;
+    align-items: center;
+  }
+  .back-btn {
+    width: 60rpx;
+    color: black;
+    height: 60rpx;
+    font-size: 40rpx;
+  }
+  .nav-title {
+    color: #000000;
+    font-size: 36rpx;
+    font-weight: 600;
+  }
+
   .highlight {
     color: red; /* 高亮颜色 */
     font-weight: bold;
@@ -150,6 +199,10 @@
   .swiper-box {
     width: 200rpx;
     height: 200rpx;
+  }
+
+  .log-wrap {
+    /* 移除之前的默认 padding，交由底部占位或者具体元素控制 */
   }
 
   .log-card {

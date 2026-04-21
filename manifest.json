@@ -1,5 +1,5 @@
 {
-  "name": "仙草甄选商城",
+  "name": "仙草甄选",
   "appid": "wxfe718def7b02b185",
   "description": "基于 uni-app + Vue3 技术驱动的在线商城系统，内含诸多功能与丰富的活动，期待您的使用和反馈。",
   "versionName": "2026.01",
@@ -227,7 +227,7 @@
     "async": {
       "timeout": 20000
     },
-    "title": "仙草甄选商城",
+    "title": "仙草甄选",
     "optimization": {
       "treeShaking": {
         "enable": true

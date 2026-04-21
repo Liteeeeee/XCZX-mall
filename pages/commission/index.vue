@@ -255,7 +255,7 @@
 
     if (item.brokeragePercent !== undefined && item.brokeragePercent > 0) {
       const commissionPrice = (item.price * item.brokeragePercent) / 100;
-      return `推广可赚${toYuanInt(commissionPrice)}元`;
+      return `预估可赚${toYuanInt(commissionPrice)}元`;
     }
 
     if (item?.brokerageMinPrice === undefined) {
@@ -263,9 +263,9 @@
     }
 
     if (item.brokerageMinPrice === item.brokerageMaxPrice) {
-      return `推广可赚${toYuanInt(item.brokerageMinPrice)}元`;
+      return `预估可赚${toYuanInt(item.brokerageMinPrice)}元`;
     }
-    return `推广可赚${toYuanInt(item.brokerageMinPrice)}~${toYuanInt(item.brokerageMaxPrice)}元`;
+    return `预估可赚${toYuanInt(item.brokerageMinPrice)}~${toYuanInt(item.brokerageMaxPrice)}元`;
   }
 
   function onShareGoods(goodsInfo) {

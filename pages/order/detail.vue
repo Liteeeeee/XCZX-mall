@@ -291,13 +291,13 @@
         >
           拼团详情
         </button>
-        <button
+        <!-- <button
           class="ss-reset-button cancel-btn"
           v-if="state.orderInfo.buttons?.includes('express')"
           @tap="onExpress(state.orderInfo.id)"
         >
           查看物流
-        </button>
+        </button> -->
         <button
           class="ss-reset-button pay-btn"
           v-if="state.orderInfo.buttons?.includes('confirm')"
@@ -971,12 +971,13 @@
 
   // 底部
   .footer-box {
+    padding-top: 20rpx;
     height: 100rpx;
     width: 100%;
     box-sizing: border-box;
     border-radius: 10rpx;
     padding-right: 20rpx;
-
+    padding-bottom: 40rpx;
     .apply-btn {
       width: 160rpx;
       height: 60rpx;

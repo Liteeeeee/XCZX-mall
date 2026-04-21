@@ -33,7 +33,7 @@
               />
             </view>
             <text class="all-num">{{
-              state.showMoney ? fen2yuan(state.summary.withdrawPrice || 0) : '*****'
+              state.showMoney ? fen2yuan(state.brokerageUser.totalBalance || 0) : '*****'
             }}</text>
           </view>
 
@@ -57,13 +57,13 @@
           <view class="ss-flex-col ss-flex-1">
             <view class="sub-title">冻结收益</view>
             <view class="sub-num">{{
-              state.showMoney ? fen2yuan(state.summary.frozenPrice || 0) : '*****'
+              state.showMoney ? fen2yuan(state.brokerageUser.frozenPrice || 0) : '*****'
             }}</view>
           </view>
           <view class="ss-flex-col ss-flex-1">
             <view class="sub-title">可提现收益</view>
             <view class="sub-num">{{
-              state.showMoney ? fen2yuan(state.summary.brokeragePrice || 0) : '*****'
+              state.showMoney ? fen2yuan(state.brokerageUser.brokeragePrice || 0) : '*****'
             }}</view>
           </view>
         </view>
@@ -213,6 +213,7 @@
   const state = reactive({
     showMoney: false,
     summary: {}, // 分销信息
+    brokerageUser: {},
 
     today: '',
     date: [],
@@ -305,6 +306,12 @@
       return;
     }
     state.summary = data;
+
+    // 获取个人分销信息，提取 brokeragePrice 字段作为当前收益
+    const userRes = await BrokerageApi.getBrokerageUser();
+    if (userRes.code === 0) {
+      state.brokerageUser = userRes.data || {};
+    }
   }
 
   // 微信场景下：用户确认收款
