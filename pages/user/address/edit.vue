@@ -77,6 +77,7 @@
           class="textarea-item"
         >
           <uni-easyinput
+            :style="{ marginTop: '11px !important' }"
             :inputBorder="false"
             type="textarea"
             v-model="state.model.detailAddress"

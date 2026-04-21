@@ -406,11 +406,7 @@
     width: 100%;
     padding: 80rpx 30rpx 20rpx; // 调整顶部内边距，并将下边距设为 20rpx
     box-sizing: border-box;
-    background: radial-gradient(
-      circle at 50% -4450rpx,
-      transparent 4485rpx,
-      rgba(248, 249, 243, 1) 400.5rpx
-    );
+    background: radial-gradient(circle at 50% -4450rpx, transparent 4485rpx, #f8f9f3 400.5rpx);
   }
 
   /* 会员统计卡片 */

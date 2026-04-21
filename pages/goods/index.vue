@@ -15,7 +15,7 @@
         actionText="再逛逛"
         actionUrl="/pages/goods/list"
       />
-      <block v-else>
+      <block :style="{ backgroundColor: '#F8F9F3' }" v-else>
         <view class="detail-swiper-selector">
           <!-- 商品轮播图  -->
           <su-swiper
@@ -97,7 +97,7 @@
         <!-- VIP 卡片 -->
 
         <!-- 功能卡片 -->
-        <view class="detail-cell-card detail-card ss-flex-col">
+        <view class="detail-card ss-flex-col">
           <!-- 积分 -->
           <view class="info-cell ss-flex ss-col-center ss-p-20">
             <view class="label">积分</view>
@@ -121,37 +121,38 @@
         </view>
 
         <!-- 仙草检测 Banner -->
-        <view
-          class="quality-check-banner ss-m-x-20 ss-m-b-20"
-          :style="{
-            backgroundImage: 'url(' + sheep.$url.static('/static/goods/reportBg.webp') + ')',
-          }"
-        >
-          <!-- 暂时使用一个占位图或者静态结构 -->
-          <view class="check-box ss-flex ss-row-between ss-col-center ss-p-20">
-            <view class="check-left">
-              <view class="check-title ss-flex ss-col-center">
-                <text class="check-name">仙草检测</text>
-                <text class="check-tag">真实透明</text>
-              </view>
-              <view class="check-desc">
-                本地质检由第三方平台权威检测，检测报告与实物不符，承诺假一赔十，平台先行赔付。
-              </view>
-              <view class="check-result ss-flex ss-row-between ss-col-center">
-                <view class="check-result-left">
-                  <view class="check-result-title">通过308项农残检测</view>
-                  <view class="check-result-date">2026.03.12</view>
+        <view :style="{ padding: '20rpx', background: '#FFFFFA' }">
+          <view
+            class="quality-check-banner"
+            :style="{
+              backgroundImage: 'url(' + sheep.$url.static('/static/goods/reportBg.webp') + ')',
+            }"
+          >
+            <!-- 暂时使用一个占位图或者静态结构 -->
+            <view class="check-box ss-flex ss-row-between ss-col-center ss-p-20">
+              <view class="check-left">
+                <view class="check-title ss-flex ss-col-center">
+                  <text class="check-name">仙草检测</text>
+                  <text class="check-tag">真实透明</text>
                 </view>
-                <view class="check-result-right">
-                  <image
-                    class="check-report-img"
-                    :src="sheep.$url.static('/static/goods/report.webp')"
-                    mode="heightFix"
-                  />
+                <view class="check-desc">
+                  本地质检由第三方平台权威检测，检测报告与实物不符，承诺假一赔十，平台先行赔付。
                 </view>
-              </view>
-            </view>
-          </view>
+                <view class="check-result ss-flex ss-row-between ss-col-center">
+                  <view class="check-result-left">
+                    <view class="check-result-title">通过308项农残检测</view>
+                    <view class="check-result-date">2026.03.12</view>
+                  </view>
+                  <view class="check-result-right">
+                    <image
+                      class="check-report-img"
+                      :src="sheep.$url.static('/static/goods/report.webp')"
+                      mode="heightFix"
+                    />
+                  </view>
+                </view>
+              </view> </view
+          ></view>
         </view>
 
         <!-- 详情 -->
@@ -493,9 +494,8 @@
   }
 
   .detail-card {
-    background-color: #ffff;
+    background-color: #fffffa;
     margin-bottom: 20rpx;
-    border-radius: 20rpx;
     overflow: hidden;
   }
 
@@ -666,7 +666,7 @@
 
     .subtitle-text {
       font-size: 26rpx;
-      color: #666;
+      color: #87919d;
       line-height: 1.5;
     }
   }
@@ -752,6 +752,7 @@
     .check-result {
       background-color: #f8f9f3;
       border-radius: 10rpx;
+      overflow: hidden;
       padding: 20rpx;
       .check-result-title {
         font-size: 28rpx;

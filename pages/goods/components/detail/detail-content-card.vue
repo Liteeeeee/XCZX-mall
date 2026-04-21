@@ -1,5 +1,5 @@
 <template>
-  <view class="detail-content-card bg-white ss-m-x-20 ss-p-t-20">
+  <view class="detail-content-card bg-white ss-p-t-20">
     <view class="card-header ss-flex ss-col-center ss-m-b-30 ss-m-l-20">
       <view class="title ss-m-l-20 ss-m-r-20">详情</view>
     </view>

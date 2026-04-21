@@ -211,6 +211,21 @@
         },
         immediate: true,
       },
+      url: {
+        handler(newVal) {
+          // 当 modelValue 没有值，但 url 有值时，同步到内部 files 数组
+          if (
+            (!this.modelValue || (Array.isArray(this.modelValue) && this.modelValue.length === 0)) &&
+            newVal
+          ) {
+            let urlArray = Array.isArray(newVal) ? newVal : [newVal];
+            if (urlArray.length > 0 && this.files.length !== urlArray.length) {
+              this.files = urlArray.map((u) => ({ url: u, path: u }));
+            }
+          }
+        },
+        immediate: true,
+      },
     },
     computed: {
       returnType() {
@@ -521,7 +536,7 @@
         if (!isEmpty(this.files)) {
           this.$emit('delete', {
             tempFile: this.files[index],
-            tempFilePath: this.files[index].url,
+            tempFilePath: this.files[index]?.url,
           });
           this.files.splice(index, 1);
         } else {
@@ -566,7 +581,7 @@
           this.localValue = [...data];
           if (this.localValue.length > 0) {
             this.localValue.forEach((item) => {
-              updateUrl.push(item.url);
+              if (item.url) updateUrl.push(item.url);
             });
           }
         }

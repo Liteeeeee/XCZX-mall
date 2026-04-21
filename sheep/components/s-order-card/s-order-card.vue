@@ -1,6 +1,6 @@
 <!-- 装修用户组件：用户订单 -->
 <template>
-  <view class="ss-order-card ss-r-20 bg-white">
+  <view class="ss-order-card ss-r-20">
     <view class="order-header ss-flex ss-col-center ss-row-between">
       <view class="header-left">我的订单</view>
       <view class="header-right ss-flex ss-col-center" @tap="sheep.$router.go('/pages/order/list')">

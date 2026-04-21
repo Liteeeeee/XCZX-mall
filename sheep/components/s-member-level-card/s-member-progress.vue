@@ -31,7 +31,7 @@
             :style="{
               marginTop: '24rpx',
               marginBottom: '12rpx',
-              fontSize: '24rpx',
+              fontSize: '28rpx',
               color: inactiveBtnStyle.color,
             }"
             v-if="!isHighestLevel"
@@ -104,9 +104,11 @@
 
       <!-- 节点文案 -->
       <view class="node-labels ss-flex ss-row-between">
-        <text :style="{ color: themeTextColor }" class="label-text">{{ currentLevelName }}</text>
+        <text :style="{ color: themeTextColor, opacity: 0.5 }" class="label-text">{{
+          currentLevelName
+        }}</text>
         <text
-          :style="{ color: themeTextColor }"
+          :style="{ color: themeTextColor, opacity: 0.5 }"
           class="label-text"
           v-if="!isHighestLevel && isVipOpened"
           >{{ nextLevelName }}</text

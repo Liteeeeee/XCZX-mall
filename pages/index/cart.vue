@@ -771,12 +771,12 @@
 
     .header-left {
       font-weight: bold;
-      color: rgba(30, 63, 28, 1);
+      color: black;
       font-size: 36rpx;
       pointer-events: none;
     }
     .goods-number {
-      color: rgba(30, 63, 28, 1);
+      color: black;
       font-size: 28rpx;
     }
     .header-right {
