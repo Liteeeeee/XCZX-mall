@@ -82,7 +82,7 @@
                 mode="aspectFit"
               />
               <view class="vip-text"
-                >开通黄金会员享折<text :style="{ color: 'red' }">9</text>优惠哦~</view
+                >开通黄金会员享<text :style="{ color: 'red' }">9</text>折优惠哦~</view
               >
             </view>
             <view class="vip-right ss-flex ss-col-center">
