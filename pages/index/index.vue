@@ -209,11 +209,15 @@
     display: none !important;
   }
 
-  // 强制首页的轮播图按 1282rpx 比例显示
+  // 强制首页的轮播图容器高度
   :deep(.ui-swiper) {
-    height: 1282rpx !important;
+    height: 1282rpx !important; // 你可以调整这个容器的高度
     swiper {
       height: 1282rpx !important;
+    }
+    .swiper-image {
+      // 关键：保持原图比例，多出部分被裁剪，不会拉伸变形
+      object-fit: cover !important;
     }
   }
 </style>

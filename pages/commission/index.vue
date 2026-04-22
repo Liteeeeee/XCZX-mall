@@ -62,6 +62,7 @@
               <view class="stat-value-row flex-row align-center justify-center">
                 <text class="text_5 count-font">{{ totalBrokerageYuan }}</text>
                 <text
+                  v-if="Number(todayBrokerageYuan) > 0"
                   :style="{ right: '-54rpx' }"
                   class="text_6 count-font stat-plus stat-plus-income"
                   >+{{ todayBrokerageYuan }}</text
@@ -75,14 +76,18 @@
             >
               <view class="stat-value-row flex-row align-center justify-center">
                 <text class="text_7 count-font">{{ fansCount }}</text>
-                <text class="text_8 count-font stat-plus">+{{ todayFirstFansCount }}</text>
+                <text v-if="todayFirstFansCount > 0" class="text_8 count-font stat-plus"
+                  >+{{ todayFirstFansCount }}</text
+                >
               </view>
               <text class="text_12">粉丝</text>
             </view>
             <view class="stat-col flex-col" @tap="sheep.$router.go('/pages/commission/order')">
               <view class="stat-value-row flex-row align-center justify-center">
                 <text class="text_9 count-font">{{ orderCount }}</text>
-                <text class="text_10 count-font stat-plus">+{{ todayOrderCount }}</text>
+                <text v-if="todayOrderCount > 0" class="text_10 count-font stat-plus"
+                  >+{{ todayOrderCount }}</text
+                >
               </view>
               <text class="text_13">推广订单</text>
             </view>

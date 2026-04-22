@@ -188,7 +188,14 @@
         </view>
       </view>
       <!-- 底部 -->
-      <su-fixed v-if="state.list.length > 0" :isInset="false" :val="50" bottom placeholder>
+      <su-fixed
+        v-if="state.list.length > 0"
+        :isInset="true"
+        :val="50"
+        bottom
+        placeholder
+        :index="10000"
+      >
         <view class="footer-wrapper">
           <!-- 金额明细弹窗 (相对底部定位) -->
           <view

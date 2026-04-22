@@ -80,6 +80,12 @@
         <s-block-item :type="item.id" :data="item.property" :styles="item.property.style || {}" />
       </s-block>
     </view>
+
+    <!-- 积分商城入口按钮 -->
+    <view class="point-mall-btn" @tap="sheep.$router.go('/pages/activity/point/list')">
+      <text class="btn-text">前往积分商城</text>
+      <text class="_icon-forward"></text>
+    </view>
   </s-layout>
 </template>
 
@@ -164,5 +170,27 @@
       rgba(248, 249, 243, 0.5) 4486rpx,
       /* 增加 1rpx 的半透明过渡缓冲区 */ rgba(248, 249, 243, 1) 4487rpx /* 平滑过渡到实色 */
     );
+  }
+
+  .point-mall-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 30rpx 40rpx;
+    padding: 30rpx;
+    background: #fff;
+    border-radius: 20rpx;
+    box-shadow: 0 4rpx 10rpx rgba(0, 0, 0, 0.05);
+
+    .btn-text {
+      font-size: 30rpx;
+      color: #333;
+      font-weight: bold;
+    }
+
+    ._icon-forward {
+      font-size: 24rpx;
+      color: #999;
+    }
   }
 </style>
