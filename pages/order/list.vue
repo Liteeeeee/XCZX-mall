@@ -143,13 +143,13 @@
             >
               取消订单
             </button>
-            <button
+            <!-- <button
               v-if="order.buttons.includes('comment')"
               class="tool-btn ss-reset-button"
               @tap.stop="onComment(order.id)"
             >
               评价
-            </button>
+            </button> -->
             <button
               v-if="order.buttons.includes('delete')"
               class="tool-btn delete-btn ss-reset-button"

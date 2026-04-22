@@ -305,13 +305,13 @@
         >
           确认收货
         </button>
-        <button
+        <!-- <button
           class="ss-reset-button pay-btn"
           v-if="state.orderInfo.buttons?.includes('comment')"
           @tap="onComment(state.orderInfo.id)"
         >
           评价
-        </button>
+        </button> -->
         <button
           class="ss-reset-button cancel-btn"
           v-if="state.orderInfo.buttons?.includes('delete')"
