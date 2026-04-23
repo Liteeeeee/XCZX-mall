@@ -21,33 +21,39 @@
     <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
 
     <view class="log-wrap">
-      <!-- 商品信息 -->
-      <view class="log-card ss-flex ss-m-20 ss-r-10" v-if="goodsImages.length > 0">
-        <uni-swiper-dot :info="goodsImages" :current="state.current" mode="round">
-          <swiper class="swiper-box">
-            <swiper-item v-for="(item, index) in goodsImages" :key="index">
-              <image class="log-card-img" :src="sheep.$url.static(item.image)" />
-            </swiper-item>
-          </swiper>
-        </uni-swiper-dot>
+      <!-- 物流公司与单号信息 -->
+      <view class="log-card ss-flex ss-m-20 ss-r-10 ss-col-center">
+        <!-- 快递公司 Logo（水平居中） -->
+        <view class="log-card-logo">
+          <image
+            class="express-logo"
+            :src="sheep.$url.static('/static/express-logo.webp')"
+            mode="aspectFit"
+          />
+        </view>
+
         <view class="log-card-msg">
           <!-- TODO 芋艿：【物流】优化点：展示状态 -->
           <!--          <view class="ss-flex ss-m-b-8">-->
           <!--            <view>物流状态：</view>-->
           <!--            <view class="warning-color">{{ state.info.status_text }}</view>-->
           <!--          </view>-->
-          <view class="ss-m-b-8">快递单号：{{ state.info.logisticsNo }}</view>
+          <view class="ss-m-b-8 ss-flex ss-col-center">
+            <text>快递单号：{{ state.info.logisticsNo }}</text>
+            <button
+              class="ss-reset-button copy-btn ss-m-l-10"
+              @tap="handleCopy(state.info.logisticsNo)"
+            >
+              复制
+            </button>
+          </view>
           <view>快递公司：{{ state.info.logisticsName }}</view>
         </view>
       </view>
 
       <!-- 物流轨迹 -->
       <view class="log-content ss-m-20 ss-r-10">
-        <view
-          class="log-content-box ss-flex"
-          v-for="(item, index) in state.tracks"
-          :key="index"
-        >
+        <view class="log-content-box ss-flex" v-for="(item, index) in state.tracks" :key="index">
           <view class="log-icon ss-flex-col ss-col-center ss-m-r-20">
             <text class="cicon-title" :class="index === 0 ? 'activity-color' : 'info-color'" />
             <view v-if="state.tracks.length - 1 !== index" class="line" />
@@ -211,10 +217,18 @@
     background: #fff;
     margin-bottom: 20rpx;
 
-    .log-card-img {
-      width: 200rpx;
-      height: 200rpx;
+    .log-card-logo {
+      width: 140rpx; // 外层容器宽度可适当保留以控制左侧空间
+      display: flex;
+      justify-content: center;
+      align-items: center;
       margin-right: 20rpx;
+
+      .express-logo {
+        width: 78rpx;
+        height: 78rpx;
+        border-radius: 50%; // 圆形效果，如果不需要可移除
+      }
     }
 
     .log-card-msg {
@@ -225,6 +239,18 @@
 
       .warning-color {
         color: #999;
+      }
+
+      .copy-btn {
+        width: 80rpx;
+        height: 36rpx;
+        line-height: 36rpx;
+        border-radius: 18rpx;
+        font-size: 20rpx;
+        color: #333;
+        background-color: #f5f5f5;
+        text-align: center;
+        display: inline-block;
       }
     }
   }

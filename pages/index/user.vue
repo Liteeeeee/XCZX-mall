@@ -82,10 +82,10 @@
     </view>
 
     <!-- 积分商城入口按钮 -->
-    <view class="point-mall-btn" @tap="sheep.$router.go('/pages/activity/point/list')">
+    <!-- <view class="point-mall-btn" @tap="sheep.$router.go('/pages/activity/point/list')">
       <text class="btn-text">前往积分商城</text>
       <text class="_icon-forward"></text>
-    </view>
+    </view> -->
   </s-layout>
 </template>
 

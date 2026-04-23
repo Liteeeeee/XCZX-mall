@@ -274,10 +274,11 @@
   }
 
   function onShareGoods(goodsInfo) {
+    console.log(goodsInfo);
     state.shareInfo = $share.getShareInfo(
       {
         title: goodsInfo.spuName,
-        image: sheep.$url.cdn(goodsInfo.picUrl),
+        image: sheep.$url.cdn(goodsInfo.spuPicUrl),
         desc: goodsInfo.name,
         params: {
           page: SharePageEnum.GOODS.value,
@@ -287,8 +288,8 @@
       {
         type: 'goods',
         title: goodsInfo.spuName,
-        picUrl: sheep.$url.cdn(goodsInfo.picUrl),
-        image: sheep.$url.cdn(goodsInfo.picUrl),
+        picUrl: sheep.$url.cdn(goodsInfo.spuPicUrl),
+        image: sheep.$url.cdn(goodsInfo.spuPicUrl),
         price: fen2yuan(goodsInfo.price),
         original_price: fen2yuan(goodsInfo.marketPrice),
       },

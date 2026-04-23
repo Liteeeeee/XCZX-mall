@@ -190,7 +190,7 @@
       <!-- 底部 -->
       <su-fixed
         v-if="state.list.length > 0"
-        :isInset="true"
+        :isInset="false"
         :val="50"
         bottom
         placeholder
@@ -550,7 +550,10 @@
 
   watch(
     selectedItemsKey,
-    () => {
+    (newKey) => {
+      if (!newKey && state.showDetailPopup) {
+        state.showDetailPopup = false;
+      }
       if (!state.showDetailPopup) {
         scheduleSettle(false);
         return;
@@ -813,7 +816,7 @@
       border-top: 1rpx solid #eee;
       position: relative;
       z-index: 12;
-
+      top: -10rpx;
       .footer-left {
         flex-shrink: 0;
       }

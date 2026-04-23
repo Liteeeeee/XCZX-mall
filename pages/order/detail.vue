@@ -291,13 +291,13 @@
         >
           拼团详情
         </button>
-        <!-- <button
+        <button
           class="ss-reset-button cancel-btn"
           v-if="state.orderInfo.buttons?.includes('express')"
           @tap="onExpress(state.orderInfo.id)"
         >
           查看物流
-        </button> -->
+        </button>
         <button
           class="ss-reset-button pay-btn"
           v-if="state.orderInfo.buttons?.includes('confirm')"
