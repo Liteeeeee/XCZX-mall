@@ -84,7 +84,12 @@
         <view class="form-item ss-flex ss-row-between ss-col-center ss-m-t-70">
           <text class="item-label">生日</text>
           <view class="item-value-box ss-flex ss-col-center">
-            <picker mode="date" :value="state.model.birthday" @change="onChangeBirthday">
+            <template v-if="userInfo.birthday">
+              <view class="ss-flex ss-col-center" @tap="handleBirthdayClick">
+                <text class="item-value">{{ formatBirthday(userInfo.birthday) }}</text>
+              </view>
+            </template>
+            <picker v-else mode="date" :value="state.model.birthday" @change="onChangeBirthday">
               <view class="ss-flex ss-col-center">
                 <text class="item-value" :class="{ 'is-empty': !state.model.birthday }">{{
                   formatBirthday(state.model.birthday) || '未设置'
@@ -144,16 +149,19 @@
 
     <!-- 底部按钮 -->
     <view class="footer-box">
-      <button class="ss-reset-button logout-btn" @tap="onLogout">退出登录</button>
+      <button v-if="!isFromBirthday" class="ss-reset-button logout-btn" @tap="onLogout"
+        >退出登录</button
+      >
       <button class="ss-reset-button save-btn ss-m-t-20" @tap="onSubmit">保存</button>
     </view>
   </s-layout>
 </template>
 
 <script setup>
-  import { computed, reactive, onBeforeMount } from 'vue';
+  import { computed, reactive, onBeforeMount, ref } from 'vue';
   import sheep from '@/sheep';
   import { clone } from 'lodash-es';
+  import { onLoad } from '@dcloudio/uni-app';
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import UserApi from '@/sheep/api/member/user';
   import SocialApi from '@/sheep/api/member/social';
@@ -192,9 +200,20 @@
     state.model.sex = parseInt(e.detail.value);
   }
 
-  // 选择生日
+  // 修改生日
   function onChangeBirthday(e) {
     state.model.birthday = e.detail.value;
+  }
+
+  function handleBirthdayClick() {
+    if (userInfo.value.birthday) {
+      uni.showModal({
+        title: '提示',
+        content: '生日信息仅可设置一次，如需修改请联系客服。',
+        showCancel: false,
+        confirmText: '我知道了',
+      });
+    }
   }
 
   // 修改手机号
@@ -306,6 +325,19 @@
       state.isBindWechat = false;
     }
   };
+
+  const isFromBirthday = ref(false);
+
+  onLoad((options) => {
+    if (options.from === 'birthday') {
+      isFromBirthday.value = true;
+      uni.showToast({
+        title: '请设置您的生日',
+        icon: 'none',
+        duration: 2000,
+      });
+    }
+  });
 
   onBeforeMount(() => {
     getUserInfo();

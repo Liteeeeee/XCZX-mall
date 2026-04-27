@@ -82,7 +82,7 @@
                 mode="aspectFit"
               />
               <view class="vip-text"
-                >开通黄金会员享<text :style="{ color: 'red' }">9</text>折优惠哦~</view
+                >开通会员最高可享<text :style="{ color: 'red' }">85</text>折优惠哦~</view
               >
             </view>
             <view class="vip-right ss-flex ss-col-center">
@@ -103,7 +103,7 @@
             <view class="label">积分</view>
             <view class="value ss-flex-1 ss-flex ss-col-center">
               <text class="tag ss-m-r-10">赠送积分</text>
-              <text>购买本商品最少可获得100积分</text>
+              <text>购买商品额外赠送积分</text>
             </view>
           </view>
           <!-- 服务 -->

@@ -7,8 +7,8 @@
     <view class="ss-flex ss-col-center vip-card-content">
       <image class="vip-icon ss-m-r-18" :src="sheep.$url.static('/static/cart/vipIcon.webp')" />
       <view class="ss-flex-col">
-        <view class="vip-title">开通黄金会员</view>
-        <view class="vip-subtitle">购物可享受9折优惠哦～</view>
+        <view class="vip-title">开通会员</view>
+        <view class="vip-subtitle">购物最高可享受85折优惠哦～</view>
       </view>
     </view>
     <button class="ss-reset-button open-vip-btn">立即开通</button>

@@ -60,6 +60,7 @@
                 ? `url(${sheep.$url.cdn(item.backgroundImage)})`
                 : 'none',
             }"
+            @tap="onTapAdvantage(item)"
           >
             <view class="text-wrapper_40 flex-col">
               <text class="text_20">{{ item.title }}</text>
@@ -716,6 +717,12 @@
       backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/tijianBg.webp',
     },
   ];
+
+  function onTapAdvantage(item) {
+    if (item.title === '仙草会员生日礼遇') {
+      sheep.$router.go('/pages/user/info', { from: 'birthday' });
+    }
+  }
 </script>
 
 <style lang="scss">
