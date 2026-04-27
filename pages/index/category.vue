@@ -28,7 +28,7 @@
             @tap="sheep.$router.back()"
             class="ss-m-l-20"
           ></uni-icons>
-          <text class="nav-title ss-m-l-10">商品分类</text>
+          <text class="nav-title ss-m-l-10">产品分类</text>
         </view>
       </view>
     </view>

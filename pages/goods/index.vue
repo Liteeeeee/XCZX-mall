@@ -107,14 +107,14 @@
             </view>
           </view>
           <!-- 服务 -->
-          <view class="info-cell ss-flex ss-col-center ss-p-20">
+          <view class="info-cell ss-flex ss-col-center ss-p-20" @tap.stop="openServiceModal">
             <view class="label">服务</view>
             <view class="value ss-flex-1 ss-flex ss-col-center">
-              <view class="service-item ss-flex ss-col-center">极速配送</view>
+              <view class="service-item ss-flex ss-col-center">极速发货</view>
               <view class="service-dot">·</view>
-              <view class="service-item ss-flex ss-col-center">退换无忧</view>
+              <view class="service-item ss-flex ss-col-center">专属客服</view>
               <view class="service-dot">·</view>
-              <view class="service-item ss-flex ss-col-center">假一赔十</view>
+              <view class="service-item ss-flex ss-col-center">品控质量</view>
             </view>
             <text class="cicon-forward"></text>
           </view>
@@ -182,6 +182,71 @@
           @close="state.showActivityModel = false"
           @get="onTakeCoupon"
         />
+
+        <!-- 服务说明弹窗 -->
+        <su-popup
+          :show="state.showServiceModal"
+          type="bottom"
+          round="20"
+          @close="state.showServiceModal = false"
+          :showClose="false"
+        >
+          <view class="service-popup-box">
+            <view class="service-popup-title ss-flex ss-row-center ss-col-center">
+              服务说明
+              <image
+                class="service-close-btn"
+                src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/close.webp"
+                mode="aspectFit"
+                @tap.stop="state.showServiceModal = false"
+              />
+            </view>
+            <scroll-view class="service-popup-content" scroll-y>
+              <!-- 极速发货 -->
+              <view class="service-item-row ss-flex ss-col-top">
+                <image
+                  class="service-icon"
+                  src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/goods/itemIcon.webp"
+                  mode="aspectFit"
+                />
+                <view class="service-text-box">
+                  <view class="service-item-title">极速发货</view>
+                  <view class="service-item-desc"
+                    >所有商品将在下单后最快速度内发货，保障您的时效体验。</view
+                  >
+                </view>
+              </view>
+              <!-- 专属客服 -->
+              <view class="service-item-row ss-flex ss-col-top">
+                <image
+                  class="service-icon"
+                  src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/goods/itemIcon.webp"
+                  mode="aspectFit"
+                />
+                <view class="service-text-box">
+                  <view class="service-item-title">专属客服</view>
+                  <view class="service-item-desc"
+                    >为您提供1对1专属客服，任何问题极速响应并解决。</view
+                  >
+                </view>
+              </view>
+              <!-- 品控质量 -->
+              <view class="service-item-row ss-flex ss-col-top">
+                <image
+                  class="service-icon"
+                  src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/goods/itemIcon.webp"
+                  mode="aspectFit"
+                />
+                <view class="service-text-box">
+                  <view class="service-item-title">品控质量</view>
+                  <view class="service-item-desc"
+                    >每一件商品都经过严格的质量把控，确保品质安全无忧。</view
+                  >
+                </view>
+              </view>
+            </scroll-view>
+          </view>
+        </su-popup>
       </block>
 
       <!-- 返回顶部按钮 -->
@@ -279,12 +344,17 @@
     selectedSku: {}, // 选中的 SKU
     settlementSku: {}, // 结算的 SKU：由于 selectedSku 不进行默认选中，所以初始使用结算价格最低的 SKU 作为基础展示
     showModel: false, // 是否展示 Coupon 优惠劵的弹窗
+    showServiceModal: false, // 是否展示服务说明弹窗
     couponInfo: [], // 可领取的 Coupon 优惠劵的列表
     showActivityModel: false, // 【满减送/限时折扣】是否展示 Activity 营销活动的弹窗
     rewardActivity: {}, // 【满减送】活动
     activityList: [], // 【秒杀/拼团/砍价】可参与的 Activity 营销活动的列表
     showBackTop: false,
   });
+
+  function openServiceModal() {
+    state.showServiceModal = true;
+  }
 
   // 处理富文本图片（对大图追加阿里云OSS的压缩/自适应参数，避免真机OOM）
   const parsedDescription = computed(() => {
@@ -923,5 +993,73 @@
     line-height: 40rpx;
     display: flex;
     justify-content: flex-end;
+  }
+
+  // 详情占位
+  .detail-content-selector {
+    min-height: 500rpx;
+  }
+
+  // 服务说明弹窗样式
+  .service-popup-box {
+    background: #ffffff;
+    border-radius: 20rpx 20rpx 0 0;
+    padding: 0 30rpx 40rpx;
+    box-sizing: border-box;
+
+    .service-popup-title {
+      position: relative;
+      height: 100rpx;
+      font-size: 32rpx;
+      font-weight: bold;
+      color: #333333;
+
+      .service-close-btn {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 40rpx;
+        height: 40rpx;
+        padding: 20rpx; // 扩大点击热区
+      }
+    }
+
+    .service-popup-content {
+      max-height: 60vh;
+      padding-top: 20rpx;
+
+      .service-item-row {
+        margin-bottom: 40rpx;
+
+        &:last-child {
+          margin-bottom: 20rpx;
+        }
+
+        .service-icon {
+          width: 32rpx;
+          height: 32rpx;
+          margin-right: 20rpx;
+          margin-top: 6rpx;
+        }
+
+        .service-text-box {
+          flex: 1;
+
+          .service-item-title {
+            font-size: 28rpx;
+            font-weight: bold;
+            color: #333333;
+            margin-bottom: 12rpx;
+          }
+
+          .service-item-desc {
+            font-size: 24rpx;
+            color: #999999;
+            line-height: 36rpx;
+          }
+        }
+      }
+    }
   }
 </style>
