@@ -1,10 +1,10 @@
 import request from '@/sheep/request';
 
 const BrokerageApi = {
-  // 绑定分销用户
+  // 绑定推广员
   bindBrokerageUser: (data) => {
     return request({
-      url: '/trade/brokerage-user/bind',
+      url: '/trade/promoter/bind',
       method: 'PUT',
       data,
     });

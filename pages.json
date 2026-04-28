@@ -145,6 +145,17 @@
 					}
 				},
 				{
+					"path": "qualification",
+					"style": {
+						"navigationBarTitleText": "仙草检测"
+					},
+					"meta": {
+						"sync": true,
+						"title": "资质检测",
+						"group": "商品"
+					}
+				},
+				{
 					"path": "groupon",
 					"style": {
 						"navigationBarTitleText": "拼团商品"

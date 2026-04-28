@@ -146,9 +146,9 @@ http.interceptors.response.use(
       if (response.data.code === 401) {
         return refreshToken(response.config);
       }
-      // 特殊：处理分销用户绑定失败的提示
+      // 特殊：处理推广员绑定失败的提示
       if ((response.data.code + '').includes('1011007')) {
-        console.error(`分销用户绑定失败，原因：${response.data.msg}`);
+        console.error(`推广员绑定失败，原因：${response.data.msg}`);
       } else if (response.config.custom.showError) {
         // 错误提示
         uni.showToast({

@@ -121,42 +121,24 @@
         </view>
 
         <!-- 仙草检测 Banner -->
-        <view :style="{ padding: '20rpx', background: '#FFFFFA' }">
-          <view
-            class="quality-check-banner"
-            :style="{
-              backgroundImage: 'url(' + sheep.$url.static('/static/goods/reportBg.webp') + ')',
-            }"
-          >
-            <!-- 暂时使用一个占位图或者静态结构 -->
-            <view class="check-box ss-flex ss-row-between ss-col-center ss-p-20">
-              <view class="check-left">
-                <view class="check-title ss-flex ss-col-center">
-                  <text class="check-name">仙草检测</text>
-                  <text class="check-tag">真实透明</text>
-                </view>
-                <view class="check-desc">
-                  本地质检由第三方平台权威检测，检测报告与实物不符，承诺假一赔十，平台先行赔付。
-                </view>
-                <view class="check-result ss-flex ss-row-between ss-col-center">
-                  <view class="check-result-left">
-                    <view class="check-result-title">通过308项农残检测</view>
-                    <view class="check-result-date">2026.03.12</view>
-                  </view>
-                  <view class="check-result-right">
-                    <image
-                      class="check-report-img"
-                      :src="sheep.$url.static('/static/goods/report.webp')"
-                      mode="heightFix"
-                    />
-                  </view>
-                </view>
-              </view> </view
-          ></view>
+        <view
+          v-if="state.goodsInfo.qualificationCover"
+          :style="{ padding: '20rpx', background: '#FFFFFA' }"
+        >
+          <image
+            class="qualification-cover"
+            :src="sheep.$url.cdn(state.goodsInfo.qualificationCover)"
+            mode="widthFix"
+            @tap="openQualificationPreview"
+          />
         </view>
 
         <!-- 详情 -->
-        <detail-content-card class="detail-content-selector" :content="parsedDescription" />
+        <detail-content-card
+          v-if="parsedDescription"
+          class="detail-content-selector"
+          :content="parsedDescription"
+        />
 
         <!-- 活动跳转：拼团/秒杀/砍价活动 -->
         <detail-activity-tip
@@ -354,6 +336,19 @@
 
   function openServiceModal() {
     state.showServiceModal = true;
+  }
+
+  // 预览资质检测
+  function openQualificationPreview() {
+    const content = state.goodsInfo.qualificationDetection;
+    if (!content) {
+      sheep.$helper.toast('暂无检测报告');
+      return;
+    }
+
+    // 存入缓存，传递给富文本展示页面
+    uni.setStorageSync('qualificationDetection', content);
+    sheep.$router.go('/pages/goods/qualification');
   }
 
   // 处理富文本图片（对大图追加阿里云OSS的压缩/自适应参数，避免真机OOM）
@@ -598,15 +593,18 @@
 
     .banner-left {
       justify-content: center;
+
       .price-unit {
         font-size: 32rpx;
         margin-bottom: 8rpx;
       }
+
       .price-value {
         font-size: 56rpx;
         font-weight: bold;
         font-family: OPPOSANS;
       }
+
       .group_51 {
         background-color: rgba(251, 233, 192, 1);
         border-radius: 8rpx;
@@ -615,6 +613,7 @@
         margin-left: 14rpx;
         margin-bottom: 12rpx;
       }
+
       .text_66 {
         overflow-wrap: break-word;
         color: rgba(82, 67, 62, 1);
@@ -626,6 +625,7 @@
         margin-right: 8rpx;
         flex: 1;
       }
+
       .text-wrapper_21 {
         background-image: linear-gradient(
           90deg,
@@ -635,6 +635,7 @@
         border-radius: 16rpx 8rpx 8rpx 0px;
         padding: 4rpx 10rpx;
       }
+
       .text_67 {
         overflow-wrap: break-word;
         color: rgba(255, 242, 217, 1);
@@ -645,6 +646,7 @@
         white-space: nowrap;
         line-height: 28rpx;
       }
+
       .sales-text {
         font-size: 24rpx;
         margin-top: 4rpx;
@@ -654,11 +656,13 @@
     .banner-right {
       justify-content: space-between;
       padding: 21rpx;
+
       .brand-name {
         font-size: 40rpx;
         font-weight: bold;
         text-align: right;
       }
+
       .brand-desc {
         font-size: 24rpx;
         opacity: 0.8;
@@ -681,10 +685,12 @@
       height: 30rpx;
       margin-right: 16rpx;
     }
+
     .vip-text {
       font-size: 24rpx;
       color: #333;
     }
+
     .vip-btn {
       font-size: 24rpx;
       color: #fff;
@@ -744,17 +750,21 @@
   // 功能单元格
   .info-cell {
     border-bottom: 1rpx solid #f5f5f5;
+
     &:last-child {
       border-bottom: none;
     }
+
     .label {
       width: 100rpx;
       font-size: 26rpx;
       color: #999;
     }
+
     .value {
       font-size: 26rpx;
       color: #333;
+
       .tag {
         background: #e6f7f2;
         color: #28b389;
@@ -762,28 +772,33 @@
         border-radius: 4rpx;
         font-size: 22rpx;
       }
+
       .service-item {
         color: #333;
         font-size: 24rpx;
       }
+
       .service-dot {
         color: #999;
         font-size: 24rpx;
         margin: 0 10rpx;
       }
     }
+
     .spec-preview-item {
       .spec-val {
         font-size: 26rpx;
         font-weight: 400;
         color: #333;
       }
+
       .spec-label {
         font-size: 22rpx;
         color: #999;
         margin-top: 4rpx;
       }
     }
+
     .cicon-forward {
       color: #ccc;
       font-size: 24rpx;
@@ -791,63 +806,14 @@
   }
 
   // 检测 Banner
-  .quality-check-banner {
-    // background: #f0f9f7;
-    background-size: cover;
-    background-repeat: no-repeat;
-    border-radius: 20rpx;
-    overflow: hidden;
-    .check-title {
-      margin-bottom: 12rpx;
-      .check-name {
-        font-size: 32rpx;
-        font-weight: bold;
-        color: #fff;
-      }
-      .check-tag {
-        background: linear-gradient(127deg, #f5ebd9 0%, #ffd6ad 100%);
-        color: #855422;
-        font-size: 20rpx;
-        padding: 2rpx 10rpx;
-        border-radius: 10rpx 10rpx 10rpx 0rpx;
-        margin-left: 12rpx;
-      }
-    }
-    .check-desc {
-      font-size: 20rpx;
-      color: #fff;
-      line-height: 1.4;
-      margin-bottom: 16rpx;
-    }
-    .check-result {
-      background-color: #f8f9f3;
-      border-radius: 10rpx;
-      overflow: hidden;
-      padding: 20rpx;
-      .check-result-title {
-        font-size: 28rpx;
-        font-weight: 500;
-        color: #333;
-        margin-bottom: 8rpx;
-      }
-      .check-result-date {
-        font-size: 24rpx;
-        color: #1a9c75;
-      }
-      .check-report-img {
-        width: 140rpx;
-        height: 140rpx;
-        margin-right: -20rpx;
-        margin-bottom: -30rpx;
-      }
-    }
-  }
+  // .quality-check-banner 及其内部样式已移除，因为改为整图展示
 
   // 购买
   .buy-box {
     padding: 20rpx;
     flex: 1;
     justify-content: flex-end;
+
     .add-btn {
       width: 220rpx;
       height: 80rpx;
@@ -993,6 +959,12 @@
     line-height: 40rpx;
     display: flex;
     justify-content: flex-end;
+  }
+
+  // 仙草检测图片样式
+  .qualification-cover {
+    width: 100%;
+    display: block;
   }
 
   // 详情占位
