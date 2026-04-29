@@ -169,7 +169,6 @@
     const rootCategory = tree.find((item) => Number(item.id) === 84);
     const secondLevelList = Array.isArray(rootCategory?.children) ? rootCategory.children : [];
     state.categoryList = secondLevelList.length > 0 ? secondLevelList : tree;
-    state.activeMenu = 0;
   }
 
   // 选中菜单
@@ -209,21 +208,38 @@
     getGoodsList();
   }
   function initMenuIndex() {
-    // TODO @AI：可优化：增加一个 params.id 的兼容
     const appStore = sheep.$store('app');
     // 处理 tabbar 传参的情况
     const tabbarParams = appStore.paramsForTabbar || {};
     const id = tabbarParams.id;
     appStore.clearParamsForTabbar(); // 使用完后清理，避免影响下次跳转
-    // 首页点击分类的处理：查找满足条件的分类
-    const foundCategory = state.categoryList.find((category) => category.id === Number(id));
-    // 如果找到则调用 onMenu 自动勾选相应分类，否则调用 onMenu(0) 勾选第一个分类
-    onMenu(foundCategory ? state.categoryList.indexOf(foundCategory) : 0);
+
+    if (id) {
+      // 如果有传参 id（比如从首页分类入口跳过来），则去匹配对应的分类
+      const foundCategory = state.categoryList.find((category) => category.id === Number(id));
+      if (foundCategory) {
+        onMenu(state.categoryList.indexOf(foundCategory));
+      } else {
+        onMenu(0);
+      }
+    } else {
+      // 如果没有传参，并且是第一次加载（loadStatus 为空），才默认选中第一个
+      if (state.categoryList.length > 0 && state.loadStatus === '') {
+        onMenu(0);
+      }
+      // 如果已有数据且没有传参（例如从商品详情页返回），则什么都不做，保留原状
+    }
   }
+
   onShow(async () => {
-    await getList();
+    // 只有当分类列表为空时才去请求，避免每次显示页面（如返回时）重新加载刷新
+    if (state.categoryList.length === 0) {
+      await getList();
+    }
     initMenuIndex();
-    await loadBanner();
+    if (!state.bannerPicUrl) {
+      await loadBanner();
+    }
   });
 
   function onSearch() {

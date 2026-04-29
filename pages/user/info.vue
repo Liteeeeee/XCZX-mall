@@ -69,14 +69,13 @@
         <!-- 手机号 -->
         <view
           class="form-item ss-flex ss-row-between ss-col-center ss-m-t-70"
-          @tap="onChangeMobile"
+          @tap="sheep.$helper.toast('暂不支持修改手机号')"
         >
           <text class="item-label">手机号</text>
           <view class="item-value-box ss-flex ss-col-center">
             <text class="item-value" :class="{ 'is-empty': !userInfo.mobile }">{{
               maskMobile(userInfo.mobile) || '未绑定'
             }}</text>
-            <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
           </view>
         </view>
 

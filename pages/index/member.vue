@@ -713,7 +713,7 @@
     },
     {
       title: '免费体检及问诊服务',
-      desc: ['免费体检一次', '免费问诊五次'],
+      desc: ['免费体检一次', '免费问诊三次'],
       backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/tijianBg.webp',
     },
   ];

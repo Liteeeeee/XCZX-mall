@@ -3,7 +3,7 @@
     <view v-for="item in list" :key="item.id" class="group_49 flex-col" @tap="onItemTap(item)">
       <image class="box_51 flex-col" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
       <text class="paragraph_1">
-        {{ item.name }}
+        {{ item.name && item.name.length > 8 ? item.name.substring(0, 8) + '...' : item.name }}
       </text>
       <view class="section_30 flex-row justify-between">
         <view class="text-wrapper_8">
