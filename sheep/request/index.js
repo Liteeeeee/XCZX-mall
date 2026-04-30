@@ -116,6 +116,7 @@ http.interceptors.request.use(
 
     config.header['Accept'] = '*/*';
     config.header['tenant-id'] = getTenantId();
+    config.header['X-Trace-Id'] = Math.random().toString(36).substring(2, 10) + Date.now();
     return config;
   },
   (error) => {
