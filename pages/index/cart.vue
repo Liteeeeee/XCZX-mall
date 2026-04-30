@@ -741,7 +741,12 @@
   }
 
   onShow(() => {
-    getCartList();
+    if (userStore.isLogin) {
+      getCartList();
+    } else {
+      cart.emptyList();
+    }
+
     if (showRecommend.value) {
       loadRecommend();
     }

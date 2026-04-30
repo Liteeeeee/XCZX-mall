@@ -129,8 +129,12 @@
   const logoUrl = sheep.$url.static('/static/loginLogo.webp');
 
   function onBack() {
-    // 无论是哪种情况，点击登录页的返回按钮，强制让用户回到首页，打破所有拦截死循环
-    sheep.$router.go('/pages/index/index', {}, { redirect: true });
+    const pages = getCurrentPages();
+    if (pages.length > 1) {
+      sheep.$router.back();
+    } else {
+      sheep.$router.go('/pages/index/index', {}, { redirect: true });
+    }
   }
 
   function onAgree() {

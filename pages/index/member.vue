@@ -151,8 +151,9 @@
 </template>
 
 <script setup>
+  import { showAuthModal } from '@/sheep/hooks/useModal';
   import sheep from '@/sheep';
-  import { computed, reactive, onBeforeMount, watch } from 'vue';
+  import { computed, reactive, ref, onBeforeMount, watch } from 'vue';
   import { onShow } from '@dcloudio/uni-app';
   import memberData from '@/sheep/data/member';
   import sMemberLevelCard from '@/sheep/components/s-member-level-card/s-member-level-card.vue';
@@ -592,6 +593,10 @@
   });
 
   async function onUpgrade() {
+    if (!isLogin.value) {
+      showAuthModal();
+      return;
+    }
     if (isVipOpened.value) {
       sheep.$router.go('/pages/user/wallet/vip-recharge');
       return;
@@ -645,6 +650,10 @@
   ];
 
   function onTapAdvantage(item) {
+    if (!isLogin.value) {
+      showAuthModal();
+      return;
+    }
     if (item.title === '仙草会员生日礼遇') {
       sheep.$router.go('/pages/user/info', { from: 'birthday' });
     }

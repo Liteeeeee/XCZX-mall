@@ -14,6 +14,13 @@ const cart = defineStore({
   actions: {
     // 获取购物车列表
     async getList() {
+      // 未登录不请求
+      const userStore = (await import('./user')).default();
+      if (!userStore.isLogin) {
+        this.emptyList();
+        return;
+      }
+      
       const { data, code } = await CartApi.getCartList();
       if (code === 0) {
         this.list = [...data.validList, ...data.invalidList];
