@@ -54,12 +54,12 @@
             :src="sheep.$url.static('/static/member/chevron-right.png')"
             style="width: 36rpx; height: 36rpx"
         /></view>
-        <view class="upgrade-guide-tipbar flex-row align-center">
+        <!-- <view class="upgrade-guide-tipbar flex-row align-center">
           <view class="upgrade-guide-tipbar-icon">
             <text class="upgrade-guide-tipbar-icon-text">!</text>
           </view>
           <text class="upgrade-guide-tipbar-text">保留原有会员成长值</text>
-        </view>
+        </view> -->
         <view class="box_90 flex-row" v-if="platinumItem">
           <image
             class="level-icon-plat"
@@ -473,9 +473,8 @@
     align-self: center;
     margin-top: 22rpx;
     width: 690rpx;
-    height: 660rpx;
     position: relative;
-    padding: 207rpx 23rpx 33rpx 23rpx;
+    padding: 82rpx 23rpx 33rpx 23rpx;
     box-sizing: border-box;
   }
 
@@ -817,6 +816,7 @@
     white-space: nowrap;
     line-height: 42rpx;
     margin-top: 20rpx;
+    margin-bottom: 40rpx;
   }
 
   .group_113 {

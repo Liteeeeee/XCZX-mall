@@ -620,20 +620,27 @@
 
   const advantageRows = [
     {
+      title: '会员基础礼包',
+      desc: ['试用包邮', '推荐有礼', '会员费抵扣'],
+      backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shichiBg.png',
+    },
+
+    {
+      title: '会员专享折扣特权',
+      desc: ['积分特权', '会员价专享'],
+      backgroundImage:
+        'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/zhuanxiangzhekou.png',
+    },
+    {
       title: '仙草会员生日礼遇',
       desc: ['当天赠送全场八折券'],
+      backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shengriBg.png',
+    },
+    {
+      title: '线上健康咨询服务',
+      desc: ['会员每年免费健康咨询x3次', '专属客服'],
       backgroundImage:
-        'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shengriBg.webp',
-    },
-    {
-      title: '免费试吃福利',
-      desc: ['每月赠送试吃小食一份'],
-      backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shichiBg.webp',
-    },
-    {
-      title: '免费体检及问诊服务',
-      desc: ['免费体检一次', '免费问诊三次'],
-      backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/tijianBg.webp',
+        'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/xianshangjiankang.png',
     },
   ];
 
@@ -820,7 +827,6 @@
       border-radius: 21rpx;
       position: relative;
       width: 690rpx;
-      height: 500rpx;
       overflow: hidden;
       align-self: center;
       margin-top: 24rpx;
