@@ -5,7 +5,7 @@ const BrokerageApi = {
   bindBrokerageUser: (data) => {
     return request({
       url: '/trade/promoter/bind',
-      method: 'PUT',
+      method: 'POST',
       data,
     });
   },

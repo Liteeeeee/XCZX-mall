@@ -198,9 +198,9 @@ const bindBrokerageUser = async (val = undefined) => {
       return;
     }
     // 绑定成功返回 true，失败返回 false
-    const { data } = await BrokerageApi.bindBrokerageUser({ bindUserId: shareId });
-    // 绑定成功后清除缓存
-    if (data) {
+    const res = await BrokerageApi.bindBrokerageUser({ bindUserId: shareId });
+    // 绑定成功或明确报错（非网络异常）后清除缓存，防止死循环
+    if (res.code === 0 || res.code > 0) {
       uni.removeStorageSync('shareId');
     }
   } catch (e) {
