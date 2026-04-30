@@ -127,7 +127,7 @@ const app = defineStore({
             },
             forwardInfo: {
               title: '',
-              image: '',
+              image: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/首页分享.jpg',
               desc: '',
             },
           },
