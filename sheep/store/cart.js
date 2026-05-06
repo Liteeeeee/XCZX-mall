@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 import CartApi from '@/sheep/api/trade/cart';
+import user from './user';
 
 const cart = defineStore({
   id: 'cart',
@@ -15,7 +16,7 @@ const cart = defineStore({
     // 获取购物车列表
     async getList() {
       // 未登录不请求
-      const userStore = (await import('./user')).default();
+      const userStore = user();
       if (!userStore.isLogin) {
         this.emptyList();
         return;
