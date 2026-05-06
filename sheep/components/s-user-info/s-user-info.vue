@@ -3,7 +3,7 @@
   <view class="ss-user-info-list" :style="[cardStyle]">
     <view v-if="data.title" class="list-title ss-p-x-30 ss-p-y-20">{{ data.title }}</view>
     <view
-      v-for="(item, index) in data.items"
+      v-for="(item, index) in filteredItems"
       :key="index"
       class="list-item ss-flex ss-col-center ss-row-between ss-p-x-30 ss-p-y-30"
       @tap="onItemClick(item)"
@@ -64,6 +64,16 @@
       borderRadius: `${style.borderRadius || 0}px`,
       overflow: 'hidden',
     };
+  });
+
+  const filteredItems = computed(() => {
+    const canSeePartner = uni.getStorageSync('can_see_partner_menu');
+    return (props.data.items || []).filter((item) => {
+      if (item.name === '平台合伙人' || item.name === '申请合伙人') {
+        return canSeePartner;
+      }
+      return true;
+    });
   });
 
   const getIcon = (item) => {

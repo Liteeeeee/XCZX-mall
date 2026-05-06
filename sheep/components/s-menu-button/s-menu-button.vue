@@ -213,8 +213,18 @@
     };
   });
 
+  const filteredList = computed(() => {
+    const canSeePartner = uni.getStorageSync('can_see_partner_menu');
+    return (props.data.list || []).filter(item => {
+      if (item.url === '/pages/commission/index' || item.title === '平台合伙人') {
+        return canSeePartner;
+      }
+      return true;
+    });
+  });
+
   // 生成数据
-  const menuList = computed(() => splitData(props.data.list, props.data.row * props.data.column));
+  const menuList = computed(() => splitData(filteredList.value, props.data.row * props.data.column));
   const swiperHeight = computed(
     () => props.data.row * (props.data.layout === 'iconText' ? 200 : 180),
   );

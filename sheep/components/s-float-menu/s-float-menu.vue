@@ -19,7 +19,7 @@
    */
 
   import sheep from '@/sheep';
-  import { reactive, ref, unref } from 'vue';
+  import { reactive, ref, unref, computed } from 'vue';
   import { onBackPress } from '@dcloudio/uni-app';
 
   // 定义属性
@@ -44,7 +44,18 @@
   const fabRef = ref(null);
   // 按钮方向
   state.direction = props.data.direction;
-  props.data?.list.forEach((item) => {
+
+  const filteredList = computed(() => {
+    const canSeePartner = uni.getStorageSync('can_see_partner_menu');
+    return (props.data?.list || []).filter(item => {
+      if (item.url === '/pages/commission/index' || item.text === '平台合伙人') {
+        return canSeePartner;
+      }
+      return true;
+    });
+  });
+
+  filteredList.value.forEach((item) => {
     // 按钮文字
     const text = props.data?.showText ? item.text : '';
     // 生成内容配置项

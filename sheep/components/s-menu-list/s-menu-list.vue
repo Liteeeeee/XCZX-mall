@@ -3,7 +3,7 @@
   <view class="menu-list-wrap">
     <uni-list :border="true">
       <uni-list-item
-        v-for="(item, index) in data.list"
+        v-for="(item, index) in filteredList"
         :key="index"
         showArrow
         clickable
@@ -42,12 +42,23 @@
   /**
    * cell
    */
+  import { computed } from 'vue';
   import sheep from '@/sheep';
   const props = defineProps({
     data: {
       type: Object,
       default: () => ({}),
     },
+  });
+
+  const filteredList = computed(() => {
+    const canSeePartner = uni.getStorageSync('can_see_partner_menu');
+    return (props.data.list || []).filter(item => {
+      if (item.url === '/pages/commission/index' || item.title === '平台合伙人') {
+        return canSeePartner;
+      }
+      return true;
+    });
   });
 </script>
 
