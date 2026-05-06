@@ -71,15 +71,21 @@ const getShareInfo = (
 const buildSpmQuery = (params) => {
   const user = $store('user');
   let shareId = '0'; // 设置分享者用户ID
-  if (typeof params.shareId === 'undefined') {
-    if (user.isLogin) {
-      shareId = user.userInfo.id;
-    }
-  }
   let page = SharePageEnum.HOME.value; // 页面类型，默认首页
   if (typeof params.page !== 'undefined') {
     page = params.page;
   }
+
+  if (typeof params.shareId === 'undefined') {
+    if (user.isLogin) {
+      // 无论是会员页(将解析为inviterId)还是其他普通页面/商品页(将解析为shareId)
+      // 只要登录了，生成分享链接时均携带当前用户的 id
+      shareId = user.userInfo.id;
+    }
+  } else {
+    shareId = params.shareId;
+  }
+  
   let query = '0'; // 设置页面ID: 如商品ID、拼团ID等
   if (typeof params.query !== 'undefined') {
     query = params.query;
@@ -169,19 +175,37 @@ const decryptSpm = (spm) => {
   shareParams.platform = platformMap[shareParamsArray[3] - 1];
   shareParams.from = fromMap[shareParamsArray[4] - 1];
   if (shareId > 0) {
-    // 记录分享者编号
-    uni.setStorageSync('shareId', String(shareId));
-    // 记录邀请人编号（首页或会员页分享视为“邀请注册”入口）
-    if (
-      shareParamsArray[1] === SharePageEnum.HOME.value ||
-      shareParamsArray[1] === SharePageEnum.MEMBER.value
-    ) {
+    // 若页面为 MEMBER，则是会员邀请注册（存 inviterId）
+    if (shareParamsArray[1] === SharePageEnum.MEMBER.value) {
       uni.setStorageSync('inviterId', String(shareId));
+    } else {
+      // 否则为商品/普通推广员分享（存 shareId）
+      uni.setStorageSync('shareId', String(shareId));
     }
-    // 已登录 绑定推广员
-    if (!!user.isLogin) {
-      bindBrokerageUser(shareId);
+  }
+
+  // 若未登录且有分享者ID，强制跳转登录页并设置 returnUrl
+  if (shareId > 0 && !user.isLogin) {
+    let returnUrl = '';
+    if (shareParams.page !== SharePageEnum.HOME.page) {
+      const queryStr = Object.keys(shareParams.query)
+        .map((k) => `${k}=${shareParams.query[k]}`)
+        .join('&');
+      returnUrl = `${shareParams.page}${queryStr ? '?' + queryStr : ''}`;
     }
+    if (returnUrl) {
+      uni.setStorageSync('returnUrl', returnUrl);
+    }
+    $router.go('/pages/index/login');
+    return shareParams;
+  }
+
+  // 已登录则直接绑定推广员
+  // （注意：如果 shareId > 0，但是页面是 MEMBER 的情况，inviterId 已经在上面写入，
+  //  邀请注册通常是在未登录注册时使用，若已登录则不需要再绑定 inviterId，除非业务要求。
+  //  这里仅当存在普通的 shareId 时才走 bindBrokerageUser 逻辑）
+  if (shareId > 0 && user.isLogin && shareParamsArray[1] !== SharePageEnum.MEMBER.value) {
+    bindBrokerageUser();
   }
 
   if (shareParams.page !== SharePageEnum.HOME.page) {
@@ -191,17 +215,47 @@ const decryptSpm = (spm) => {
 };
 
 // 绑定推广员
-const bindBrokerageUser = async (val = undefined) => {
+const bindBrokerageUser = async () => {
   try {
-    const shareId = Number(val || uni.getStorageSync('shareId') || 0);
-    if (!shareId) {
+    const shareId = Number(uni.getStorageSync('shareId') || 0);
+    const promotionId = Number(uni.getStorageSync('promotionId') || 0);
+
+    if (!shareId && !promotionId) {
       return;
     }
-    // 绑定成功返回 true，失败返回 false
-    const res = await BrokerageApi.bindBrokerageUser({ bindUserId: shareId });
-    // 绑定成功或明确报错（非网络异常）后清除缓存，防止死循环
-    if (res.code === 0 || res.code > 0) {
-      uni.removeStorageSync('shareId');
+
+    const userStore = $store('user');
+    // 如果未登录，跳转到登录页，登录成功后(loginAfter)会再次触发绑定
+    if (!userStore.isLogin) {
+      $router.go('/pages/index/login');
+      return;
+    }
+
+    const userInfo = userStore.userInfo || {};
+    let res;
+
+    // 存在 promotionId，走 admin-api 推广人员绑定接口
+    if (promotionId) {
+      res = await BrokerageApi.bindBrokerageUser({
+        promoterId: promotionId,
+        userId: userInfo.id,
+        mobile: userInfo.mobile || '',
+        provinceId: userInfo.provinceId || 0,
+        cityId: userInfo.cityId || 0,
+        remark: '通过推广链接/二维码绑定',
+      });
+      if (res.code === 0 || res.code > 0) {
+        uni.removeStorageSync('promotionId');
+      }
+    } 
+    // 存在 shareId，走 app-api 分销用户绑定接口
+    else if (shareId) {
+      res = await BrokerageApi.bindBrokerageUserByShareId({
+        bindUserId: shareId,
+      });
+      if (res.code === 0 || res.code > 0) {
+        uni.removeStorageSync('shareId');
+      }
     }
   } catch (e) {
     console.error(e);

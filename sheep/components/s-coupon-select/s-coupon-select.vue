@@ -9,7 +9,10 @@
     backgroundColor="rgba(255, 255, 250, 1)"
   >
     <view class="model-box flex-col">
-      <view class="title">选择优惠券</view>
+      <view class="title ss-flex ss-row-between ss-col-center">
+        <text>选择优惠券</text>
+        <uni-icons type="closeempty" size="20" color="#3d3d3c" @tap="emits('close')" />
+      </view>
       <scroll-view
         class="model-content"
         scroll-y

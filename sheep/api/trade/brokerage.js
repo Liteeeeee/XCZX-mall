@@ -1,11 +1,19 @@
 import request from '@/sheep/request';
 
 const BrokerageApi = {
-  // 绑定推广员
+  // 绑定推广员 (基于 promotionId 调用的管理员创建绑定关系接口)
   bindBrokerageUser: (data) => {
     return request({
       url: '/trade/promoter/bind',
       method: 'POST',
+      data,
+    });
+  },
+  // 绑定推广员 (基于 shareId 调用的普通分销用户绑定接口)
+  bindBrokerageUserByShareId: (data) => {
+    return request({
+      url: '/trade/brokerage-user/bind',
+      method: 'PUT',
       data,
     });
   },

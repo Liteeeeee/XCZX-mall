@@ -116,7 +116,7 @@
         <view class="row flex-row" @tap="openCareerDrawer">
           <text class="row-label">职业</text>
           <text class="row-select" :class="state.careerName ? '' : 'row-select-placeholder'">{{
-            state.careerName || '请选择'
+            displayCareerName
           }}</text>
           <uni-icons
             type="right"
@@ -300,6 +300,12 @@
   const careerDescription = computed(() => {
     const hit = state.careerOptions.find((it) => String(it.value) === String(state.careerValue));
     return hit?.description || '上传您的相关资质照片，可以帮助平台更快帮您通过审核。';
+  });
+
+  const displayCareerName = computed(() => {
+    const name = state.careerName;
+    if (!name) return '请选择';
+    return name.length > 17 ? name.slice(0, 16) + '...' : name;
   });
 
   async function loadCareerOptions() {
