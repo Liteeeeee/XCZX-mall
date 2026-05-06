@@ -45,19 +45,11 @@
   // 按钮方向
   state.direction = props.data.direction;
 
-  const filteredList = computed(() => {
-    const canSeePartner = uni.getStorageSync('can_see_partner_menu');
-    return (props.data?.list || []).filter(item => {
-      if (item.url === '/pages/commission/index' || item.text === '平台合伙人') {
-        return canSeePartner;
-      }
-      return true;
-    });
-  });
+  const renderList = computed(() => props.data.list || []);
 
-  filteredList.value.forEach((item) => {
+  renderList.value.forEach((item) => {
     // 按钮文字
-    const text = props.data?.showText ? item.text : '';
+    const text = props.data?.showText ? item.text : "";
     // 生成内容配置项
     state.content.push({ iconPath: sheep.$url.cdn(item.imgUrl), url: item.url, text });
     // 生成样式配置项

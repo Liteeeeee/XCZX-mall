@@ -97,11 +97,6 @@
     }
     // #endif
 
-    // 解析太阳码等携带的 is_special 参数
-    if (options.is_special === '1') {
-      uni.setStorageSync('can_see_partner_menu', true);
-    }
-
     // 预览模板
     if (options.templateId) {
       sheep.$store('app').init(options.templateId);

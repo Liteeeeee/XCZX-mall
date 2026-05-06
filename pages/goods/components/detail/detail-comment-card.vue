@@ -3,7 +3,6 @@
   <view class="detail-comment-card bg-white">
     <view class="card-header ss-flex ss-col-center ss-row-between ss-p-b-30">
       <view class="ss-flex ss-col-center">
-        <view class="line"></view>
         <view class="title ss-m-l-20 ss-m-r-10">评价</view>
         <view class="des">({{ state.total }})</view>
       </view>
@@ -62,7 +61,7 @@
 
 <style lang="scss" scoped>
   .detail-comment-card {
-    margin: 0 20rpx 20rpx 20rpx;
+    margin: 0 0rpx 20rpx 0rpx;
     padding: 20rpx 20rpx 0 20rpx;
     .card-header {
       .line {

@@ -3,7 +3,7 @@
   <view class="menu-list-wrap">
     <uni-list :border="true">
       <uni-list-item
-        v-for="(item, index) in filteredList"
+        v-for="(item, index) in renderList"
         :key="index"
         showArrow
         clickable
@@ -51,15 +51,7 @@
     },
   });
 
-  const filteredList = computed(() => {
-    const canSeePartner = uni.getStorageSync('can_see_partner_menu');
-    return (props.data.list || []).filter(item => {
-      if (item.url === '/pages/commission/index' || item.title === '平台合伙人') {
-        return canSeePartner;
-      }
-      return true;
-    });
-  });
+  const renderList = computed(() => props.data.list || []);
 </script>
 
 <style lang="scss">

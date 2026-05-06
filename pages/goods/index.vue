@@ -133,6 +133,9 @@
           />
         </view>
 
+        <!-- 评价 -->
+        <detail-comment-card class="detail-comment-selector" :goodsId="state.goodsId" />
+
         <!-- 详情 -->
         <detail-content-card
           v-if="parsedDescription"
@@ -251,6 +254,7 @@
   import detailNavbar from './components/detail/detail-navbar.vue';
   import detailTabbar from './components/detail/detail-tabbar.vue';
   import detailSkeleton from './components/detail/detail-skeleton.vue';
+  import detailCommentCard from './components/detail/detail-comment-card.vue';
   import detailContentCard from './components/detail/detail-content-card.vue';
   import detailActivityTip from './components/detail/detail-activity-tip.vue';
   import { isEmpty } from 'lodash-es';

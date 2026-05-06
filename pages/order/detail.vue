@@ -130,6 +130,19 @@
               </button>
             </template>
           </s-goods-item>
+
+          <!-- 显示该商品的评价内容 -->
+          <view class="item-comment-box" v-if="item.commentInfo">
+            <view class="comment-title ss-flex ss-row-between">
+              <text>用户评价</text>
+              <text
+                class="more-comment"
+                @tap="sheep.$router.go('/pages/goods/comment/list', { id: item.spuId })"
+                >查看全部 ></text
+              >
+            </view>
+            <comment-item :item="item.commentInfo" />
+          </view>
         </view>
       </view>
     </view>
@@ -305,13 +318,13 @@
         >
           确认收货
         </button>
-        <!-- <button
+        <button
           class="ss-reset-button pay-btn"
           v-if="state.orderInfo.buttons?.includes('comment')"
           @tap="onComment(state.orderInfo.id)"
         >
           评价
-        </button> -->
+        </button>
         <button
           class="ss-reset-button cancel-btn"
           v-if="state.orderInfo.buttons?.includes('delete')"
@@ -376,7 +389,9 @@
   import OrderApi from '@/sheep/api/trade/order';
   import DeliveryApi from '@/sheep/api/trade/delivery';
   import PayOrderApi from '@/sheep/api/pay/order';
+  import CommentApi from '@/sheep/api/product/comment';
   import PickUpVerify from '@/pages/order/pickUpVerify.vue';
+  import commentItem from '@/pages/goods/components/detail/comment-item.vue';
 
   const statusBarHeight = sheep.$platform.device.statusBarHeight * 2;
   const headerBg = sheep.$url.css('/static/img/shop/order/order_bg.webp');
@@ -634,6 +649,18 @@
     if (res.code === 0) {
       state.orderInfo = res.data;
       handleOrderButtons(state.orderInfo);
+
+      // 拉取商品的最新一条真实评价进行展示
+      if (state.orderInfo.items) {
+        for (const item of state.orderInfo.items) {
+          // 调用商品评价接口，获取最新的评价（不受订单是否已评价限制）
+          const commentRes = await CommentApi.getCommentPage(item.spuId, 1, 1, 0);
+          if (commentRes.code === 0 && commentRes.data?.list?.length > 0) {
+            item.commentInfo = commentRes.data.list[0];
+          }
+        }
+      }
+
       // 配送方式：门店自提
       if (res.data.pickUpStoreId) {
         const { data } = await DeliveryApi.getDeliveryPickUpStore(res.data.pickUpStoreId);
@@ -846,6 +873,26 @@
           border: 2rpx solid var(--ui-BG-Main);
           border-radius: 14rpx;
           padding: 0 4rpx;
+        }
+
+        .item-comment-box {
+          margin-top: 20rpx;
+          padding-top: 20rpx;
+          border-top: 1rpx dashed #eeeeee;
+
+          .comment-title {
+            font-size: 26rpx;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10rpx;
+            padding-left: 10rpx;
+
+            .more-comment {
+              font-size: 24rpx;
+              color: #999;
+              font-weight: normal;
+            }
+          }
         }
       }
     }

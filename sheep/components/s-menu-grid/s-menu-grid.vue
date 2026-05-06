@@ -2,7 +2,7 @@
 <template>
   <view :style="[bgStyle, { marginLeft: `${data.space}px` }]">
     <uni-grid :showBorder="Boolean(data.border)" :column="data.column">
-      <uni-grid-item v-for="(item, index) in filteredList" :key="index">
+      <uni-grid-item v-for="(item, index) in renderList" :key="index">
         <view
           class="grid-item-box ss-flex ss-flex-col ss-row-center ss-col-center"
           @tap="sheep.$router.go(item.url)"
@@ -59,15 +59,7 @@
     };
   });
 
-  const filteredList = computed(() => {
-    const canSeePartner = uni.getStorageSync('can_see_partner_menu');
-    return (props.data.list || []).filter((item) => {
-      if (item.url === '/pages/commission/index' || item.title === '平台合伙人') {
-        return canSeePartner;
-      }
-      return true;
-    });
-  });
+  const renderList = computed(() => props.data.list || []);
 </script>
 
 <style lang="scss" scoped>

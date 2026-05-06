@@ -66,15 +66,7 @@
     };
   });
 
-  const filteredItems = computed(() => {
-    const canSeePartner = uni.getStorageSync('can_see_partner_menu');
-    return (props.data.items || []).filter((item) => {
-      if (item.name === '平台合伙人' || item.name === '申请合伙人') {
-        return canSeePartner;
-      }
-      return true;
-    });
-  });
+  const filteredItems = computed(() => props.data.items || []);
 
   const getIcon = (item) => {
     const iconMap = {
