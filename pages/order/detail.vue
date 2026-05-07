@@ -338,13 +338,17 @@
     <su-popup
       :show="state.showSelectGoodsDrawer"
       type="bottom"
-      round="20"
-      :showClose="true"
+      round="24"
+      :showClose="false"
       @close="state.showSelectGoodsDrawer = false"
+      backgroundColor="#FFFefa"
     >
-      <view class="select-goods-drawer flex-col">
-        <view class="drawer-header flex-row align-center justify-center">
+      <view class="select-goods-drawer">
+        <view class="drawer-header">
           <text class="drawer-title">请选择需要售后的商品</text>
+          <view class="drawer-close" @tap="state.showSelectGoodsDrawer = false">
+            <text class="drawer-close-icon">×</text>
+          </view>
         </view>
 
         <scroll-view class="drawer-content" scroll-y>
@@ -353,24 +357,28 @@
               (i) => [10, 20, 30].includes(state.orderInfo.status) && i.afterSaleStatus === 0,
             )"
             :key="item.id"
-            class="goods-item-card flex-row align-center justify-between"
+            class="goods-item-card"
             @tap="onSelectGoodsForAfterSale(item.id)"
           >
-            <view class="flex-row align-center" style="flex: 1">
-              <image class="goods-img" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
-              <view class="goods-info flex-col justify-between">
-                <text class="goods-name ss-line-2">{{ item.spuName }}</text>
-                <text class="goods-sku" v-if="item.properties">{{
-                  item.properties.map((p) => p.valueName).join(' ')
-                }}</text>
-                <view class="flex-row justify-between" style="width: 100%">
-                  <text class="goods-price">￥{{ fen2yuan(item.price) }}</text>
-                  <text class="goods-count">x{{ item.count }}</text>
+            <view class="drawer-goods-item">
+              <image
+                class="drawer-goods-image"
+                :src="sheep.$url.cdn(item.picUrl)"
+                mode="aspectFill"
+              />
+              <view class="drawer-goods-info">
+                <text class="drawer-goods-title ss-line-1">{{ item.spuName }}</text>
+                <text class="drawer-goods-spec ss-line-1" v-if="item.properties"
+                  >已选：{{ item.properties.map((p) => p.valueName).join('，') }}</text
+                >
+                <view class="drawer-goods-footer">
+                  <view class="drawer-goods-price">
+                    <text class="drawer-goods-price-symbol">￥</text>
+                    <text class="drawer-goods-price-value">{{ fen2yuan(item.price) }}</text>
+                  </view>
+                  <text class="drawer-goods-count">数量：{{ item.count }}</text>
                 </view>
               </view>
-            </view>
-            <view class="action-btn">
-              <button class="ss-reset-button apply-btn-small">申请</button>
             </view>
           </view>
         </scroll-view>
@@ -1072,74 +1080,125 @@
       color: rgba(30, 63, 28, 1);
       line-height: 46rpx;
     }
+  }
 
-    // 抽屉样式
-    .select-goods-drawer {
-      width: 750rpx;
-      background-color: #f8f9f3;
-      border-radius: 20rpx 20rpx 0 0;
-      padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .drawer-header {
-      height: 100rpx;
-      background-color: #fff;
-      border-bottom: 1rpx solid #f5f5f5;
-    }
-
-    .drawer-title {
-      font-size: 32rpx;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .drawer-content {
-      max-height: 60vh;
-      padding: 20rpx 30rpx;
-      box-sizing: border-box;
-    }
-
-    .goods-item-card {
-      background-color: #fff;
-      border-radius: 10rpx;
-      padding: 20rpx;
-      margin-bottom: 20rpx;
-
-      .goods-img {
-        width: 140rpx;
-        height: 140rpx;
-        border-radius: 10rpx;
-        margin-right: 20rpx;
-        background-color: #f5f5f5;
-      }
-
-      .goods-info {
-        flex: 1;
-        height: 140rpx;
-        padding-right: 20rpx;
-
-        .goods-name {
-          font-size: 26rpx;
-          color: #333;
-          line-height: 36rpx;
-        }
-
-        .goods-sku {
-          font-size: 22rpx;
-          color: #999;
-        }
-
-        .goods-price {
-          font-size: 28rpx;
-          color: #f53f3f;
-          font-weight: bold;
-        }
-
-        .goods-count {
-          font-size: 24rpx;
-          color: #999;
-        }
-      }
-    }
+  /* 售后选择商品弹窗 */
+  .select-goods-drawer {
+    width: 100%;
+    padding: 20rpx 36rpx 0;
+    box-sizing: border-box;
+  }
+  .drawer-header {
+    height: 96rpx;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .drawer-title {
+    color: #111111;
+    font-size: 32rpx;
+    font-weight: 600;
+    line-height: 44rpx;
+  }
+  .drawer-close {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56rpx;
+    height: 56rpx;
+    border-radius: 50%;
+    background: #f2f3f5;
+    transform: translateY(-50%);
+  }
+  .drawer-close-icon {
+    color: #333333;
+    font-size: 36rpx;
+    line-height: 1;
+    transform: translateY(-2rpx);
+  }
+  .drawer-content {
+    max-height: 60vh;
+    padding: 16rpx 0 calc(env(safe-area-inset-bottom) + 36rpx);
+  }
+  .goods-item-card {
+    padding: 0 0 52rpx;
+  }
+  .drawer-goods-item {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+  }
+  .drawer-goods-image {
+    width: 160rpx;
+    height: 160rpx;
+    border-radius: 8rpx;
+    flex-shrink: 0;
+    background: #f7f7f7;
+  }
+  .drawer-goods-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    margin-left: 24rpx;
+    min-width: 0;
+    height: 160rpx;
+  }
+  .drawer-goods-title {
+    color: #2b2b2b;
+    font-size: 30rpx;
+    font-weight: 500;
+    text-align: left;
+    line-height: 42rpx;
+  }
+  .drawer-goods-spec {
+    color: #999999;
+    font-size: 24rpx;
+    font-weight: normal;
+    text-align: left;
+    line-height: 34rpx;
+    margin: 14rpx 0 0;
+  }
+  .drawer-goods-footer {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    width: 100%;
+  }
+  .drawer-goods-price {
+    display: flex;
+    align-items: flex-end;
+    font-size: 0;
+    font-family: 'DIN Alternate Bold', 'DINAlternate-Bold', sans-serif;
+    font-weight: 700;
+    text-align: left;
+  }
+  .drawer-goods-price-symbol {
+    color: #f53f3f;
+    font-size: 24rpx;
+    font-weight: 600;
+    text-align: left;
+    line-height: 1;
+    margin-right: 2rpx;
+    margin-bottom: 4rpx;
+  }
+  .drawer-goods-price-value {
+    color: #f53f3f;
+    font-size: 40rpx;
+    font-family: 'DIN Alternate Bold', 'DINAlternate-Bold', sans-serif;
+    font-weight: 600;
+    text-align: left;
+    line-height: 1;
+  }
+  .drawer-goods-count {
+    color: #666666;
+    font-size: 24rpx;
+    font-weight: normal;
+    text-align: right;
+    line-height: 34rpx;
   }
 </style>
