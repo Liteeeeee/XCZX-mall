@@ -1,8 +1,9 @@
 <script setup>
   import { onLaunch, onShow, onError } from '@dcloudio/uni-app';
   import { ShoproInit } from './sheep';
+  import $share from '@/sheep/platform/share';
 
-  onLaunch(() => {
+  onLaunch((options) => {
     // 隐藏原生导航栏 使用自定义底部导航
     uni.hideTabBar({
       fail: () => {},
@@ -10,6 +11,9 @@
 
     // 加载Shopro底层依赖
     ShoproInit();
+
+    // 全局处理扫码/太阳码携带的 promotionId，避免仅首页生效
+    $share.handlePromotionEntry(options);
 
     // 动态加载字体（避免主包含入字体文件）
     uni.loadFontFace({

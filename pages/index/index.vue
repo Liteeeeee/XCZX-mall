@@ -116,17 +116,6 @@
       }
     }
 
-    // 推广员关联：兼容二维码/链接直接携带 promotionId
-    if (options.promotionId) {
-      uni.setStorageSync('promotionId', options.promotionId);
-      if (sheep.$store('user').isLogin) {
-        $share.bindBrokerageUser();
-      } else {
-        sheep.$router.go('/pages/index/login');
-        return;
-      }
-    }
-
     // 进入指定页面(完整页面路径)
     if (options.page) {
       sheep.$router.go(decodeURIComponent(options.page));

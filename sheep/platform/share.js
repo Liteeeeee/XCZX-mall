@@ -262,6 +262,84 @@ const bindBrokerageUser = async () => {
   }
 };
 
+const parseSceneParams = (scene) => {
+  const params = {};
+  if (!scene) {
+    return params;
+  }
+  decodeURIComponent(scene)
+    .split('&')
+    .forEach((pair) => {
+      if (!pair) return;
+      const idx = pair.indexOf('=');
+      if (idx < 0) return;
+      const key = pair.slice(0, idx);
+      const value = pair.slice(idx + 1);
+      if (!key) return;
+      params[key] = value;
+    });
+  return params;
+};
+
+const buildQueryString = (params = {}) => {
+  return Object.keys(params)
+    .filter((key) => typeof params[key] !== 'undefined' && params[key] !== '')
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
+    .join('&');
+};
+
+const extractEntryParams = (options = {}) => {
+  const params = {
+    ...(options.query || {}),
+  };
+  Object.keys(options).forEach((key) => {
+    if (['path', 'query', 'scene', 'referrerInfo'].includes(key)) {
+      return;
+    }
+    params[key] = options[key];
+  });
+  const scene = options.scene || params.scene;
+  if (scene) {
+    Object.assign(params, parseSceneParams(scene));
+  }
+  return params;
+};
+
+const buildEntryReturnUrl = (options = {}, params = {}) => {
+  const page = options.path;
+  if (!page || page === '/pages/index/login') {
+    return '';
+  }
+  const query = {
+    ...(options.query || {}),
+    ...params,
+  };
+  delete query.scene;
+  delete query.promotionId;
+  const queryString = buildQueryString(query);
+  return `${page}${queryString ? `?${queryString}` : ''}`;
+};
+
+const handlePromotionEntry = async (options = {}) => {
+  const params = extractEntryParams(options);
+  const promotionId = Number(params.promotionId || 0);
+  if (!promotionId) {
+    return false;
+  }
+  uni.setStorageSync('promotionId', String(promotionId));
+  const userStore = $store('user');
+  if (userStore.isLogin) {
+    await bindBrokerageUser();
+    return true;
+  }
+  const returnUrl = buildEntryReturnUrl(options, params);
+  if (returnUrl) {
+    uni.setStorageSync('returnUrl', returnUrl);
+  }
+  $router.go('/pages/index/login');
+  return true;
+};
+
 // 更新公众号分享sdk
 const updateShareInfo = (shareInfo) => {
   // #ifdef H5
@@ -276,4 +354,5 @@ export default {
   updateShareInfo,
   decryptSpm,
   bindBrokerageUser,
+  handlePromotionEntry,
 };
