@@ -288,6 +288,13 @@ const buildQueryString = (params = {}) => {
     .join('&');
 };
 
+const normalizePagePath = (path = '') => {
+  if (!path) {
+    return '';
+  }
+  return path.startsWith('/') ? path : `/${path}`;
+};
+
 const extractEntryParams = (options = {}) => {
   const params = {
     ...(options.query || {}),
@@ -305,8 +312,15 @@ const extractEntryParams = (options = {}) => {
   return params;
 };
 
+const getPromotionReturnUrl = (promotionId, options = {}, params = {}) => {
+  if (promotionId === 2) {
+    return '/pages/commission/apply';
+  }
+  return buildEntryReturnUrl(options, params);
+};
+
 const buildEntryReturnUrl = (options = {}, params = {}) => {
-  const page = options.path;
+  const page = normalizePagePath(options.path);
   if (!page || page === '/pages/index/login') {
     return '';
   }
@@ -326,17 +340,23 @@ const handlePromotionEntry = async (options = {}) => {
   if (!promotionId) {
     return false;
   }
+  const currentPage = normalizePagePath(options.path);
+  const returnUrl = getPromotionReturnUrl(promotionId, options, params);
   uni.setStorageSync('promotionId', String(promotionId));
   const userStore = $store('user');
   if (userStore.isLogin) {
     await bindBrokerageUser();
+    if (returnUrl && currentPage !== returnUrl) {
+      $router.go(returnUrl, {}, { redirect: currentPage === '/pages/index/login' });
+    }
     return true;
   }
-  const returnUrl = buildEntryReturnUrl(options, params);
   if (returnUrl) {
     uni.setStorageSync('returnUrl', returnUrl);
   }
-  $router.go('/pages/index/login');
+  if (currentPage !== '/pages/index/login') {
+    $router.go('/pages/index/login');
+  }
   return true;
 };
 
