@@ -547,7 +547,7 @@
   .stat-plus {
     position: absolute;
     right: -24rpx;
-    top: 0;
+    top: -14rpx;
   }
 
   .stat-plus-income {

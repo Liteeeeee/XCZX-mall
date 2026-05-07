@@ -71,30 +71,28 @@
     </view>
 
     <!-- tab -->
-    <su-sticky :customNavHeight="sys_navBar">
-      <view class="section_2 flex-col">
-        <view class="text-wrapper_4 flex-row justify-between" style="width: 350rpx; margin: 0 auto">
-          <text
-            class="tab-item"
-            :class="state.currentTab === 0 ? 'text_6' : 'text_7'"
-            @tap="onChangeTab(0)"
-            >获得收益</text
-          >
-          <text
-            class="tab-item"
-            :class="state.currentTab === 1 ? 'text_6' : 'text_7'"
-            @tap="onChangeTab(1)"
-            >提现</text
-          >
-        </view>
-        <view class="group_39 flex-row" style="width: 350rpx; margin: 27rpx auto 0">
-          <view
-            class="block_12 flex-col"
-            :style="{ transform: `translateX(${state.currentTab * 286}rpx)` }"
-          ></view>
-        </view>
+    <view class="section_2 flex-col">
+      <view class="text-wrapper_4 flex-row justify-between" style="width: 350rpx; margin: 0 auto">
+        <text
+          class="tab-item"
+          :class="state.currentTab === 0 ? 'text_6' : 'text_7'"
+          @tap="onChangeTab(0)"
+          >获得收益</text
+        >
+        <text
+          class="tab-item"
+          :class="state.currentTab === 1 ? 'text_6' : 'text_7'"
+          @tap="onChangeTab(1)"
+          >提现</text
+        >
       </view>
-    </su-sticky>
+      <view class="group_39 flex-row" style="width: 350rpx; margin: 27rpx auto 0">
+        <view
+          class="block_12 flex-col"
+          :style="{ transform: `translateX(${state.currentTab * 286}rpx)` }"
+        ></view>
+      </view>
+    </view>
 
     <!-- list -->
     <view class="list-box">
@@ -199,7 +197,7 @@
 
 <script setup>
   import { computed, reactive } from 'vue';
-  import { onLoad, onReachBottom } from '@dcloudio/uni-app';
+  import { onLoad, onShow, onReachBottom } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import dayjs from 'dayjs';
   import { concat } from 'lodash-es';
@@ -276,8 +274,8 @@
 
   // 确认操作（转账到余额）
   async function onConfirm() {
-    if (state.price <= 0) {
-      sheep.$helper.toast('请输入正确的金额');
+    if (!state.price || state.price < 200) {
+      sheep.$helper.toast('转出金额不得小于200元');
       return;
     }
     uni.showModal({
@@ -368,13 +366,17 @@
     );
   }
 
-  onLoad(async (options) => {
-    state.today = dayjs().format('YYYY-MM-DD');
-    state.date = [state.today, state.today];
+  onLoad((options) => {
     if (options.type === '2') {
       // 切换到"提现" tab 下
       state.currentTab = 1;
     }
+  });
+
+  onShow(() => {
+    state.today = dayjs().format('YYYY-MM-DD');
+    state.date = [state.today, state.today];
+    resetPagination(state.pagination);
     getLogList();
     getAgentInfo();
   });

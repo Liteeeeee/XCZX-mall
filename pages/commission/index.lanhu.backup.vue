@@ -61,15 +61,15 @@
           <text class="text_8" @tap="onGoWithdrawLog">提现记录</text>
         </view>
         <view :style="{ marginTop: '16rpx' }" class="group_36 flex-row justify-between">
-          <view class="text-group_13 flex-col">
+          <view class="text-group_13 flex-col flex-1">
             <text class="text_10">今日推广收益(元)</text>
             <text class="text_11 count-font">{{ todayExpectedIncome }}</text>
           </view>
-          <view class="text-group_14 flex-col">
+          <view class="text-group_14 flex-col flex-1">
             <text class="text_12">累计推广订单(次)</text>
             <text class="text_13 count-font">{{ todayPaidOrderCount }}</text>
           </view>
-          <view class="text-group_15 flex-col">
+          <view class="text-group_15 flex-col flex-1">
             <text class="text_14">今日增长订单(次)</text>
             <text class="text_15 count-font">{{ todayPromoteCount }}</text>
           </view>
@@ -130,7 +130,7 @@
 
 <script setup>
   import { computed, reactive } from 'vue';
-  import { onLoad, onReachBottom } from '@dcloudio/uni-app';
+  import { onShow, onReachBottom } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import { SharePageEnum } from '@/sheep/helper/const';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
@@ -168,6 +168,7 @@
     showMoney: true,
     summary: {},
     todayStatistics: {},
+    brokerageUser: {},
     currentTab: 0, // 0 明细 1 收入 2 支出
     pagination: {
       list: [],
@@ -181,12 +182,7 @@
   const showMoney = computed(() => state.showMoney);
   const balanceFen = computed(() => Number(state.summary?.brokeragePrice) || 0);
   const withdrawingFen = computed(() => Number(state.summary?.frozenPrice) || 0);
-  const totalEarnedFen = computed(
-    () =>
-      (Number(state.summary?.withdrawPrice) || 0) +
-      (Number(state.summary?.brokeragePrice) || 0) +
-      (Number(state.summary?.frozenPrice) || 0),
-  );
+  const totalEarnedFen = computed(() => Number(state.brokerageUser?.historyBrokeragePrice) || 0);
 
   const todayExpectedIncome = computed(() => {
     return fen2yuan(Number(state.todayStatistics?.todayBrokeragePrice || 0));
@@ -228,6 +224,13 @@
     state.summary = data || {};
   }
 
+  async function loadBrokerageUser() {
+    const res = await BrokerageApi.getBrokerageUser();
+    if (res.code === 0) {
+      state.brokerageUser = res.data || {};
+    }
+  }
+
   async function loadTodayStatistics() {
     const res = await BrokerageApi.getBrokerageRecordTodayStatistics();
     if (!res || typeof res !== 'object') return;
@@ -242,42 +245,41 @@
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
     };
-    const res =
-      state.currentTab === 0
-        ? await Promise.all([
-            BrokerageApi.getBrokerageRecordPage(baseParams),
-            BrokerageApi.getBrokerageWithdrawPage(baseParams),
-          ])
-        : state.currentTab === 1
-        ? await BrokerageApi.getBrokerageRecordPage(baseParams)
-        : await BrokerageApi.getBrokerageWithdrawPage(baseParams);
+
+    // 只调用 BrokerageApi.getBrokerageRecordPage
+    const res = await BrokerageApi.getBrokerageRecordPage({
+      ...baseParams,
+      // 根据不同的 tab 传递参数（如果有的话，通常业务上可能会根据 type 或 status 过滤）
+      // 这里如果接口不支持传类型，就只能拉全部或者依赖后端的筛选支持
+      // 假设暂时全拉取由后端返回的列表，前端再处理显示，或者如果接口支持传 bizType，可以在这里传
+    });
+
     state.loading = false;
-    if (Array.isArray(res)) {
-      const [recordRes, withdrawRes] = res;
-      const recordList =
-        recordRes?.code === 0 && Array.isArray(recordRes?.data?.list) ? recordRes.data.list : [];
-      const withdrawList =
-        withdrawRes?.code === 0 && Array.isArray(withdrawRes?.data?.list)
-          ? withdrawRes.data.list
-          : [];
-      const merged = [
-        ...recordList.map((it) => ({ ...it, _kind: 'income', _key: `r-${it.id}` })),
-        ...withdrawList.map((it) => ({ ...it, _kind: 'expense', _key: `w-${it.id}` })),
-      ].sort((a, b) => Number(b.createTime || 0) - Number(a.createTime || 0));
-      state.pagination.list = concat(state.pagination.list, merged);
-      const total = (recordRes?.data?.total || 0) + (withdrawRes?.data?.total || 0);
-      state.pagination.total = total;
-      state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
-      return;
-    }
+
     if (res.code !== 0) {
       state.loadStatus = 'more';
       return;
     }
-    const kind = state.currentTab === 2 ? 'expense' : 'income';
+
+    let list = res.data?.list || [];
+
+    // 前端根据当前 tab 过滤数据 (假设 bizType: 1-收入, 2-提现/支出 等)
+    // 注意：如果分页是后端处理的，前端过滤会导致每一页数量不固定。
+    // 如果后端接口 getBrokerageRecordPage 支持传 bizType 参数，最好将过滤逻辑放在参数中。
+    // 假设记录中有 price 字段：正数为收入，负数为支出
+    if (state.currentTab === 1) {
+      list = list.filter((item) => item.price > 0);
+    } else if (state.currentTab === 2) {
+      list = list.filter((item) => item.price <= 0);
+    }
+
     state.pagination.list = concat(
       state.pagination.list,
-      (res.data?.list || []).map((it) => ({ ...it, _kind: kind, _key: `${kind}-${it.id}` })),
+      list.map((it) => ({
+        ...it,
+        _kind: it.price > 0 ? 'income' : 'expense',
+        _key: `r-${it.id}`,
+      })),
     );
     state.pagination.total = res.data?.total || 0;
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
@@ -291,10 +293,13 @@
   }
 
   function rowTitle(item) {
-    if (item?._kind === 'expense') {
-      return item?.statusName || item?.typeName || item?.title || '';
+    let title = item.title || item.bizId || '未知记录';
+    if (item.bizType === 1) {
+      title = '订单推广佣金';
+    } else if (item.bizType === 2) {
+      title = '提现申请';
     }
-    return item?.title || item?.typeName || '';
+    return title.length > 15 ? title.slice(0, 14) + '...' : title;
   }
 
   function rowAmount(item) {
@@ -347,8 +352,9 @@
     sheep.$router.go('/pages/commission/wallet', { type: 2 });
   }
 
-  onLoad(async () => {
-    await Promise.all([loadSummary(), loadTodayStatistics()]);
+  onShow(async () => {
+    resetPagination();
+    await Promise.all([loadSummary(), loadTodayStatistics(), loadBrokerageUser()]);
     await loadList();
   });
 
@@ -540,7 +546,12 @@
   .text_11,
   .text_13,
   .text_15 {
-    margin: 3rpx 145rpx 0 0;
+    margin-top: 3rpx;
+  }
+
+  .flex-1 {
+    flex: 1;
+    align-items: center;
   }
 
   .text-wrapper_3 {

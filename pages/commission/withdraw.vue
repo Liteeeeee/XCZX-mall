@@ -113,7 +113,7 @@
               3.今日预估订单收益:今日所有已付款订单的预估收益;<br />
               4.今日推广商品:今日推广商品次数;<br />
               <view class="statement-subtitle">提现说明</view>
-              1.账户余额为可提现的金额，单笔提现至少1元;<br />
+              1.账户余额为可提现的金额，单笔提现至少200元;<br />
               2.同一时间只能申请一笔提现，在审核结束前不能再次申请;<br />
               3.申请提交成功后，平台会在三个工作日内完成审核，请耐心等待;<br />
               4.已申请提现的金额会从账户余额中扣除，并被冻结;<br />
@@ -141,6 +141,7 @@
   import { onBeforeMount, reactive, computed } from 'vue';
   import sheep from '@/sheep';
   import accountTypeSelect from './components/account-type-select.vue';
+  import { showAuthModal } from '@/sheep/hooks/useModal';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import TradeConfigApi from '@/sheep/api/trade/config';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
@@ -151,7 +152,7 @@
     showStatement: false,
     accountInfo: {
       // 提现表单
-      type: undefined,
+      type: '1', // 默认选中钱包余额
       price: '',
       userAccount: undefined,
       userName: undefined,
@@ -198,7 +199,11 @@
     // 参数校验
     const price = Number(state.accountInfo.price);
     const maxPrice = Number(state.brokerageInfo.brokeragePrice || 0) / 100;
-    if (!price || price <= 0 || price > maxPrice) {
+    if (!price || price < 200) {
+      sheep.$helper.toast('提现金额不得小于200元');
+      return;
+    }
+    if (price > maxPrice) {
       sheep.$helper.toast('请输入正确的提现金额');
       return;
     }
@@ -212,10 +217,35 @@
     }
     let openid;
     if (String(state.accountInfo.type) === '5') {
-      openid = await sheep.$platform.useProvider('wechat').getOpenid();
-      // 如果获取不到 openid，微信无法发起支付，此时需要引导
-      if (!openid) {
-        goBindWeixin();
+      const wechatProvider = sheep.$platform.useProvider('wechat');
+      openid = await wechatProvider.getOpenid();
+
+      let isBound = true;
+      if (wechatProvider.getInfo) {
+        const socialInfo = await wechatProvider.getInfo();
+        if (!socialInfo) {
+          isBound = false;
+        }
+      }
+
+      // 如果获取不到 openid 或者未完全绑定微信，此时需要引导
+      if (!openid || !isBound) {
+        uni.showModal({
+          title: '提示',
+          content: '请先绑定微信后再进行提现',
+          success: async function (res) {
+            if (res.confirm) {
+              uni.showLoading({ title: '正在绑定微信' });
+              const result = await wechatProvider.bind();
+              uni.hideLoading();
+              if (result) {
+                sheep.$helper.toast('微信绑定成功，请再次点击提现');
+              } else {
+                sheep.$helper.toast('微信绑定失败');
+              }
+            }
+          },
+        });
         return;
       }
     }
@@ -228,12 +258,44 @@
     if (String(state.accountInfo.type) === '5') {
       data.userAccount = openid;
       data.transferChannelCode = getWeixinPayChannelCode();
+      data.userName = 'wechat'; // 补充的参数
     } else {
       delete data.userAccount;
       delete data.transferChannelCode;
     }
-    let { code } = await BrokerageApi.createBrokerageWithdraw(data);
-    if (code !== 0) {
+    let res = await BrokerageApi.createBrokerageWithdraw(data);
+    if (res.code !== 0) {
+      if (res.msg && (res.msg.includes('昵称') || res.msg.includes('微信'))) {
+        const userInfo = sheep.$store('user').userInfo;
+        if (!userInfo.nickname) {
+          uni.showModal({
+            title: '提示',
+            content: '需要完善您的昵称和头像信息后才能提现',
+            success: function (modalRes) {
+              if (modalRes.confirm) {
+                showAuthModal('mpAuthorization');
+              }
+            },
+          });
+        } else {
+          uni.showModal({
+            title: '提示',
+            content: '您的微信未绑定或信息异常，请重新绑定微信',
+            success: async function (modalRes) {
+              if (modalRes.confirm) {
+                uni.showLoading({ title: '正在绑定微信' });
+                const result = await sheep.$platform.useProvider('wechat').bind();
+                uni.hideLoading();
+                if (result) {
+                  sheep.$helper.toast('微信绑定成功，请再次点击提现');
+                } else {
+                  sheep.$helper.toast('微信绑定失败');
+                }
+              }
+            },
+          });
+        }
+      }
       return;
     }
     // 提示
