@@ -433,7 +433,7 @@
     background: url('https://file.sheepjs.com/storage/img/2024/11/12/3df8a9a4b8784d1ab1b83d81f2113f8c.webp')
       no-repeat;
     background-size: 100% 100%;
-    padding: 0 0 120rpx 0;
+    padding: 0 0 40rpx 0;
     box-sizing: border-box;
 
     .score-container {
@@ -502,7 +502,7 @@
     );
     border-radius: 22px 22px 0px 0px;
     padding: 38rpx 82rpx 0 82rpx;
-    margin: -80rpx 33rpx 0;
+    margin: 24rpx 33rpx 0;
     position: relative;
     z-index: 1;
   }
