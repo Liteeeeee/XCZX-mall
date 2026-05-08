@@ -84,14 +84,14 @@
 
       .more-btn {
         font-size: 24rpx;
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
         line-height: normal;
       }
 
       .cicon-forward {
         font-size: 24rpx;
         line-height: normal;
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
         margin-top: 4rpx;
       }
     }

@@ -1,33 +1,56 @@
 <!-- 商品评论的分页 -->
 <template>
-  <s-layout title="全部评论">
-    <su-tabs
-      :list="state.type"
-      :scrollable="false"
-      @change="onTabsChange"
-      :current="state.currentTab"
-    />
-    <!-- 评论列表 -->
-    <view class="ss-m-t-20">
-      <view class="list-item" v-for="item in state.pagination.list" :key="item">
-        <comment-item :item="item" />
+  <s-layout navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
+    <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
+      <su-status-bar />
+      <view
+        class="nav-bar-container"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
+      >
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{ height: '100%', paddingLeft: '20rpx' }"
+        >
+          <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
+            <text class="sicon-back"></text>
+          </view>
+          <text class="nav-title ss-m-l-10">全部评论</text>
+        </view>
       </view>
     </view>
-    <s-empty
-      v-if="state.pagination.total === 0"
-      text="暂无数据"
-      :icon="sheep.$url.static('/static/data-empty.webp')"
-    />
-    <!-- 下拉 -->
-    <uni-load-more
-      icon-type="auto"
-      v-if="state.pagination.total > 0"
-      :status="state.loadStatus"
-      :content-text="{
-        contentdown: '上拉加载更多',
-      }"
-      @tap="loadMore"
-    />
+    <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+
+    <view class="comment-page">
+      <view class="tabs-card">
+        <su-tabs
+          :list="state.type"
+          :scrollable="false"
+          @change="onTabsChange"
+          :current="state.currentTab"
+        />
+      </view>
+
+      <view class="comment-list" v-if="state.pagination.total > 0">
+        <view class="list-item" v-for="item in state.pagination.list" :key="item">
+          <comment-item :item="item" />
+        </view>
+      </view>
+
+      <s-empty
+        v-if="state.pagination.total === 0"
+        text="暂无数据"
+        :icon="sheep.$url.static('/static/data-empty.webp')"
+      />
+      <uni-load-more
+        icon-type="auto"
+        v-if="state.pagination.total > 0"
+        :status="state.loadStatus"
+        :content-text="{
+          contentdown: '上拉加载更多',
+        }"
+        @tap="loadMore"
+      />
+    </view>
   </s-layout>
 </template>
 
@@ -106,9 +129,66 @@
 </script>
 
 <style lang="scss" scoped>
+  .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background: #f8f9f3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* #ifdef H5 */
+    max-width: 750rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    /* #endif */
+  }
+
+  .nav-bar-container {
+    background: #f8f9f3;
+    display: flex;
+    align-items: center;
+  }
+
+  .back-btn {
+    width: 60rpx;
+    height: 60rpx;
+    color: #000000;
+    font-size: 40rpx;
+  }
+
+  .nav-title {
+    color: #000000;
+    font-size: 36rpx;
+    font-weight: 600;
+  }
+
+  .comment-page {
+    padding: 20rpx 24rpx 32rpx;
+    background: #f8f9f3;
+    min-height: calc(100vh - var(--window-top));
+    box-sizing: border-box;
+  }
+
+  .tabs-card {
+    background: #ffffff;
+    border-radius: 20rpx;
+    padding: 8rpx 12rpx;
+  }
+
+  .comment-list {
+    margin-top: 20rpx;
+    border-radius: 20rpx;
+    overflow: hidden;
+  }
+
   .list-item {
     padding: 32rpx 30rpx 20rpx 20rpx;
     background: #fff;
+    margin-bottom: 20rpx;
+    border-radius: 20rpx;
 
     .avatar {
       width: 52rpx;
@@ -150,6 +230,10 @@
       font-weight: 500;
       color: #999999;
     }
+  }
+
+  .list-item:last-child {
+    margin-bottom: 0;
   }
 
   .btn-box {

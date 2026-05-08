@@ -40,7 +40,7 @@
                 {
                   width: addUnit(lineWidth),
                   height: addUnit(lineHeight),
-                  background: lineColor ? lineColor : 'var(--ui-BG-Main)',
+                  background: lineColor ? lineColor : '#1E3F1C',
                   backgroundSize: lineBgSize,
                 },
               ]"
@@ -56,7 +56,7 @@
                   transform: `translate(${lineOffsetLeft}px)`,
                   transitionDuration: `${firstTime ? 0 : duration}ms`,
                   height: addUnit(lineHeight),
-                  background: lineColor ? lineColor : 'var(--ui-BG-Main)',
+                  background: lineColor ? lineColor : '#1E3F1C',
                   backgroundSize: lineBgSize,
                 },
               ]"
