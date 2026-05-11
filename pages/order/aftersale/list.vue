@@ -1,66 +1,90 @@
 <!-- 售后列表 -->
 <template>
-  <s-layout title="售后列表">
-    <!-- tab -->
-    <su-sticky bgColor="#fff">
-      <su-tabs
-        :list="tabMaps"
-        :scrollable="false"
-        @change="onTabsChange"
-        :current="state.currentTab"
-      />
-    </su-sticky>
-    <s-empty
-      v-if="state.pagination.total === 0"
-      :icon="sheep.$url.static('/static/data-empty.webp')"
-      text="暂无数据"
-    />
-    <!-- 列表 -->
-    <view v-if="state.pagination.total > 0">
+  <s-layout navbar="clear" :bgStyle="{ color: '#F8F9F3' }">
+    <view class="fixed-header" :style="{ height: sheep.$platform.navbar + 'px' }">
+      <su-status-bar />
       <view
-        class="list-box ss-m-y-20"
-        v-for="order in state.pagination.list"
-        :key="order.id"
-        @tap="sheep.$router.go('/pages/order/aftersale/detail', { id: order.id })"
+        class="nav-bar-container"
+        :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
       >
-        <view class="order-head ss-flex ss-col-center ss-row-between">
-          <text class="no">服务单号：{{ order.no }}</text>
-          <text class="state">{{ formatAfterSaleStatus(order) }}</text>
-        </view>
-        <s-goods-item
-          :img="order.picUrl"
-          :title="order.spuName"
-          :skuText="order.properties.map((property) => property.valueName).join(' ')"
-          :price="order.refundPrice"
-        />
-        <view class="apply-box ss-flex ss-col-center ss-row-between border-bottom ss-p-x-20">
-          <view class="ss-flex ss-col-center">
-            <view class="title ss-m-r-20">{{ order.way === 10 ? '仅退款' : '退款退货' }}</view>
-            <view class="value">{{ formatAfterSaleStatusDescription(order) }}</view>
+        <view
+          class="nav-bar-inner ss-flex ss-col-center"
+          :style="{ height: '100%', paddingLeft: '20rpx' }"
+        >
+          <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="sheep.$router.back()">
+            <text class="sicon-back"></text>
           </view>
-          <text class="_icon-forward"></text>
-        </view>
-        <view class="tool-btn-box ss-flex ss-col-center ss-row-right ss-p-r-20">
-          <view>
-            <button
-              class="ss-reset-button tool-btn"
-              @tap.stop="onApply(order.id)"
-              v-if="order?.buttons.includes('cancel')"
-            >
-              取消申请
-            </button>
-          </view>
+          <text class="nav-title ss-m-l-10">售后列表</text>
         </view>
       </view>
     </view>
-    <uni-load-more
-      v-if="state.pagination.total > 0"
-      :status="state.loadStatus"
-      :content-text="{
-        contentdown: '上拉加载更多',
-      }"
-      @tap="loadMore"
-    />
+    <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
+
+    <view class="aftersale-page">
+      <su-sticky bgColor="#F8F9F3">
+        <view class="tabs-card">
+          <su-tabs
+            :list="tabMaps"
+            :scrollable="false"
+            @change="onTabsChange"
+            :current="state.currentTab"
+          />
+        </view>
+      </su-sticky>
+
+      <s-empty
+        v-if="state.pagination.total === 0"
+        :icon="sheep.$url.static('/static/data-empty.webp')"
+        text="暂无数据"
+      />
+
+      <view v-if="state.pagination.total > 0">
+        <view
+          class="list-box"
+          v-for="order in state.pagination.list"
+          :key="order.id"
+          @tap="sheep.$router.go('/pages/order/aftersale/detail', { id: order.id })"
+        >
+          <view class="order-head ss-flex ss-col-center ss-row-between">
+            <text class="no">服务单号：{{ order.no }}</text>
+            <text class="state">{{ formatAfterSaleStatus(order) }}</text>
+          </view>
+          <s-goods-item
+            :img="order.picUrl"
+            :title="order.spuName"
+            :skuText="order.properties.map((property) => property.valueName).join(' ')"
+            :price="order.refundPrice"
+          />
+          <view class="apply-box ss-flex ss-col-center ss-row-between border-bottom ss-p-x-20">
+            <view class="ss-flex ss-col-center">
+              <view class="title ss-m-r-20">{{ order.way === 10 ? '仅退款' : '退款退货' }}</view>
+              <view class="value">{{ formatAfterSaleStatusDescription(order) }}</view>
+            </view>
+            <text class="_icon-forward"></text>
+          </view>
+          <view class="tool-btn-box ss-flex ss-col-center ss-row-right ss-p-r-20">
+            <view>
+              <button
+                class="ss-reset-button tool-btn"
+                @tap.stop="onApply(order.id)"
+                v-if="order?.buttons.includes('cancel')"
+              >
+                取消申请
+              </button>
+            </view>
+          </view>
+        </view>
+      </view>
+
+      <uni-load-more
+        v-if="state.pagination.total > 0"
+        :status="state.loadStatus"
+        :content-text="{
+          contentdown: '上拉加载更多',
+        }"
+        @tap="loadMore"
+      />
+    </view>
   </s-layout>
 </template>
 
@@ -176,12 +200,75 @@
 </script>
 
 <style lang="scss" scoped>
+  .fixed-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background: #f8f9f3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* #ifdef H5 */
+    max-width: 750rpx;
+    left: 50%;
+    transform: translateX(-50%);
+    /* #endif */
+  }
+
+  .nav-bar-container {
+    background: #f8f9f3;
+    display: flex;
+    align-items: center;
+  }
+
+  .back-btn {
+    width: 60rpx;
+    height: 60rpx;
+    color: #000000;
+    font-size: 40rpx;
+  }
+
+  .nav-title {
+    color: #000000;
+    font-size: 36rpx;
+    font-weight: 600;
+  }
+
+  .aftersale-page {
+    padding: 20rpx 24rpx 32rpx;
+    background: #f8f9f3;
+    min-height: calc(100vh - var(--window-top));
+    box-sizing: border-box;
+  }
+
+  .tabs-card {
+    background: #ffffff;
+    border-radius: 20rpx;
+    padding: 8rpx 12rpx;
+  }
+
   .list-box {
     background-color: #fff;
+    margin: 20rpx 0 0;
+    border-radius: 20rpx;
+    overflow: hidden;
 
     .order-head {
       padding: 0 25rpx;
       height: 77rpx;
+
+      .no {
+        font-size: 24rpx;
+        color: #3d3d3c;
+      }
+
+      .state {
+        font-size: 24rpx;
+        color: #1e3f1c;
+        font-weight: 500;
+      }
     }
 
     .apply-box {
@@ -210,4 +297,5 @@
       }
     }
   }
+
 </style>

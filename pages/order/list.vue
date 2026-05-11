@@ -263,6 +263,12 @@
     {
       name: '待评价',
       value: 30,
+      commentStatus: false,
+    },
+    {
+      name: '已完成',
+      value: 30,
+      commentStatus: true,
     },
   ];
 
@@ -432,11 +438,13 @@
   // 获取订单列表
   async function getOrderList() {
     state.loadStatus = 'loading';
+    const currentTabConfig = tabMaps[state.currentTab] || {};
     let { code, data } = await OrderApi.getOrderPage({
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
-      status: tabMaps[state.currentTab].value,
-      commentStatus: tabMaps[state.currentTab].value === 30 ? false : null,
+      status: currentTabConfig.value,
+      commentStatus:
+        currentTabConfig.commentStatus === undefined ? null : currentTabConfig.commentStatus,
     });
     if (code !== 0) {
       return;
@@ -459,7 +467,7 @@
 
   onLoad(async (options) => {
     if (options.type) {
-      state.currentTab = options.type;
+      state.currentTab = Number(options.type);
     }
     // 初次加载时获取列表
     await getOrderList();

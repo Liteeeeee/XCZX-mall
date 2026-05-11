@@ -45,6 +45,7 @@
             :rightsUnlockedMap="state.rightsUnlockedMap"
             :rightsUnlockLoaded="state.rightsUnlockLoaded"
             :isVipOpened="isVipOpened"
+            :isLogin="isLogin"
           />
         </view>
 
@@ -118,7 +119,7 @@
                 <text class="text_23">/{{ currentLevel.upgradeName }}</text>
               </view>
               <view class="text-wrapper_4 flex-col" @tap="onUpgrade">
-                <text class="text_24">{{ isVipOpened ? '会员卡充值' : '升级会员' }}</text>
+                <text class="text_24">{{ isVipOpened ? '会员卡充值' : '开通会员' }}</text>
               </view>
             </view>
             <view class="box_23 flex-row">
@@ -171,10 +172,6 @@
   }
 
   async function loadAllRights() {
-    if (!isLogin.value) {
-      state.rightsAll = [];
-      return;
-    }
     const pageSize = 200;
     let pageNo = 1;
     const all = [];
@@ -254,6 +251,9 @@
     });
     state.hasAutoLocated = false;
     state.hasUserInteracted = false;
+    if (isLogin.value) {
+      await sheep.$store('user').getInfo();
+    }
     await loadMemberLevelList();
     await loadAllRights();
   });

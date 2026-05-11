@@ -65,10 +65,10 @@
             <view class="recharge-title-bar"></view>
             <text class="recharge-title-text">充值金额</text>
           </view>
-          <view class="recharge-record" @tap="onGoRechargeLog">
+          <!-- <view class="recharge-record" @tap="onGoRechargeLog">
             <text class="recharge-record-text">充值记录</text>
             <text class="recharge-record-arrow">›</text>
-          </view>
+          </view> -->
         </view>
 
         <view class="package-grid">

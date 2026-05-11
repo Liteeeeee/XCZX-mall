@@ -94,7 +94,7 @@
 
       .sub-title-text {
         font-size: 22rpx;
-        font-weight: 100 !important;
+        font-weight: 400 !important;
         color: #1e3f1c;
       }
     }

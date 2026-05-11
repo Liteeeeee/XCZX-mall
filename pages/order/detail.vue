@@ -130,9 +130,14 @@
               </button>
             </template>
           </s-goods-item>
+          <view class="order-item-actions" v-if="shouldShowAfterSaleButton(item)">
+            <button class="ss-reset-button apply-btn-small" @tap.stop="onAfterSaleAction(item)">
+              {{ getAfterSaleButtonText(item) }}
+            </button>
+          </view>
 
           <!-- 显示该商品的评价内容 -->
-          <view class="item-comment-box" v-if="item.commentInfo">
+          <!-- <view class="item-comment-box" v-if="item.commentInfo">
             <view class="comment-title ss-flex ss-row-between">
               <text>用户评价</text>
               <text
@@ -142,7 +147,7 @@
               >
             </view>
             <comment-item :item="item.commentInfo" />
-          </view>
+          </view> -->
         </view>
       </view>
     </view>
@@ -232,53 +237,9 @@
       bottom
       placeholder
       bg="bg-white"
-      v-if="
-        state.orderInfo.buttons?.length ||
-        state.orderInfo.items?.some(
-          (item) =>
-            ([10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0) ||
-            [10, 20].includes(item.afterSaleStatus),
-        )
-      "
+      v-if="state.orderInfo.buttons?.length || showCommentButton"
     >
       <view class="footer-box ss-flex ss-col-center ss-row-right">
-        <!-- 售后相关按钮（统一只显示一个） -->
-        <template v-if="state.orderInfo.items">
-          <button
-            class="ss-reset-button apply-btn"
-            v-if="
-              state.orderInfo.items.find(
-                (item) =>
-                  [10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0,
-              )
-            "
-            @tap.stop="onApplyAfterSale"
-          >
-            {{ state.orderInfo.status === 10 ? '申请退款' : '申请售后' }}
-          </button>
-          <button
-            class="ss-reset-button apply-btn"
-            v-if="state.orderInfo.items.find((item) => item.afterSaleStatus === 10)"
-            @tap.stop="
-              sheep.$router.go('/pages/order/aftersale/detail', {
-                id: state.orderInfo.items.find((item) => item.afterSaleStatus === 10).afterSaleId,
-              })
-            "
-          >
-            退款中
-          </button>
-          <button
-            class="ss-reset-button apply-btn"
-            v-if="state.orderInfo.items.find((item) => item.afterSaleStatus === 20)"
-            @tap.stop="
-              sheep.$router.go('/pages/order/aftersale/detail', {
-                id: state.orderInfo.items.find((item) => item.afterSaleStatus === 20).afterSaleId,
-              })
-            "
-          >
-            退款成功
-          </button>
-        </template>
         <button
           class="ss-reset-button cancel-btn"
           v-if="state.orderInfo.buttons?.includes('cancel')"
@@ -320,7 +281,7 @@
         </button>
         <button
           class="ss-reset-button pay-btn"
-          v-if="state.orderInfo.buttons?.includes('comment')"
+          v-if="showCommentButton"
           @tap="onComment(state.orderInfo.id)"
         >
           评价
@@ -334,63 +295,13 @@
         </button>
       </view>
     </su-fixed>
-    <!-- 订单选择商品售后抽屉 -->
-    <su-popup
-      :show="state.showSelectGoodsDrawer"
-      type="bottom"
-      round="24"
-      :showClose="false"
-      @close="state.showSelectGoodsDrawer = false"
-      backgroundColor="#FFFefa"
-    >
-      <view class="select-goods-drawer">
-        <view class="drawer-header">
-          <text class="drawer-title">请选择需要售后的商品</text>
-          <view class="drawer-close" @tap="state.showSelectGoodsDrawer = false">
-            <text class="drawer-close-icon">×</text>
-          </view>
-        </view>
-
-        <scroll-view class="drawer-content" scroll-y>
-          <view
-            v-for="item in state.orderInfo.items.filter(
-              (i) => [10, 20, 30].includes(state.orderInfo.status) && i.afterSaleStatus === 0,
-            )"
-            :key="item.id"
-            class="goods-item-card"
-            @tap="onSelectGoodsForAfterSale(item.id)"
-          >
-            <view class="drawer-goods-item">
-              <image
-                class="drawer-goods-image"
-                :src="sheep.$url.cdn(item.picUrl)"
-                mode="aspectFill"
-              />
-              <view class="drawer-goods-info">
-                <text class="drawer-goods-title ss-line-1">{{ item.spuName }}</text>
-                <text class="drawer-goods-spec ss-line-1" v-if="item.properties"
-                  >已选：{{ item.properties.map((p) => p.valueName).join('，') }}</text
-                >
-                <view class="drawer-goods-footer">
-                  <view class="drawer-goods-price">
-                    <text class="drawer-goods-price-symbol">￥</text>
-                    <text class="drawer-goods-price-value">{{ fen2yuan(item.price) }}</text>
-                  </view>
-                  <text class="drawer-goods-count">数量：{{ item.count }}</text>
-                </view>
-              </view>
-            </view>
-          </view>
-        </scroll-view>
-      </view>
-    </su-popup>
   </s-layout>
 </template>
 
 <script setup>
   import sheep from '@/sheep';
   import { onLoad, onShow } from '@dcloudio/uni-app';
-  import { reactive, ref, onUnmounted } from 'vue';
+  import { computed, reactive, ref, onUnmounted } from 'vue';
   import { isEmpty } from 'lodash-es';
   import dayjs from 'dayjs';
   import { fen2yuan, formatOrderStatus, handleOrderButtons } from '@/sheep/hooks/useGoods';
@@ -407,7 +318,20 @@
   const state = reactive({
     orderInfo: {},
     now: dayjs(), // 当前时间用于倒计时
-    showSelectGoodsDrawer: false, // 是否显示多商品退款选择抽屉
+  });
+
+  function isOrderCommented(order) {
+    const value = order?.commentStatus;
+    return value === true || value === 1 || value === '1' || value === 'true';
+  }
+
+  const showCommentButton = computed(() => {
+    return (
+      Number(state.orderInfo.status) === 30 &&
+      Array.isArray(state.orderInfo.items) &&
+      state.orderInfo.items.length > 0 &&
+      !isOrderCommented(state.orderInfo)
+    );
   });
 
   let timer = null;
@@ -614,34 +538,44 @@
     });
   }
 
-  const pickUpVerifyRef = ref();
-  const skipNextOnShowRefresh = ref(false);
-
-  // 点击申请退款/售后按钮
-  function onApplyAfterSale() {
-    const availableItems = state.orderInfo.items.filter(
-      (item) => [10, 20, 30].includes(state.orderInfo.status) && item.afterSaleStatus === 0,
+  function canApplyAfterSale(item) {
+    return (
+      [10, 20, 30].includes(Number(state.orderInfo.status)) && Number(item?.afterSaleStatus) === 0
     );
-    if (availableItems.length === 1) {
-      // 只有一个商品可退，直接跳转
-      sheep.$router.go('/pages/order/aftersale/apply', {
-        orderId: state.orderInfo.id,
-        itemId: availableItems[0].id,
-      });
-    } else if (availableItems.length > 1) {
-      // 有多个商品可退，弹出抽屉让用户选择
-      state.showSelectGoodsDrawer = true;
-    }
   }
 
-  // 选中某个商品进行退款
-  function onSelectGoodsForAfterSale(itemId) {
-    state.showSelectGoodsDrawer = false;
+  function shouldShowAfterSaleButton(item) {
+    return canApplyAfterSale(item) || [10, 20].includes(Number(item?.afterSaleStatus));
+  }
+
+  function getAfterSaleButtonText(item) {
+    if (Number(item?.afterSaleStatus) === 10) {
+      return '退款中';
+    }
+    if (Number(item?.afterSaleStatus) === 20) {
+      return '退款成功';
+    }
+    return Number(state.orderInfo.status) === 10 ? '申请退款' : '申请售后';
+  }
+
+  function onAfterSaleAction(item) {
+    if ([10, 20].includes(Number(item?.afterSaleStatus)) && item?.afterSaleId) {
+      sheep.$router.go('/pages/order/aftersale/detail', {
+        id: item.afterSaleId,
+      });
+      return;
+    }
+    if (!canApplyAfterSale(item)) {
+      return;
+    }
     sheep.$router.go('/pages/order/aftersale/apply', {
       orderId: state.orderInfo.id,
-      itemId,
+      itemId: item.id,
     });
   }
+
+  const pickUpVerifyRef = ref();
+  const skipNextOnShowRefresh = ref(false);
 
   async function getOrderDetail(id) {
     // 对详情数据进行适配
@@ -852,6 +786,12 @@
           font-size: 24rpx;
           margin-top: 10rpx;
           text-align: right;
+        }
+
+        .order-item-actions {
+          display: flex;
+          justify-content: flex-end;
+          padding: 0 24rpx 8rpx;
         }
 
         :deep(.price-text) {
@@ -1069,136 +1009,18 @@
       background: #1e3f1c;
       line-height: 60rpx;
     }
-    .apply-btn-small {
-      width: 120rpx;
-      height: 50rpx;
-      background: rgba(255, 255, 250, 1);
-      border-radius: 25rpx;
-      border: 2rpx solid rgba(30, 63, 28, 1);
-      font-size: 24rpx;
-      font-weight: 500;
-      color: rgba(30, 63, 28, 1);
-      line-height: 46rpx;
-    }
   }
 
-  /* 售后选择商品弹窗 */
-  .select-goods-drawer {
-    width: 100%;
-    padding: 20rpx 36rpx 0;
-    box-sizing: border-box;
-  }
-  .drawer-header {
-    height: 96rpx;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .drawer-title {
-    color: #111111;
-    font-size: 32rpx;
-    font-weight: 600;
-    line-height: 44rpx;
-  }
-  .drawer-close {
-    position: absolute;
-    right: 0;
-    top: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 56rpx;
-    height: 56rpx;
-    border-radius: 50%;
-    background: #f2f3f5;
-    transform: translateY(-50%);
-  }
-  .drawer-close-icon {
-    color: #333333;
-    font-size: 36rpx;
-    line-height: 1;
-    transform: translateY(-2rpx);
-  }
-  .drawer-content {
-    max-height: 60vh;
-    padding: 16rpx 0 calc(env(safe-area-inset-bottom) + 36rpx);
-  }
-  .goods-item-card {
-    padding: 0 0 52rpx;
-  }
-  .drawer-goods-item {
-    display: flex;
-    align-items: flex-start;
-    width: 100%;
-  }
-  .drawer-goods-image {
-    width: 160rpx;
-    height: 160rpx;
-    border-radius: 8rpx;
-    flex-shrink: 0;
-    background: #f7f7f7;
-  }
-  .drawer-goods-info {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    flex: 1;
-    margin-left: 24rpx;
-    min-width: 0;
-    height: 160rpx;
-  }
-  .drawer-goods-title {
-    color: #2b2b2b;
-    font-size: 30rpx;
+  .apply-btn-small {
+    width: 120rpx;
+    height: 50rpx;
+    background: rgba(255, 255, 250, 1);
+    border-radius: 30rpx;
+    border: 2rpx solid #9d9c96;
+    font-size: 24rpx;
     font-weight: 500;
-    text-align: left;
-    line-height: 42rpx;
-  }
-  .drawer-goods-spec {
-    color: #999999;
-    font-size: 24rpx;
-    font-weight: normal;
-    text-align: left;
-    line-height: 34rpx;
-    margin: 14rpx 0 0;
-  }
-  .drawer-goods-footer {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    width: 100%;
-  }
-  .drawer-goods-price {
-    display: flex;
-    align-items: flex-end;
-    font-size: 0;
-    font-family: 'DIN Alternate Bold', 'DINAlternate-Bold', sans-serif;
-    font-weight: 700;
-    text-align: left;
-  }
-  .drawer-goods-price-symbol {
-    color: #f53f3f;
-    font-size: 24rpx;
-    font-weight: 600;
-    text-align: left;
-    line-height: 1;
-    margin-right: 2rpx;
-    margin-bottom: 4rpx;
-  }
-  .drawer-goods-price-value {
-    color: #f53f3f;
-    font-size: 40rpx;
-    font-family: 'DIN Alternate Bold', 'DINAlternate-Bold', sans-serif;
-    font-weight: 600;
-    text-align: left;
-    line-height: 1;
-  }
-  .drawer-goods-count {
-    color: #666666;
-    font-size: 24rpx;
-    font-weight: normal;
-    text-align: right;
-    line-height: 34rpx;
+    color: #3d3d3c;
+    line-height: 46rpx;
+    box-sizing: border-box;
   }
 </style>

@@ -106,7 +106,7 @@
           <view class="item-title">申请原因：</view>
           <view class="item-content">{{ state.info.applyReason }}</view>
         </view>
-        <view class="aftersale-item ss-flex ss-col-center">
+        <view class="aftersale-item aftersale-item--top ss-flex">
           <view class="item-title">相关描述：</view>
           <view class="item-content">{{ state.info.applyDescription }}</view>
         </view>
@@ -401,7 +401,8 @@
     margin: 0 20rpx;
 
     .aftersale-item {
-      height: 60rpx;
+      min-height: 60rpx;
+      padding: 12rpx 0;
 
       .copy-btn {
         background: #eeeeee;
@@ -415,11 +416,24 @@
       .item-title {
         color: #999;
         font-size: 28rpx;
+        flex-shrink: 0;
       }
 
       .item-content {
         color: #333;
         font-size: 28rpx;
+        flex: 1;
+        min-width: 0;
+        line-height: 40rpx;
+        word-break: break-all;
+      }
+    }
+
+    .aftersale-item--top {
+      align-items: flex-start;
+
+      .item-title {
+        line-height: 40rpx;
       }
     }
   }

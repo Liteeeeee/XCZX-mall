@@ -15,23 +15,23 @@
           <image class="logo" :src="sheep.$url.static('/static/log.webp')" mode="aspectFit"></image>
         </view>
       </template>
+      <view class="home-content">
+        <s-block
+          v-for="(item, index) in template.components"
+          :key="index"
+          :styles="item.property.style"
+        >
+          <s-block-item :type="item.id" :data="item.property" :styles="item.property.style" />
+        </s-block>
 
-      <s-block
-        v-for="(item, index) in template.components"
-        :key="index"
-        :styles="item.property.style"
-      >
-        <s-block-item :type="item.id" :data="item.property" :styles="item.property.style" />
-      </s-block>
+        <image
+          v-show="showDownGuide"
+          class="down-guide"
+          :src="sheep.$url.static('/static/down.gif')"
+          mode="aspectFit"
+        ></image>
+      </view>
     </s-layout>
-
-    <!-- 下拉引导动图：移到 s-layout 外层，避免被容器裁剪或层级遮挡 -->
-    <image
-      v-show="showDownGuide"
-      class="down-guide"
-      :src="sheep.$url.static('/static/down.gif')"
-      mode="aspectFit"
-    ></image>
   </view>
 </template>
 
@@ -175,14 +175,18 @@
 </script>
 
 <style lang="scss" scoped>
+  .home-content {
+    position: relative;
+  }
+
   .down-guide {
-    position: fixed;
-    bottom: 12vh;
+    position: absolute;
+    top: calc(1282rpx - 170rpx);
     left: 50%;
     transform: translateX(-50%);
     width: 110rpx;
     height: 110rpx;
-    z-index: 99999;
+    z-index: 20;
     pointer-events: none; /* 防止遮挡用户点击事件 */
   }
 
@@ -203,11 +207,6 @@
     }
   }
 
-  // 首页专属的轮播图指示器样式：隐藏指示器
-  :deep(.ui-swiper-dot) {
-    display: none !important;
-  }
-
   // 强制首页的轮播图容器高度
   :deep(.ui-swiper) {
     height: 1282rpx !important; // 你可以调整这个容器的高度
@@ -218,5 +217,59 @@
       // 关键：保持原图比例，多出部分被裁剪，不会拉伸变形
       object-fit: cover !important;
     }
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot) {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    justify-content: center;
+    bottom: 36rpx;
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot.default .line-box),
+  :deep(.ui-swiper .ui-swiper-dot.long .line-box),
+  :deep(.ui-swiper .ui-swiper-dot.line .line-box) {
+    background: rgba(255, 255, 255, 0.6);
+    box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.14);
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot.default .line-box.cur),
+  :deep(.ui-swiper .ui-swiper-dot.long .line-box.cur),
+  :deep(.ui-swiper .ui-swiper-dot.line .line-box.cur) {
+    background: rgba(255, 255, 255, 0.98);
+    box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.18);
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot.long .line-box) {
+    width: 12rpx;
+    height: 12rpx;
+    margin: 0 12rpx;
+    border: 2rpx solid rgba(255, 255, 255, 0.35);
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot.long .line-box.cur) {
+    width: 34rpx;
+    border-color: rgba(255, 255, 255, 0.92);
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot.default .line-box.cur::after) {
+    width: 6rpx;
+    height: 6rpx;
+    background-color: rgba(255, 255, 255, 0.98);
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot.tag) {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    justify-content: center;
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.22);
+    border: 1rpx solid rgba(255, 255, 255, 0.42);
+    box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.12);
+    padding: 10rpx 24rpx;
+    border-radius: 999rpx;
+    font-weight: 600;
   }
 </style>

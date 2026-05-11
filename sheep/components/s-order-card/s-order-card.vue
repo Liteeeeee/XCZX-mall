@@ -23,7 +23,7 @@
           :show-zero="false"
         >
           <view class="item-icon-box ss-flex ss-row-center ss-col-center">
-            <image class="item-icon" :src="sheep.$url.static(item.icon)" mode="aspectFit" />
+            <image class="item-icon" :src="sheep.$url.cdn(item.icon)" mode="aspectFit" />
           </view>
         </uni-badge>
         <view class="item-title ss-m-t-20">{{ item.title }}</view>
@@ -52,10 +52,10 @@
     },
   });
 
-  const orderList = [
+  const defaultOrderList = [
     {
       title: '待付款',
-      icon: '/static/user/dfk.webp',
+      icon: '/mp/static/myPageIcon/待付款@2x.png',
       path: '/pages/order/list',
       type: 'unpaid',
       value: '1',
@@ -63,7 +63,7 @@
     },
     {
       title: '待发货',
-      icon: '/static/user/dfh.webp',
+      icon: '/mp/static/myPageIcon/待发货@2x.png',
       path: '/pages/order/list',
       type: 'nosend',
       value: '2',
@@ -71,7 +71,7 @@
     },
     {
       title: '待收货',
-      icon: '/static/user/dsh.webp',
+      icon: '/mp/static/myPageIcon/待收货@2x.png',
       path: '/pages/order/list',
       type: 'noget',
       value: '3',
@@ -79,16 +79,95 @@
     },
     {
       title: '已完成',
-      icon: '/static/user/ywc.webp',
+      icon: '/mp/static/myPageIcon/已完成@2x.png',
       path: '/pages/order/list',
       type: 'completed',
       value: '4',
       count: 'uncommentedCount',
     },
+    {
+      title: '售后/退款',
+      icon: '/mp/static/myPageIcon/已完成@2x.png',
+      path: '/pages/order/aftersale/list',
+      type: 'aftersale',
+      count: 'afterSaleCount',
+    },
   ];
 
+  const orderMenuConfigMap = [
+    {
+      names: ['待付款'],
+      icon: '/mp/static/myPageIcon/待付款@2x.png',
+      path: '/pages/order/list',
+      value: '1',
+      count: 'unpaidCount',
+    },
+    {
+      names: ['待发货'],
+      icon: '/mp/static/myPageIcon/待发货@2x.png',
+      path: '/pages/order/list',
+      value: '2',
+      count: 'undeliveredCount',
+    },
+    {
+      names: ['待收货'],
+      icon: '/mp/static/myPageIcon/待收货@2x.png',
+      path: '/pages/order/list',
+      value: '3',
+      count: 'deliveredCount',
+    },
+    {
+      names: ['待评价'],
+      icon: '/mp/static/myPageIcon/待评价@2x.png',
+      path: '/pages/order/list',
+      value: '4',
+      count: 'uncommentedCount',
+    },
+    {
+      names: ['已完成'],
+      icon: '/mp/static/myPageIcon/已完成@2x.png',
+      path: '/pages/order/list',
+      value: '5',
+    },
+    {
+      names: ['售后/退款', '退款/售后', '售后', '退款'],
+      icon: '/static/user/ywc.webp',
+      path: '/pages/order/aftersale/list',
+      count: 'afterSaleCount',
+    },
+  ];
+
+  const getOrderMenuConfig = (item, index) => {
+    const itemName = item?.name || item?.title || '';
+    return (
+      orderMenuConfigMap.find((config) => config.names.includes(itemName)) ||
+      defaultOrderList[index] ||
+      {}
+    );
+  };
+
+  const orderList = computed(() => {
+    const sourceItems = props.data?.items?.length ? props.data.items : defaultOrderList;
+    return sourceItems.map((item, index) => {
+      const config = getOrderMenuConfig(item, index);
+      return {
+        ...config,
+        ...item,
+        title: item?.name || item?.title || config.title,
+        icon: config.icon,
+        path: item?.url || item?.path || config.path,
+        value: item?.value ?? config.value,
+        count: item?.count || config.count,
+      };
+    });
+  });
+
   const onItemClick = (item) => {
-    sheep.$router.go(item.path, { type: item.value });
+    if (item.value !== undefined && item.path === '/pages/order/list') {
+      sheep.$router.go(item.path, { type: item.value });
+      return;
+    }
+    sheep.$router.go(item.path);
   };
 
   // 设置角标
@@ -122,17 +201,22 @@
     }
 
     .order-content {
+      justify-content: space-between;
+
       .order-item {
+        flex: 1;
+        min-width: 0;
+
         .item-icon-box {
-          width: 80rpx;
-          height: 80rpx;
+          width: 56rpx;
+          height: 56rpx;
           // border: 1rpx dashed #ccc;
           border-radius: 10rpx;
         }
 
         .item-icon {
-          width: 80rpx;
-          height: 80rpx;
+          width: 56rpx;
+          height: 56rpx;
         }
 
         .item-title {

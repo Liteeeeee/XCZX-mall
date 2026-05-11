@@ -29,13 +29,13 @@
         }"
         @tap="sheep.$router.go('/pages/user/wallet/vip-recharge')"
       ></view>
-      <text class="text_8">已解锁{{ unlockedCount }}项权益</text>
+      <text class="text_8">{{ rightsSummaryText }}</text>
       <view class="section_5 flex-row" v-if="rightsToRender.length > 0">
         <view class="rights-item" v-for="(item, index) in rightsToRender" :key="item?.id ?? index">
           <view class="rights-icon-wrap">
             <image class="rights-icon" :src="getRightIcon(item)" mode="aspectFit"></image>
             <image
-              v-if="rightsUnlockLoaded && isRightLocked(item)"
+              v-if="isRightLocked(item)"
               class="rights-lock-icon"
               :src="lockIconSrc"
               mode="aspectFit"
@@ -164,6 +164,10 @@
       type: Boolean,
       default: false,
     },
+    isLogin: {
+      type: Boolean,
+      default: false,
+    },
   });
 
   const rightsUnlockLoaded = computed(() => !!props.rightsUnlockLoaded);
@@ -189,6 +193,7 @@
   };
 
   const isRightLocked = (item) => {
+    if (!props.isLogin) return true;
     const id = getRightId(item);
     if (id === null) return false;
     if (!rightsUnlockLoaded.value) return false;
@@ -197,6 +202,7 @@
   };
 
   const unlockedCount = computed(() => {
+    if (!props.isLogin) return 0;
     const list = rightsToRender.value;
     if (!rightsUnlockLoaded.value) return list.length;
     let n = 0;
@@ -204,6 +210,13 @@
       if (!isRightLocked(it)) n += 1;
     }
     return n;
+  });
+
+  const rightsSummaryText = computed(() => {
+    if (!props.isLogin) {
+      return `未解锁${rightsToRender.value.length}项权益`;
+    }
+    return `已解锁${unlockedCount.value}项权益`;
   });
 
   const getRightIcon = (item) => {

@@ -62,7 +62,10 @@
     }
   }
 
-  function onMyMember() {
+  async function onMyMember() {
+    if (sheep.$store('user').isLogin) {
+      await sheep.$store('user').getInfo();
+    }
     sheep.$router.redirect('/pages/index/member');
   }
 
