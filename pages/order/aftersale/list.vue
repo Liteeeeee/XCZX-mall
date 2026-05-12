@@ -55,13 +55,13 @@
             :skuText="order.properties.map((property) => property.valueName).join(' ')"
             :price="order.refundPrice"
           />
-          <view class="apply-box ss-flex ss-col-center ss-row-between border-bottom ss-p-x-20">
+          <!-- <view class="apply-box ss-flex ss-col-center ss-row-between border-bottom ss-p-x-20">
             <view class="ss-flex ss-col-center">
               <view class="title ss-m-r-20">{{ order.way === 10 ? '仅退款' : '退款退货' }}</view>
               <view class="value">{{ formatAfterSaleStatusDescription(order) }}</view>
             </view>
             <text class="_icon-forward"></text>
-          </view>
+          </view> -->
           <view class="tool-btn-box ss-flex ss-col-center ss-row-right ss-p-r-20">
             <view>
               <button
@@ -297,5 +297,4 @@
       }
     }
   }
-
 </style>

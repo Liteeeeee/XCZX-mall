@@ -131,13 +131,99 @@
         <button
           class="ss-reset-button btn"
           v-if="state.info.buttons?.includes('delivery')"
-          @tap="sheep.$router.go('/pages/order/aftersale/return-delivery', { id: state.info.id })"
+          @tap="openDeliveryDrawer"
         >
           填写退货
         </button>
         <button class="ss-reset-button contcat-btn btn" open-type="contact"> 联系客服 </button>
       </view>
     </su-fixed>
+
+    <su-popup
+      :show="state.showDeliveryDrawer"
+      type="bottom"
+      round="20"
+      :showClose="false"
+      @close="state.showDeliveryDrawer = false"
+    >
+      <view class="delivery-popup-box">
+        <view class="delivery-popup-title ss-flex ss-row-center ss-col-center">
+          填写退货信息
+          <view
+            class="delivery-close-btn ss-flex ss-row-center ss-col-center"
+            @tap.stop="state.showDeliveryDrawer = false"
+          >
+            <image
+              class="delivery-close-icon"
+              src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/close.webp"
+              mode="aspectFit"
+            />
+          </view>
+        </view>
+
+        <scroll-view class="delivery-popup-content" scroll-y>
+          <view class="delivery-section-title">退货邮寄地址</view>
+          <view class="delivery-address-card">
+            <view class="delivery-address-main">
+              <view class="delivery-address-text">{{
+                state.config.afterSaleReturnAddress || '朝阳区东城路15号西城科学园'
+              }}</view>
+              <view class="delivery-address-contact">{{
+                state.config.afterSaleReturnMobile || '苏小三 180****8888'
+              }}</view>
+            </view>
+            <view class="delivery-copy-btn" @tap="copyReturnAddress">复制地址信息</view>
+          </view>
+
+          <view class="delivery-form-box">
+            <view class="delivery-form-row">
+              <text class="delivery-row-label">快递单号</text>
+              <input
+                class="delivery-row-input"
+                v-model="deliveryData.logisticsNo"
+                placeholder="请输入快递单号"
+                placeholder-class="delivery-placeholder"
+              />
+            </view>
+
+            <view class="delivery-row-divider"></view>
+
+            <view class="delivery-form-row">
+              <text class="delivery-row-label">快递公司</text>
+              <picker
+                mode="selector"
+                class="delivery-row-picker"
+                @change="onExpressChange"
+                :value="deliveryData.expressIndex"
+                :range="state.expresses"
+                range-key="name"
+              >
+                <view class="delivery-picker-inner">
+                  <text
+                    :class="
+                      deliveryData.expressIndex !== -1
+                        ? 'delivery-picker-value'
+                        : 'delivery-placeholder'
+                    "
+                  >
+                    {{
+                      deliveryData.expressIndex !== -1
+                        ? state.expresses[deliveryData.expressIndex].name
+                        : '请选择快递公司'
+                    }}
+                  </text>
+                  <text class="sicon-forward delivery-picker-arrow"></text>
+                </view>
+              </picker>
+            </view>
+          </view>
+
+          <view class="delivery-popup-footer">
+            <button class="ss-reset-button delivery-confirm-btn" @tap="submitDelivery">确定</button>
+          </view>
+        </scroll-view>
+      </view>
+    </su-popup>
   </s-layout>
 </template>
 
@@ -152,6 +238,8 @@
     handleAfterSaleButtons,
   } from '@/sheep/hooks/useGoods';
   import AfterSaleApi from '@/sheep/api/trade/afterSale';
+  import DeliveryApi from '@/sheep/api/trade/delivery';
+  import TradeConfigApi from '@/sheep/api/trade/config';
 
   const isMiniProgram = sheep.$platform.platform === 'miniProgram';
   const capsuleStyle = computed(() => {
@@ -168,7 +256,10 @@
   const state = reactive({
     id: 0, // 售后编号
     info: {}, // 收货信息
+    config: {},
     loading: false,
+    showDeliveryDrawer: false,
+    expresses: [],
     active: 0, // 在 list 的激活位置
     list: [
       {
@@ -181,6 +272,10 @@
         title: '完成',
       },
     ], // 时间轴
+  });
+  const deliveryData = reactive({
+    logisticsNo: '',
+    expressIndex: -1,
   });
 
   function onBack() {
@@ -212,6 +307,69 @@
     sheep.$helper.copyText(state.info.no);
   };
 
+  async function getTradeConfig() {
+    const { code, data } = await TradeConfigApi.getTradeConfig();
+    if (code === 0) {
+      state.config = data || {};
+    }
+  }
+
+  async function getExpressList() {
+    if (state.expresses.length > 0) {
+      return;
+    }
+    const { code, data } = await DeliveryApi.getDeliveryExpressList();
+    if (code === 0) {
+      state.expresses = data || [];
+    }
+  }
+
+  function copyReturnAddress() {
+    const address = `${state.config.afterSaleReturnAddress || '朝阳区东城路15号西城科学园'} ${
+      state.config.afterSaleReturnMobile || '苏小三 180****8888'
+    }`;
+    sheep.$helper.copyText(address);
+  }
+
+  function onExpressChange(e) {
+    deliveryData.expressIndex = Number(e.detail.value);
+  }
+
+  async function openDeliveryDrawer() {
+    await Promise.all([getTradeConfig(), getExpressList()]);
+    state.showDeliveryDrawer = true;
+  }
+
+  async function submitDelivery() {
+    if (!deliveryData.logisticsNo) {
+      sheep.$helper.toast('请输入快递单号');
+      return;
+    }
+    if (deliveryData.expressIndex === -1 || !state.expresses[deliveryData.expressIndex]) {
+      sheep.$helper.toast('请选择快递公司');
+      return;
+    }
+
+    uni.showLoading({ title: '提交中' });
+    const { code } = await AfterSaleApi.deliveryAfterSale({
+      id: state.info.id,
+      logisticsId: state.expresses[deliveryData.expressIndex].id,
+      logisticsNo: deliveryData.logisticsNo,
+    });
+    uni.hideLoading();
+    if (code !== 0) {
+      return;
+    }
+
+    uni.showToast({
+      title: '填写退货成功',
+    });
+    state.showDeliveryDrawer = false;
+    deliveryData.logisticsNo = '';
+    deliveryData.expressIndex = -1;
+    await getDetail(state.info.id);
+  }
+
   async function getDetail(id) {
     state.loading = true;
     const { code, data } = await AfterSaleApi.getAfterSale(id);
@@ -241,6 +399,7 @@
     }
     state.id = options.id;
     getDetail(options.id);
+    getTradeConfig();
   });
 </script>
 
@@ -458,5 +617,154 @@
       font-weight: 400;
       color: rgba(51, 51, 51, 1);
     }
+  }
+
+  .delivery-popup-box {
+    background: #fffefa;
+    border-radius: 24rpx 24rpx 0 0;
+    padding: 0 32rpx calc(36rpx + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+  }
+
+  .delivery-popup-title {
+    position: relative;
+    height: 108rpx;
+    font-size: 36rpx;
+    font-weight: 600;
+    color: #222222;
+  }
+
+  .delivery-close-btn {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40rpx;
+    height: 40rpx;
+    border-radius: 50%;
+    background: #eeeeee;
+    color: #666666;
+    font-size: 20rpx;
+  }
+
+  .delivery-close-icon {
+    width: 40rpx;
+    height: 40rpx;
+  }
+
+  .delivery-popup-content {
+    max-height: 62vh;
+  }
+
+  .delivery-section-title {
+    font-size: 30rpx;
+    font-weight: 500;
+    color: #222222;
+    line-height: 42rpx;
+    margin-bottom: 20rpx;
+  }
+
+  .delivery-address-card {
+    background: #f5f5f3;
+    border-radius: 18rpx;
+    padding: 22rpx 24rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    column-gap: 20rpx;
+  }
+
+  .delivery-address-main {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .delivery-address-text,
+  .delivery-address-contact {
+    font-size: 28rpx;
+    color: #666666;
+    line-height: 40rpx;
+    word-break: break-all;
+  }
+
+  .delivery-address-contact {
+    margin-top: 4rpx;
+  }
+
+  .delivery-copy-btn {
+    flex-shrink: 0;
+    font-size: 28rpx;
+    color: #4a63ff;
+    line-height: 40rpx;
+  }
+
+  .delivery-form-box {
+    margin-top: 34rpx;
+    background: transparent;
+  }
+
+  .delivery-form-row {
+    min-height: 88rpx;
+    display: flex;
+    align-items: center;
+  }
+
+  .delivery-row-label {
+    width: 152rpx;
+    flex-shrink: 0;
+    font-size: 30rpx;
+    color: #222222;
+    line-height: 42rpx;
+  }
+
+  .delivery-row-input,
+  .delivery-row-picker {
+    flex: 1;
+    min-width: 0;
+    font-size: 28rpx;
+    color: #222222;
+  }
+
+  .delivery-row-divider {
+    height: 1rpx;
+    background: #eceae4;
+  }
+
+  .delivery-picker-inner {
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .delivery-picker-value {
+    color: #222222;
+    font-size: 28rpx;
+  }
+
+  .delivery-placeholder {
+    color: #b7b2aa;
+    font-size: 28rpx;
+  }
+
+  .delivery-picker-arrow {
+    color: #b7b2aa;
+    font-size: 24rpx;
+  }
+
+  .delivery-popup-footer {
+    padding-top: 44rpx;
+  }
+
+  .delivery-confirm-btn {
+    width: 100%;
+    height: 88rpx;
+    line-height: 88rpx;
+    border-radius: 44rpx;
+    background: #1e4a1d;
+    color: #ffffff;
+    font-size: 34rpx;
+    font-weight: 500;
+    text-align: center;
   }
 </style>

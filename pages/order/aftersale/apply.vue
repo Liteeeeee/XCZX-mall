@@ -123,80 +123,6 @@
         </view>
       </view>
     </su-popup>
-
-    <!-- 退货物流填写抽屉 -->
-    <su-popup
-      :show="state.showDeliveryDrawer"
-      type="bottom"
-      round="20"
-      :showClose="true"
-      @close="state.showDeliveryDrawer = false"
-    >
-      <view class="delivery-drawer-box flex-col">
-        <view class="drawer-header flex-row align-center justify-center">
-          <text class="drawer-title">填写退货信息</text>
-        </view>
-
-        <view class="drawer-content flex-col">
-          <view class="section-title">退货邮寄地址</view>
-
-          <view class="address-card flex-row align-center justify-between">
-            <view class="address-info flex-col">
-              <text class="address-detail">{{
-                state.config.afterSaleReturnAddress || '朝阳区东城路15号西城科学园'
-              }}</text>
-              <text class="address-contact">{{
-                state.config.afterSaleReturnMobile || '苏小三 180****8888'
-              }}</text>
-            </view>
-            <view class="copy-action" @tap="copyReturnAddress">
-              <text class="copy-text">复制地址信息</text>
-            </view>
-          </view>
-
-          <view class="form-row flex-row align-center">
-            <text class="row-label">快递单号</text>
-            <input
-              class="row-input"
-              v-model="deliveryData.logisticsNo"
-              placeholder="请输入快递单号"
-              placeholder-class="placeholder-text"
-            />
-          </view>
-
-          <view class="divider"></view>
-
-          <view class="form-row flex-row align-center">
-            <text class="row-label">快递公司</text>
-            <picker
-              mode="selector"
-              class="row-input"
-              @change="onExpressChange"
-              :value="deliveryData.expressIndex"
-              :range="state.expresses"
-              range-key="name"
-            >
-              <view class="picker-inner flex-row align-center justify-between">
-                <text :class="deliveryData.expressIndex !== -1 ? 'value-text' : 'placeholder-text'">
-                  {{
-                    deliveryData.expressIndex !== -1
-                      ? state.expresses[deliveryData.expressIndex].name
-                      : '请选择快递公司'
-                  }}
-                </text>
-                <uni-icons type="right" size="14" color="rgba(212, 212, 213, 1)"></uni-icons>
-              </view>
-            </picker>
-          </view>
-
-          <view class="divider"></view>
-        </view>
-
-        <view class="drawer-footer">
-          <button class="ss-reset-button confirm-btn" @tap="submitDelivery">确定</button>
-        </view>
-      </view>
-    </su-popup>
   </s-layout>
 </template>
 
@@ -208,7 +134,6 @@
   import TradeConfigApi from '@/sheep/api/trade/config';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import AfterSaleApi from '@/sheep/api/trade/afterSale';
-  import DeliveryApi from '@/sheep/api/trade/delivery';
 
   const form = ref(null);
   const state = reactive({
@@ -232,9 +157,6 @@
     reasonList: [], // 可选的申请原因数组
     showModal: false, // 是否显示申请原因弹窗
     currentValue: '', // 当前选择的售后原因
-    showDeliveryDrawer: false, // 退货物流填写抽屉
-    expresses: [], // 快递公司列表
-    createdAfterSaleId: null, // 成功创建后的售后单号
   });
   let formData = reactive({
     way: '',
@@ -242,62 +164,7 @@
     applyDescription: '',
     applyPicUrls: [],
   });
-  let deliveryData = reactive({
-    logisticsNo: '',
-    expressIndex: -1,
-  });
   const rules = reactive({});
-
-  // 获得快递物流列表
-  async function getExpressList() {
-    const { code, data } = await DeliveryApi.getDeliveryExpressList();
-    if (code !== 0) {
-      return;
-    }
-    state.expresses = data;
-  }
-
-  // 复制退货地址
-  function copyReturnAddress() {
-    const address = `${state.config.afterSaleReturnAddress || '朝阳区东城路15号西城科学园'} ${
-      state.config.afterSaleReturnMobile || '苏小三 180****8888'
-    }`;
-    sheep.$helper.copyText(address);
-  }
-
-  // 快递公司选择
-  function onExpressChange(e) {
-    deliveryData.expressIndex = e.detail.value;
-  }
-
-  // 提交售后退货物流信息
-  async function submitDelivery() {
-    if (!deliveryData.logisticsNo) {
-      sheep.$helper.toast('请输入快递单号');
-      return;
-    }
-    if (deliveryData.expressIndex === -1) {
-      sheep.$helper.toast('请选择快递公司');
-      return;
-    }
-
-    let data = {
-      id: state.createdAfterSaleId,
-      logisticsId: state.expresses[deliveryData.expressIndex].id,
-      logisticsNo: deliveryData.logisticsNo,
-    };
-
-    uni.showLoading({ title: '提交中' });
-    const { code } = await AfterSaleApi.deliveryAfterSale(data);
-    uni.hideLoading();
-    if (code === 0) {
-      uni.showToast({
-        title: '填写退货成功',
-      });
-      state.showDeliveryDrawer = false;
-      sheep.$router.redirect('/pages/order/aftersale/list');
-    }
-  }
 
   // 提交表单
   async function submit() {
@@ -319,19 +186,13 @@
 
     /* 原有真实逻辑 */
     uni.showLoading({ title: '提交中' });
-    const { code, data: afterSaleId } = await AfterSaleApi.createAfterSale(data);
+    const { code } = await AfterSaleApi.createAfterSale(data);
     uni.hideLoading();
     if (code === 0) {
-      if (formData.way === '20') {
-        // 退货退款，成功后弹出填写物流抽屉
-        state.createdAfterSaleId = afterSaleId;
-        state.showDeliveryDrawer = true;
-      } else {
-        uni.showToast({
-          title: '申请成功',
-        });
-        sheep.$router.redirect('/pages/order/aftersale/list');
-      }
+      uni.showToast({
+        title: '申请成功',
+      });
+      sheep.$router.redirect('/pages/order/aftersale/list');
     }
   }
 
@@ -359,9 +220,6 @@
   }
 
   onLoad(async (options) => {
-    // 获得快递物流列表
-    getExpressList();
-
     // 解析参数
     if (!options.orderId || !options.itemId) {
       sheep.$helper.toast(`缺少订单信息，请检查`);

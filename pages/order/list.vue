@@ -33,7 +33,7 @@
       </view>
       <su-tabs
         :list="tabMaps"
-        :scrollable="false"
+        :scrollable="true"
         @change="onTabsChange"
         :current="state.currentTab"
         :activeStyle="{ color: '#1E3F1C', fontSize: '32rpx', fontWeight: 600 }"
