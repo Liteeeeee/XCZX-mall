@@ -21,16 +21,19 @@
     <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
 
     <view class="aftersale-page">
-      <su-sticky bgColor="#F8F9F3">
-        <view class="tabs-card">
-          <su-tabs
-            :list="tabMaps"
-            :scrollable="false"
-            @change="onTabsChange"
-            :current="state.currentTab"
-          />
-        </view>
-      </su-sticky>
+      <view class="tabs-card">
+        <su-tabs
+          :list="tabMaps"
+          :scrollable="true"
+          @change="onTabsChange"
+          :current="state.currentTab"
+          :activeStyle="{ color: '#1E3F1C', fontSize: '32rpx', fontWeight: 600 }"
+          :inactiveStyle="{ color: '#1D2129', fontSize: '32rpx', fontWeight: 'normal' }"
+          lineColor="#1E3F1C"
+          lineWidth="32"
+          lineHeight="6"
+        />
+      </view>
 
       <s-empty
         v-if="state.pagination.total === 0"
@@ -244,7 +247,6 @@
   }
 
   .tabs-card {
-    background: #ffffff;
     border-radius: 20rpx;
     padding: 8rpx 12rpx;
   }

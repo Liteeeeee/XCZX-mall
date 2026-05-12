@@ -36,7 +36,7 @@
         <!-- 操作区 -->
         <view class="btn-box ss-flex ss-row-between">
           <button class="check-btn ss-reset-button" v-if="payResult === 'success'" @tap="onOrder">
-            查看订单
+            {{ state.orderType === 'recharge' ? '返回充值' : '查看订单' }}
           </button>
           <button
             class="check-btn ss-reset-button"
@@ -171,10 +171,14 @@
 
   function onOrder() {
     if (state.orderType === 'recharge') {
-      sheep.$router.redirect('/pages/pay/recharge-log');
+      sheep.$router.redirect('/pages/user/wallet/vip-recharge');
     } else {
       sheep.$router.redirect('/pages/order/list');
     }
+  }
+
+  function onBack() {
+    sheep.$router.go('/pages/index/index');
   }
 
   // #ifdef MP

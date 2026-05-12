@@ -8,11 +8,9 @@
         <view class="ss-flex-col ss-row-center ss-col-center">
           <view class="price-box ss-flex ss-col-bottom">
             <view class="price-unit" v-if="data.discountType === 1">￥</view>
-            <view class="price-text">{{
-              data.discountType === 1
-                ? fen2yuan(data.discountPrice)
-                : data.discountPercent / 10.0 || data.amount || 0
-            }}</view>
+            <view class="price-text" :class="{ 'price-text-small': isPriceTextSmall() }">
+              {{ getDisplayPriceText() }}
+            </view>
             <view
               class="price-unit"
               v-if="data.discountType === 2"
@@ -133,6 +131,20 @@
     return props.disabled;
   });
 
+  function getDisplayPriceText() {
+    const d = props.data || {};
+    if (Number(d.discountType) === 1) {
+      return String(fen2yuan(d.discountPrice));
+    }
+    const percent = Number(d.discountPercent || 0);
+    const amount = d.amount !== undefined && d.amount !== null ? d.amount : 0;
+    return String(percent ? percent / 10.0 : amount || 0);
+  }
+
+  function isPriceTextSmall() {
+    return getDisplayPriceText().length >= 6;
+  }
+
   function onCouponTap() {
     if (isDisable.value && props.data?.mismatchReason) {
       uni.showToast({
@@ -195,6 +207,13 @@
           font-family: PingFangSC-Semibold;
           font-weight: 600;
           line-height: 56rpx;
+          white-space: nowrap;
+          flex-shrink: 1;
+        }
+
+        .price-text-small {
+          font-size: 44rpx;
+          line-height: 52rpx;
         }
       }
 
@@ -247,10 +266,6 @@
               transform: rotate(180deg);
             }
           }
-        }
-
-        .btn-box {
-          // Adjust button position if needed
         }
       }
     }

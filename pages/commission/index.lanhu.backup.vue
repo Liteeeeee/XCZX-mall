@@ -97,8 +97,8 @@
           </view>
         </view>
 
-        <view v-if="state.pagination.total === 0 && !state.loading" class="empty-text"
-          >暂无数据</view
+        <view v-if="state.pagination.list.length === 0 && !state.loading" class="empty-text"
+          >暂无更多数据</view
         >
         <view
           v-for="item in state.pagination.list"
@@ -113,13 +113,18 @@
               }}</text
             >
           </view>
-          <text class="count-font" :class="rowAmountTextClass(item)">{{
-            rowAmountText(item)
-          }}</text>
+          <view class="amount-col">
+            <text class="count-font" :class="rowAmountTextClass(item)">{{
+              rowAmountText(item)
+            }}</text>
+            <text v-if="item.statusName" class="row-status" :class="rowStatusTextClass(item)">{{
+              item.statusName
+            }}</text>
+          </view>
         </view>
 
         <uni-load-more
-          v-if="state.pagination.total > 0"
+          v-if="state.pagination.list.length > 0"
           :status="state.loadStatus"
           :content-text="{ contentdown: '上拉加载更多' }"
         />
@@ -342,6 +347,13 @@
       return 'text_22';
     }
     return 'text_19';
+  }
+
+  function rowStatusTextClass(item) {
+    const status = Number(item?.status);
+    if (status === 1) return 'status-settled';
+    if (status === 2) return 'status-cancel';
+    return 'status-pending';
   }
 
   function onWithdrawNow() {
@@ -699,7 +711,7 @@
 
   .text_19 {
     overflow-wrap: break-word;
-    color: rgba(54, 208, 7, 1);
+    color: #1d2129;
     font-size: 32rpx;
     font-family: Helvetica, 'Microsoft YaHei', Arial, sans-serif;
     font-weight: normal;
@@ -710,7 +722,7 @@
 
   .text_22 {
     overflow-wrap: break-word;
-    color: rgba(255, 0, 0, 1);
+    color: #1d2129;
     font-size: 32rpx;
     font-family: Helvetica;
     font-weight: normal;
@@ -730,6 +742,39 @@
     white-space: nowrap;
     line-height: 32rpx;
     margin: 44rpx 0 0 187rpx;
+  }
+
+  .amount-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .amount-col .text_22,
+  .amount-col .text_31 {
+    margin: 0;
+  }
+
+  .row-status {
+    margin-top: 10rpx;
+    font-size: 22rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: right;
+    white-space: nowrap;
+    line-height: 22rpx;
+  }
+
+  .status-pending {
+    color: #9d9c96;
+  }
+
+  .status-settled {
+    color: #2ec21b;
+  }
+
+  .status-cancel {
+    color: #c21b1b;
   }
 
   .box_21 {

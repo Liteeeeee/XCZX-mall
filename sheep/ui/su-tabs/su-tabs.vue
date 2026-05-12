@@ -55,7 +55,7 @@
                   width: addUnit(lineWidth),
                   transform: `translate(${lineOffsetLeft}px)`,
                   transitionDuration: `${firstTime ? 0 : duration}ms`,
-                  height: addUnit(lineHeight),
+                  height: '4rpx',
                   background: lineColor ? lineColor : '#1E3F1C',
                   backgroundSize: lineBgSize,
                 },
@@ -378,7 +378,6 @@
 
 <style lang="scss" scoped>
   .u-tabs {
-    background: #fff;
     border-bottom: 2rpx solid #eee;
 
     &__wrapper {

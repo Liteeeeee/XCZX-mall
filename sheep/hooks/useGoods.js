@@ -252,10 +252,11 @@ export function formatAfterSaleStatusDescription(afterSale) {
     return '退款关闭';
   }
   if (afterSale.status === 62) {
-    return `商家不同意退款申请，拒绝原因：${afterSale.auditReason}`;
+    debugger
+    return `商家不同意退款申请`;
   }
   if (afterSale.status === 63) {
-    return `商家拒绝收货，不同意退款，拒绝原因：${afterSale.auditReason}`;
+    return `商家拒绝收货，不同意退款`;
   }
   return '未知状态';
 }

@@ -93,16 +93,12 @@
                 </view>
                 <view class="order-meta flex-row justify-between">
                   <text class="order-qty">数量*{{ item._totalCount || item._count || 1 }}</text>
-                  <text class="order-earn"
-                    >预估收益{{
-                      fen2yuan(
-                        item._itemsDisplay?.[0]?.brokeragePrice ??
-                          item.brokeragePrice ??
-                          item.price ??
-                          0,
-                      )
-                    }}元</text
+                  <text
+                    class="order-earn"
+                    :class="{ 'order-earn-disabled': isExcludeCommission(getFirstGoods(item)) }"
                   >
+                    {{ getSingleOrderEarnText(item) }}
+                  </text>
                 </view>
               </view>
             </view>
@@ -125,9 +121,12 @@
                   <text class="text_8">实付金额：¥{{ fen2yuan(goods.payPrice) }}</text>
                   <view class="order-meta flex-row justify-between">
                     <text class="order-qty">数量*{{ goods.count || 1 }}</text>
-                    <text class="order-earn"
-                      >预估收益{{ fen2yuan(goods.brokeragePrice ?? goods.price ?? 0) }}元</text
+                    <text
+                      class="order-earn"
+                      :class="{ 'order-earn-disabled': isExcludeCommission(goods) }"
                     >
+                      {{ getGoodsEarnText(goods) }}
+                    </text>
                   </view>
                 </view>
               </view>
@@ -135,19 +134,9 @@
                 <text class="multi-time"
                   >下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text
                 >
-                <text class="multi-total-earn"
-                  >预估总收益{{
-                    fen2yuan(
-                      item._itemsDisplay?.reduce(
-                        (sum, goods) => sum + (goods.brokeragePrice ?? 0),
-                        0,
-                      ) ??
-                        item.brokeragePrice ??
-                        item.price ??
-                        0,
-                    )
-                  }}元</text
-                >
+                <text class="multi-total-earn">
+                  预估总收益{{ fen2yuan(getOrderTotalEarnFen(item)) }}元
+                </text>
               </view>
             </view>
           </view>
@@ -233,7 +222,77 @@
   }
 
   function shouldGrayGoods(goods) {
-    return Number(goods?.afterSaleStatus || 0) > 0;
+    return Boolean(getExcludeCommissionReason(goods));
+  }
+
+  function isExcludeCommission(goods) {
+    return Boolean(getExcludeCommissionReason(goods));
+  }
+
+  function getExcludeCommissionReason(goods) {
+    const g = goods || {};
+    if (Number(g.brokerageStatus || 0) === 2 || String(g.brokerageStatusName || '') === '已取消') {
+      return 'cancel';
+    }
+    if (
+      Boolean(g._excludeCommission) ||
+      Number(g.orderStatus || 0) === 40 ||
+      Number(g.afterSaleStatus || 0) > 0
+    ) {
+      return 'afterSale';
+    }
+    return '';
+  }
+
+  function getFirstGoods(item) {
+    const list = item && Array.isArray(item._itemsDisplay) ? item._itemsDisplay : [];
+    return list[0] || null;
+  }
+
+  function getSingleOrderEarnText(item) {
+    const goods = getFirstGoods(item);
+    const reason = getExcludeCommissionReason(goods);
+    if (reason === 'cancel') {
+      return '已取消不计分佣';
+    }
+    if (reason === 'afterSale') {
+      return '售后商品不计分佣';
+    }
+    const g = goods || {};
+    const fen = Number(
+      g.brokeragePrice !== undefined && g.brokeragePrice !== null
+        ? g.brokeragePrice
+        : g.price !== undefined && g.price !== null
+        ? g.price
+        : item?.brokeragePrice ?? item?.price ?? 0,
+    );
+    return '预估收益' + fen2yuan(fen) + '元';
+  }
+
+  function getGoodsEarnText(goods) {
+    const reason = getExcludeCommissionReason(goods);
+    if (reason === 'cancel') {
+      return '已取消不计分佣';
+    }
+    if (reason === 'afterSale') {
+      return '售后商品不计分佣';
+    }
+    const g = goods || {};
+    const fen = Number(g.brokeragePrice ?? g.price ?? 0);
+    return '预估收益' + fen2yuan(fen) + '元';
+  }
+
+  function getOrderTotalEarnFen(item) {
+    const list = item && Array.isArray(item._itemsDisplay) ? item._itemsDisplay : [];
+    if (list.length === 0) {
+      return Number(item?.brokeragePrice ?? item?.price ?? 0);
+    }
+    return list.reduce((sum, goods) => {
+      if (isExcludeCommission(goods)) {
+        return sum;
+      }
+      return sum + Number((goods || {}).brokeragePrice ?? 0);
+    }, 0);
   }
 
   function statusText(item) {
@@ -281,6 +340,7 @@
       const count = Number(it?.count || 0);
       const ratio = count > 0 ? count / safeCountSum : 1 / safeCountSum;
       const lineBrokerage = Number(it?.brokeragePrice ?? Math.floor(totalBrokerage * ratio));
+      const excludeCommission = Number(it?.orderStatus || 0) === 40;
       return {
         ...it,
         spuName: it?.spuName || it?.name || '',
@@ -288,7 +348,8 @@
         originalPrice: Number(it?.originalPrice ?? it?.price ?? it?.spuPrice ?? 0),
         payPrice: Number(it?.payPrice ?? it?.orderPayPrice ?? it?.price ?? 0),
         count,
-        brokeragePrice: Number(it?.brokeragePrice ?? lineBrokerage ?? 0),
+        brokeragePrice: excludeCommission ? 0 : Number(it?.brokeragePrice ?? lineBrokerage ?? 0),
+        _excludeCommission: excludeCommission,
       };
     });
     const orderNo = data.orderNo || data.no || data._orderNo || '';
@@ -332,10 +393,16 @@
       state.loadStatus = 'more';
       return;
     }
-    const list = Array.isArray(data.list) ? data.list : [];
+    const list = Array.isArray(data?.list)
+      ? data.list
+      : Array.isArray(data?.records)
+      ? data.records
+      : [];
     const normalized = list.map(normalizeOrderItem);
     state.pagination.list = concat(state.pagination.list, normalized);
-    state.pagination.total = data.total || 0;
+    state.pagination.total = Number(
+      data?.total ?? data?.totalCount ?? data?.count ?? data?.totalElements ?? list.length ?? 0,
+    );
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
 
@@ -452,9 +519,6 @@
   .section_14 {
     width: 12rpx;
     height: 12rpx;
-  }
-
-  .group_23 {
   }
 
   .box_6 {
@@ -699,6 +763,10 @@
     text-align: left;
     white-space: nowrap;
     line-height: 33rpx;
+  }
+
+  .order-earn-disabled {
+    color: #9d9c96;
   }
 
   .flex-col {
