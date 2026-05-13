@@ -27,6 +27,10 @@
       text="暂无售后进度"
     />
     <view v-else class="log-box">
+      <view v-if="state.info && state.info.status === 62 && state.info.auditReason" class="reason">
+        <view class="reason-title">拒绝原因</view>
+        <view class="reason-content">{{ state.info.auditReason }}</view>
+      </view>
       <view v-for="(item, index) in state.list" :key="item.id">
         <log-item :item="item" :index="index" :data="state.list" />
       </view>
@@ -56,6 +60,7 @@
   const state = reactive({
     list: [],
     loaded: false,
+    info: null,
   });
 
   function onBack() {
@@ -67,8 +72,12 @@
   }
 
   async function getDetail(id) {
-    const { data } = await AfterSaleApi.getAfterSaleLogList(id);
-    state.list = Array.isArray(data) ? data : [];
+    const [logRes, infoRes] = await Promise.all([
+      AfterSaleApi.getAfterSaleLogList(id),
+      AfterSaleApi.getAfterSale(id),
+    ]);
+    state.list = Array.isArray(logRes.data) ? logRes.data : [];
+    state.info = infoRes.code === 0 ? infoRes.data : null;
     state.loaded = true;
   }
 
@@ -135,5 +144,23 @@
     background-color: #fff;
     border-radius: 10rpx;
     box-sizing: border-box;
+  }
+
+  .reason {
+    padding: 20rpx 20rpx 24rpx 0;
+    border-bottom: 2rpx solid #eeeeee;
+    margin-bottom: 24rpx;
+  }
+  .reason-title {
+    font-size: 28rpx;
+    font-weight: 600;
+    color: #ff4d4f;
+  }
+  .reason-content {
+    margin-top: 12rpx;
+    font-size: 26rpx;
+    font-weight: 400;
+    color: #333333;
+    line-height: 38rpx;
   }
 </style>

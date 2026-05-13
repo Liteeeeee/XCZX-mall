@@ -201,30 +201,95 @@ export function handleOrderButtons(order) {
  */
 export function formatAfterSaleStatus(afterSale) {
   if (afterSale.status === 10) {
-    return '申请售后';
+    return '申请中';
   }
-  if (afterSale.status === 20) {
-    return '商品待退货';
-  }
-  if (afterSale.status === 30) {
-    return '商家待收货';
-  }
-  if (afterSale.status === 40) {
-    return '等待退款';
+  if ([20, 30, 40].includes(afterSale.status)) {
+    return '处理中';
   }
   if (afterSale.status === 50) {
-    return '退款成功';
+    return '已完成';
   }
-  if (afterSale.status === 61) {
-    return '买家取消';
-  }
-  if (afterSale.status === 62) {
-    return '商家拒绝';
-  }
-  if (afterSale.status === 63) {
-    return '商家拒收货';
+  if ([61, 62, 63].includes(afterSale.status)) {
+    return '已拒绝';
   }
   return '未知状态';
+}
+
+export function getAfterSaleStageText(afterSale) {
+  const status = afterSale?.status;
+  const way = afterSale?.way;
+  const auditReason = afterSale?.auditReason;
+
+  if (status === 61) {
+    return {
+      title: '已取消',
+      desc: '用户已取消',
+    };
+  }
+
+  if ([62, 63].includes(status)) {
+    return {
+      title: '未通过',
+      desc: auditReason ? `拒绝原因：${auditReason}` : '',
+    };
+  }
+
+  if (way === 10) {
+    if (status === 10) {
+      return {
+        title: '等待商家处理',
+        desc: '您已提交仅退款申请，请耐心等待商家审核处！',
+      };
+    }
+    if (status === 40) {
+      return {
+        title: '待退款',
+        desc: '您好，您申请的仅退款正在为您退款中！',
+      };
+    }
+    if (status === 50) {
+      return {
+        title: '已退款',
+        desc: '您好，您申请的仅退款已为您退款！',
+      };
+    }
+  } else {
+    if (status === 10) {
+      return {
+        title: '等待商家处理',
+        desc: '您已提交退货退款申请，请耐心等待商家审核！',
+      };
+    }
+    if (status === 20) {
+      return {
+        title: '待退货',
+        desc: '您的退货退款申请成功，请填写退货信息将货！',
+      };
+    }
+    if (status === 30) {
+      return {
+        title: '等待商家处理',
+        desc: '您的退货退款申请已成功，收货后将为您的退款！',
+      };
+    }
+    if (status === 40) {
+      return {
+        title: '待退款',
+        desc: '您好，您申请的退货退款正在为您退款中！',
+      };
+    }
+    if (status === 50) {
+      return {
+        title: '已退款',
+        desc: '您好，您申请的退货退款已为您退款！',
+      };
+    }
+  }
+
+  return {
+    title: '',
+    desc: '',
+  };
 }
 
 /**
@@ -252,7 +317,6 @@ export function formatAfterSaleStatusDescription(afterSale) {
     return '退款关闭';
   }
   if (afterSale.status === 62) {
-    debugger
     return `商家不同意退款申请`;
   }
   if (afterSale.status === 63) {
@@ -433,7 +497,7 @@ export function appendSettlementProduct(spus, settlementInfos) {
   }
 }
 
-// 获得满减送活动的规则描述（group）
+// 获得满减送活动的规则描述group
 export function getRewardActivityRuleGroupDescriptions(activity) {
   if (!activity || !activity.rules || activity.rules.length === 0) {
     return [];
@@ -475,7 +539,7 @@ export function getRewardActivityRuleGroupDescriptions(activity) {
   return result;
 }
 
-// 获得满减送活动的规则描述（item）
+// 获得满减送活动的规则描述item
 export function getRewardActivityRuleItemDescriptions(activity) {
   if (!activity || !activity.rules || activity.rules.length === 0) {
     return [];

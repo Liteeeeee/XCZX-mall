@@ -15,6 +15,34 @@ const platformMap = ['H5', 'WechatOfficialAccount', 'WechatMiniProgram', 'App'];
 // 设置分享方式: 1=直接转发,2=海报,3=复制链接,...按需扩展
 const fromMap = ['forward', 'poster', 'link'];
 
+const SHARE_LANDING_ALLOWLIST = new Set([
+  SharePageEnum.HOME.page,
+  SharePageEnum.GOODS.page,
+  SharePageEnum.GROUPON.page,
+  SharePageEnum.SECKILL.page,
+  SharePageEnum.GROUPON_DETAIL.page,
+  SharePageEnum.POINT.page,
+  SharePageEnum.MEMBER.page,
+]);
+
+function isAllowedShareLanding(page = '') {
+  const normalized = normalizePagePath(String(page).split('?')[0] || '');
+  return SHARE_LANDING_ALLOWLIST.has(normalized);
+}
+
+function sanitizeEntryTargetUrl(url = '') {
+  if (!url) {
+    return '';
+  }
+  const raw = String(url);
+  const [path, query] = raw.split('?');
+  const normalizedPath = normalizePagePath(path || '');
+  if (!isAllowedShareLanding(normalizedPath)) {
+    return '';
+  }
+  return query ? `${normalizedPath}?${query}` : normalizedPath;
+}
+
 // 设置分享信息参数
 const getShareInfo = (
   scene = {
@@ -76,16 +104,27 @@ const buildSpmQuery = (params) => {
     page = params.page;
   }
 
+  const shouldAttachShareId = [
+    SharePageEnum.GOODS.value,
+    SharePageEnum.GROUPON.value,
+    SharePageEnum.SECKILL.value,
+    SharePageEnum.GROUPON_DETAIL.value,
+    SharePageEnum.POINT.value,
+    SharePageEnum.MEMBER.value,
+  ].includes(String(page));
+
   if (typeof params.shareId === 'undefined') {
     if (user.isLogin) {
       // 无论是会员页(将解析为inviterId)还是其他普通页面/商品页(将解析为shareId)
       // 只要登录了，生成分享链接时均携带当前用户的 id
-      shareId = user.userInfo.id;
+      if (shouldAttachShareId) {
+        shareId = user.userInfo.id;
+      }
     }
   } else {
     shareId = params.shareId;
   }
-  
+
   let query = '0'; // 设置页面ID: 如商品ID、拼团ID等
   if (typeof params.query !== 'undefined') {
     query = params.query;
@@ -113,13 +152,14 @@ const buildSpmLink = (query, linkAddress = '') => {
 };
 
 // 解析Spm
-const decryptSpm = (spm) => {
+const decryptSpm = (spm, options = {}) => {
   const user = $store('user');
+  const currentPath = normalizePagePath(options.currentPath || '');
   let shareParamsArray = spm.split('.');
   let shareParams = {
     spm,
     shareId: 0,
-    page: '',
+    page: SharePageEnum.HOME.page,
     query: {},
     platform: '',
     from: '',
@@ -172,6 +212,10 @@ const decryptSpm = (spm) => {
       shareParams.page = SharePageEnum.MEMBER.page;
       break;
   }
+  if (!isAllowedShareLanding(shareParams.page)) {
+    shareParams.page = SharePageEnum.HOME.page;
+    shareParams.query = {};
+  }
   shareParams.platform = platformMap[shareParamsArray[3] - 1];
   shareParams.from = fromMap[shareParamsArray[4] - 1];
   if (shareId > 0) {
@@ -208,7 +252,10 @@ const decryptSpm = (spm) => {
     bindBrokerageUser();
   }
 
-  if (shareParams.page !== SharePageEnum.HOME.page) {
+  if (
+    shareParams.page !== SharePageEnum.HOME.page &&
+    (!currentPath || currentPath !== shareParams.page)
+  ) {
     $router.go(shareParams.page, shareParams.query);
   }
   return shareParams;
@@ -247,7 +294,7 @@ const bindBrokerageUser = async () => {
       if (res.code === 0 || res.code > 0) {
         uni.removeStorageSync('promotionId');
       }
-    } 
+    }
     // 存在 shareId，走 app-api 分销用户绑定接口
     else if (shareId) {
       res = await BrokerageApi.bindBrokerageUserByShareId({
@@ -288,12 +335,12 @@ const buildQueryString = (params = {}) => {
     .join('&');
 };
 
-const normalizePagePath = (path = '') => {
+function normalizePagePath(path = '') {
   if (!path) {
     return '';
   }
   return path.startsWith('/') ? path : `/${path}`;
-};
+}
 
 const extractEntryParams = (options = {}) => {
   const params = {
@@ -323,6 +370,9 @@ const buildEntryReturnUrl = (options = {}, params = {}) => {
   const page = normalizePagePath(options.path);
   if (!page || page === '/pages/index/login') {
     return '';
+  }
+  if (!isAllowedShareLanding(page)) {
+    return SharePageEnum.HOME.page;
   }
   const query = {
     ...(options.query || {}),
@@ -375,4 +425,5 @@ export default {
   decryptSpm,
   bindBrokerageUser,
   handlePromotionEntry,
+  sanitizeEntryTargetUrl,
 };

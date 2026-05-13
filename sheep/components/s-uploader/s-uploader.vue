@@ -215,7 +215,8 @@
         handler(newVal) {
           // 当 modelValue 没有值，但 url 有值时，同步到内部 files 数组
           if (
-            (!this.modelValue || (Array.isArray(this.modelValue) && this.modelValue.length === 0)) &&
+            (!this.modelValue ||
+              (Array.isArray(this.modelValue) && this.modelValue.length === 0)) &&
             newVal
           ) {
             let urlArray = Array.isArray(newVal) ? newVal : [newVal];

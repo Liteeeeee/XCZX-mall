@@ -119,7 +119,7 @@ const _go = (
     if (page !== '/pages/index/login') {
       uni.setStorageSync('returnUrl', targetUrl);
     }
-    
+
     // 如果目标是 tabbar 页面，则拦截器不生效，放行游客进入
     if (!TABBAR.includes(page)) {
       showAuthModal();

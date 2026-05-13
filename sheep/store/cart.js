@@ -21,7 +21,7 @@ const cart = defineStore({
         this.emptyList();
         return;
       }
-      
+
       const { data, code } = await CartApi.getCartList();
       if (code === 0) {
         this.list = [...data.validList, ...data.invalidList];

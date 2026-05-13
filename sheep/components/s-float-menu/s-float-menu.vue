@@ -49,7 +49,7 @@
 
   renderList.value.forEach((item) => {
     // 按钮文字
-    const text = props.data?.showText ? item.text : "";
+    const text = props.data?.showText ? item.text : '';
     // 生成内容配置项
     state.content.push({ iconPath: sheep.$url.cdn(item.imgUrl), url: item.url, text });
     // 生成样式配置项

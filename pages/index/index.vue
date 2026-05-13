@@ -97,6 +97,17 @@
     }
     // #endif
 
+    const entrySpm = uni.getStorageSync('entrySpm');
+    if (!options.spm && entrySpm) {
+      options.spm = entrySpm;
+      uni.removeStorageSync('entrySpm');
+    }
+    const entryInviterId = uni.getStorageSync('entryInviterId');
+    if (!options.inviterId && entryInviterId) {
+      options.inviterId = entryInviterId;
+      uni.removeStorageSync('entryInviterId');
+    }
+
     // 预览模板
     if (options.templateId) {
       sheep.$store('app').init(options.templateId);
@@ -108,17 +119,30 @@
     }
 
     // 邀请注册：兼容二维码/链接直接携带 inviterId
-    if (options.inviterId) {
+    if (options.inviterId && !options.spm) {
       uni.setStorageSync('inviterId', options.inviterId);
+      const memberUrl = '/pages/index/member';
       if (!sheep.$store('user').isLogin) {
+        uni.setStorageSync('returnUrl', memberUrl);
         sheep.$router.go('/pages/index/login');
         return;
       }
+      sheep.$router.go(memberUrl);
+      return;
     }
 
     // 进入指定页面(完整页面路径)
     if (options.page) {
-      sheep.$router.go(decodeURIComponent(options.page));
+      let targetUrl = '';
+      try {
+        targetUrl = decodeURIComponent(options.page);
+      } catch (e) {
+        targetUrl = options.page;
+      }
+      const sanitized = $share.sanitizeEntryTargetUrl(targetUrl);
+      if (sanitized) {
+        sheep.$router.go(sanitized);
+      }
     }
   });
 

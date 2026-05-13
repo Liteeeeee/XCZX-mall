@@ -23,7 +23,7 @@
     <view class="header-placeholder" :style="{ height: sheep.$platform.navbar + 'px' }"></view>
     <view class="content_box" v-if="!isEmpty(state.info) && state.loading">
       <!-- 步骤条 -->
-      <view class="steps-box ss-flex">
+      <!-- <view class="steps-box ss-flex">
         <view class="ss-flex">
           <view class="steps-item" v-for="(item, index) in state.list" :key="index">
             <view class="ss-flex">
@@ -51,8 +51,11 @@
             </view>
           </view>
         </view>
+      </view> -->
+      <view class="text-group_7 flex-col" v-if="afterSaleStageTitle">
+        <text class="text_3">{{ afterSaleStageTitle }}</text>
+        <text class="text_4" v-if="afterSaleStageDesc">{{ afterSaleStageDesc }}</text>
       </view>
-
       <!-- 服务状态 -->
       <view
         class="status-box ss-flex ss-col-center ss-row-between ss-m-x-20"
@@ -68,14 +71,9 @@
         </view>
         <text class="ss-iconfont _icon-forward" style="color: #666" />
       </view>
-
-      <!-- 退款金额 -->
-      <view class="aftersale-money ss-flex ss-col-center ss-row-between">
-        <view class="aftersale-money--title">退款总额</view>
-        <view class="aftersale-money--num">￥{{ fen2yuan(state.info.refundPrice) }}</view>
-      </view>
       <!-- 服务商品 -->
       <view class="order-shop">
+        <view class="reason-title">售后商品</view>
         <s-goods-item
           :img="state.info.picUrl"
           :title="state.info.spuName"
@@ -84,9 +82,15 @@
           :num="state.info.count"
         />
       </view>
+      <!-- 退款金额 -->
+      <view class="aftersale-money ss-flex ss-col-center ss-row-between">
+        <view class="aftersale-money--title">退款总额</view>
+        <view class="aftersale-money--num">￥{{ fen2yuan(state.info.refundPrice) }}</view>
+      </view>
 
       <!-- 服务内容 -->
       <view class="aftersale-content">
+        <view class="reason-title">售后信息</view>
         <view class="aftersale-item ss-flex ss-col-center">
           <view class="item-title">服务单号：</view>
           <view class="item-content ss-m-r-16">{{ state.info.no }}</view>
@@ -108,7 +112,21 @@
         </view>
         <view class="aftersale-item aftersale-item--top ss-flex">
           <view class="item-title">相关描述：</view>
-          <view class="item-content">{{ state.info.applyDescription }}</view>
+          <view class="item-content">
+            <view class="desc-text" v-if="state.info.applyDescription">
+              {{ state.info.applyDescription }}
+            </view>
+            <view v-if="applyPicUrls.length" class="desc-images">
+              <image
+                v-for="(url, idx) in applyPicUrls"
+                :key="url + '_' + idx"
+                class="desc-image"
+                :src="url"
+                mode="aspectFill"
+                @tap="previewApplyPics(idx)"
+              />
+            </view>
+          </view>
         </view>
       </view>
     </view>
@@ -235,6 +253,7 @@
   import {
     fen2yuan,
     formatAfterSaleStatusDescription,
+    getAfterSaleStageText,
     handleAfterSaleButtons,
   } from '@/sheep/hooks/useGoods';
   import AfterSaleApi from '@/sheep/api/trade/afterSale';
@@ -277,6 +296,28 @@
     logisticsNo: '',
     expressIndex: -1,
   });
+
+  const applyPicUrls = computed(() => {
+    const list = state.info?.applyPicUrls;
+    if (!Array.isArray(list)) {
+      return [];
+    }
+    return list.filter(Boolean).map((u) => sheep.$url.cdn(u));
+  });
+
+  const afterSaleStageTitle = computed(() => getAfterSaleStageText(state.info || {}).title);
+  const afterSaleStageDesc = computed(() => getAfterSaleStageText(state.info || {}).desc);
+
+  function previewApplyPics(index) {
+    const urls = applyPicUrls.value || [];
+    if (!urls.length) {
+      return;
+    }
+    uni.previewImage({
+      current: urls[index] || urls[0],
+      urls,
+    });
+  }
 
   function onBack() {
     if (sheep.$router.hasHistory()) {
@@ -539,10 +580,10 @@
     }
 
     .aftersale-money--num {
-      font-size: 28rpx;
-      font-family: OPPOSANS;
+      font-size: 32rpx;
+      font-family: PingFangSC;
       font-weight: 500;
-      color: #f53f3f;
+      color: #000;
     }
   }
 
@@ -550,7 +591,7 @@
   .order-shop {
     padding: 20rpx;
     background-color: #fff;
-    margin: 0 20rpx 20rpx 20rpx;
+    margin: 20rpx 20rpx 20rpx 20rpx;
   }
 
   // 服务内容
@@ -593,6 +634,25 @@
 
       .item-title {
         line-height: 40rpx;
+      }
+
+      .desc-text {
+        line-height: 40rpx;
+        word-break: break-all;
+      }
+
+      .desc-images {
+        margin-top: 20rpx;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20rpx;
+      }
+
+      .desc-image {
+        width: 180rpx;
+        height: 180rpx;
+        border-radius: 10rpx;
+        background: #f5f5f5;
       }
     }
   }
@@ -766,5 +826,40 @@
     font-size: 34rpx;
     font-weight: 500;
     text-align: center;
+  }
+  .reason-title {
+    color: #000000;
+    font-size: 32rpx;
+    font-weight: 500;
+    line-height: 50rpx;
+  }
+
+  .text-group_7 {
+    margin: 36rpx 125rpx 0 32rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .text_3 {
+    height: 44rpx;
+    overflow-wrap: break-word;
+    color: rgba(29, 33, 41, 1);
+    font-size: 40rpx;
+    font-family: PingFangSC-Semibold;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 40rpx;
+    margin-right: 113rpx;
+  }
+  .text_4 {
+    overflow-wrap: break-word;
+    color: rgba(134, 144, 156, 1);
+    font-size: 28rpx;
+    font-weight: normal;
+    text-align: left;
+    white-space: normal;
+    line-height: 40rpx;
+    margin-top: 14rpx;
   }
 </style>
