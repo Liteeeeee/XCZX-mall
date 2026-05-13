@@ -219,6 +219,7 @@ export function getAfterSaleStageText(afterSale) {
   const status = afterSale?.status;
   const way = afterSale?.way;
   const auditReason = afterSale?.auditReason;
+  const receiveReason = afterSale?.receiveReason;
 
   if (status === 61) {
     return {
@@ -228,9 +229,10 @@ export function getAfterSaleStageText(afterSale) {
   }
 
   if ([62, 63].includes(status)) {
+    const reason = status === 63 ? receiveReason : auditReason;
     return {
       title: '未通过',
-      desc: auditReason ? `拒绝原因：${auditReason}` : '',
+      desc: reason ? `拒绝原因：${reason}` : '',
     };
   }
 
@@ -238,7 +240,7 @@ export function getAfterSaleStageText(afterSale) {
     if (status === 10) {
       return {
         title: '等待商家处理',
-        desc: '您已提交仅退款申请，请耐心等待商家审核处！',
+        desc: '您已提交仅退款申请，请耐心等待商家审核处理！',
       };
     }
     if (status === 40) {
@@ -263,13 +265,13 @@ export function getAfterSaleStageText(afterSale) {
     if (status === 20) {
       return {
         title: '待退货',
-        desc: '您的退货退款申请成功，请填写退货信息将货！',
+        desc: '您的退货退款申请成功，请填写退货信息将商品退回指定地址！',
       };
     }
     if (status === 30) {
       return {
         title: '等待商家处理',
-        desc: '您的退货退款申请已成功，收货后将为您的退款！',
+        desc: '您的退货退款申请已成功，收货后将为您退款！',
       };
     }
     if (status === 40) {

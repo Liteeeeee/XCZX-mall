@@ -10,7 +10,7 @@
         <view class="nav-bar-inner">
           <view class="nav-left ss-flex ss-col-center">
             <view class="back-btn ss-flex ss-col-center ss-row-center" @tap="onBack">
-              <text class="sicon-back"></text>
+              <text style="font-size: 40rpx" class="sicon-back"></text>
             </view>
             <text class="nav-title ss-m-l-10">售后详情</text>
           </view>
@@ -56,6 +56,18 @@
         <text class="text_3">{{ afterSaleStageTitle }}</text>
         <text class="text_4" v-if="afterSaleStageDesc">{{ afterSaleStageDesc }}</text>
       </view>
+
+      <!-- 服务商品 -->
+      <view class="order-shop">
+        <view class="reason-title">售后商品</view>
+        <s-goods-item
+          :img="state.info.picUrl"
+          :title="state.info.spuName"
+          :titleWidth="480"
+          :skuText="state.info.properties.map((property) => property.valueName).join(' ')"
+          :num="state.info.count"
+        />
+      </view>
       <!-- 服务状态 -->
       <view
         class="status-box ss-flex ss-col-center ss-row-between ss-m-x-20"
@@ -71,19 +83,11 @@
         </view>
         <text class="ss-iconfont _icon-forward" style="color: #666" />
       </view>
-      <!-- 服务商品 -->
-      <view class="order-shop">
-        <view class="reason-title">售后商品</view>
-        <s-goods-item
-          :img="state.info.picUrl"
-          :title="state.info.spuName"
-          :titleWidth="480"
-          :skuText="state.info.properties.map((property) => property.valueName).join(' ')"
-          :num="state.info.count"
-        />
-      </view>
       <!-- 退款金额 -->
-      <view class="aftersale-money ss-flex ss-col-center ss-row-between">
+      <view
+        v-if="Number(state.info.refundPrice || 0) > 0"
+        class="aftersale-money ss-flex ss-col-center ss-row-between"
+      >
         <view class="aftersale-money--title">退款总额</view>
         <view class="aftersale-money--num">￥{{ fen2yuan(state.info.refundPrice) }}</view>
       </view>
@@ -470,6 +474,7 @@
     width: 60rpx;
     color: rgba(30, 63, 28, 0.9);
     height: 60rpx;
+    font-size: 24rpx;
   }
   .nav-title {
     color: #000000;

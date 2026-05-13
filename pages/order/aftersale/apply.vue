@@ -54,14 +54,14 @@
         </view>
       </view>
       <!-- 退款金额 -->
-      <view class="refund-item ss-flex ss-col-center ss-row-between" @tap="state.showModal = true">
+      <view class="refund-item ss-flex ss-col-center ss-row-between">
         <text class="item-title">退款金额</text>
         <view class="ss-flex refund-cause ss-col-center">
           <text class="ss-m-r-20">￥{{ fen2yuan(state.item.payPrice) }}</text>
         </view>
       </view>
       <!-- 申请原因 -->
-      <view class="refund-item ss-flex ss-col-center ss-row-between" @tap="state.showModal = true">
+      <view class="refund-item ss-flex ss-col-center ss-row-between" @tap="openReasonModal">
         <text class="item-title">申请原因</text>
         <view class="ss-flex refund-cause ss-col-center">
           <text class="ss-m-r-20" v-if="formData.applyReason">{{ formData.applyReason }}</text>
@@ -80,6 +80,7 @@
             type="textarea"
             maxlength="120"
             autoHeight
+            :disabled="state.showModal"
             v-model="formData.applyDescription"
             placeholder="客官~请描述您遇到的问题，建议上传照片"
           />
@@ -106,7 +107,7 @@
 
     <!-- 申请原因弹窗 -->
     <su-popup :show="state.showModal" round="10" :showClose="true" @close="state.showModal = false">
-      <view class="modal-box page_box">
+      <view class="modal-box page_box" @tap.stop>
         <view class="modal-head item-title head_box ss-flex ss-row-center ss-col-center">
           申请原因
         </view>
@@ -166,6 +167,11 @@
   });
   const rules = reactive({});
 
+  function openReasonModal() {
+    uni.hideKeyboard();
+    state.showModal = true;
+  }
+
   // 提交表单
   async function submit() {
     if (!formData.applyReason) {
@@ -175,7 +181,6 @@
 
     let data = {
       orderItemId: state.itemId,
-      refundPrice: state.item.payPrice,
       ...formData,
     };
 
