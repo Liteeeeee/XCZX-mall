@@ -22,39 +22,37 @@
         </view>
       </view>
     </view>
-    <su-sticky bgColor="#f8f9f3" :offset="sheep.$platform.navbar">
-      <view class="section_2 flex-col">
-        <view class="text-wrapper_9 flex-row ss-flex">
-          <text
-            class="tab-item"
-            :class="state.currentSubTab === 0 ? 'text_3' : 'text_all_inactive'"
-            @tap="onSubTabsChange(0, 'all')"
-            >全部</text
-          >
-          <text
-            class="tab-item"
-            :class="state.currentSubTab === 1 ? 'text_3' : 'text_inactive_color'"
-            @tap="onSubTabsChange(1, '1')"
-            >未使用</text
-          >
-          <text
-            class="tab-item"
-            :class="state.currentSubTab === 2 ? 'text_3' : 'text_inactive_color'"
-            @tap="onSubTabsChange(2, '2')"
-            >已失效</text
-          >
-        </view>
-        <view class="section_7">
-          <view
-            class="section_3"
-            :style="{
-              transform: `translateX(${state.currentSubTab * 250 + 109}rpx)`,
-              transition: 'transform 0.3s',
-            }"
-          ></view>
-        </view>
+    <view class="section_2 flex-col">
+      <view class="text-wrapper_9 flex-row ss-flex">
+        <text
+          class="tab-item"
+          :class="state.currentSubTab === 0 ? 'text_3' : 'text_all_inactive'"
+          @tap="onSubTabsChange(0, 'all')"
+          >全部</text
+        >
+        <text
+          class="tab-item"
+          :class="state.currentSubTab === 1 ? 'text_3' : 'text_inactive_color'"
+          @tap="onSubTabsChange(1, '1')"
+          >未使用</text
+        >
+        <text
+          class="tab-item"
+          :class="state.currentSubTab === 2 ? 'text_3' : 'text_inactive_color'"
+          @tap="onSubTabsChange(2, '2')"
+          >已失效</text
+        >
       </view>
-    </su-sticky>
+      <view class="section_7">
+        <view
+          class="section_3"
+          :style="{
+            transform: `translateX(${state.currentSubTab * 250 + 109}rpx)`,
+            transition: 'transform 0.3s',
+          }"
+        ></view>
+      </view>
+    </view>
     <s-empty
       v-if="state.pagination.total === 0"
       :icon="sheep.$url.static('/static/coupon-empty.webp')"

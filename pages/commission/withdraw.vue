@@ -43,6 +43,19 @@
         <text class="account-value">{{ withdrawAccountText }}</text>
       </view>
 
+      <view
+        v-if="String(state.accountInfo.type) === '5'"
+        class="realname-card flex-row justify-between"
+      >
+        <text class="account-label">微信提现姓名</text>
+        <input
+          class="realname-input"
+          v-model="state.accountInfo.userName"
+          placeholder="请输入真实姓名"
+          placeholder-class="amount-placeholder"
+        />
+      </view>
+
       <view class="amount-card flex-col">
         <text class="amount-label">提现金额</text>
         <view class="amount-row flex-row align-end">
@@ -138,13 +151,14 @@
 </template>
 
 <script setup>
-  import { onBeforeMount, reactive, computed } from 'vue';
+  import { onBeforeMount, reactive, computed, watch } from 'vue';
   import sheep from '@/sheep';
   import accountTypeSelect from './components/account-type-select.vue';
   import { showAuthModal } from '@/sheep/hooks/useModal';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import TradeConfigApi from '@/sheep/api/trade/config';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
+  import BrokerageWithdrawConfigApi from '@/sheep/api/trade/brokerageWithdrawConfig';
   import { getWeixinPayChannelCode, goBindWeixin } from '@/sheep/platform/pay';
 
   const state = reactive({
@@ -167,6 +181,7 @@
 
     frozenDays: 0, // 冻结天数
     minPrice: 0, // 最低提现金额
+    maxPrice: 0, // 最高提现金额(单笔)
     withdrawTypes: [], // 提现方式
   });
 
@@ -181,8 +196,75 @@
     return '请选择';
   });
 
+  watch(
+    () => String(state.accountInfo.type || ''),
+    async (t) => {
+      if (t !== '5') {
+        state.accountInfo.userName = undefined;
+      } else if (typeof state.accountInfo.userName === 'undefined') {
+        state.accountInfo.userName = '';
+      }
+      await getWithdrawConfig();
+    },
+    { immediate: true },
+  );
+
+  function normalizeWithdrawPrice(value) {
+    const n = Number(value);
+    if (!n || n <= 0) {
+      return 0;
+    }
+    return n / 100;
+  }
+
+  function pickNumber(obj, keys = []) {
+    if (!obj) {
+      return 0;
+    }
+    for (const k of keys) {
+      const v = obj[k];
+      const n = Number(v);
+      if (!Number.isNaN(n) && n > 0) {
+        return n;
+      }
+    }
+    return 0;
+  }
+
+  async function getWithdrawConfig() {
+    const code = 'default';
+    if (!code) {
+      return;
+    }
+    const { code: resCode, data } = await BrokerageWithdrawConfigApi.getBrokerageWithdrawConfig(
+      code,
+    );
+    if (resCode !== 0 || !data) {
+      return;
+    }
+    const minRaw = pickNumber(data, [
+      'minPrice',
+      'withdrawMinPrice',
+      'minWithdrawPrice',
+      'minWithdrawAmount',
+      'minAmount',
+    ]);
+    const maxRaw = pickNumber(data, [
+      'maxPrice',
+      'withdrawMaxPrice',
+      'maxWithdrawPrice',
+      'maxWithdrawAmount',
+      'maxAmount',
+    ]);
+    state.minPrice = normalizeWithdrawPrice(minRaw);
+    state.maxPrice = normalizeWithdrawPrice(maxRaw);
+  }
+
   function onWithdrawAll() {
-    state.accountInfo.price = fen2yuan(state.brokerageInfo.brokeragePrice);
+    const balance = Number(state.brokerageInfo.brokeragePrice || 0) / 100;
+    const maxLimit = Number(state.maxPrice || 0) || 0;
+    const actualMax = maxLimit > 0 ? Math.min(maxLimit, balance) : balance;
+    state.accountInfo.price = String(actualMax || 0);
   }
 
   // 打开提现方式的弹窗
@@ -199,12 +281,16 @@
     // 参数校验
     const price = Number(state.accountInfo.price);
     const maxPrice = Number(state.brokerageInfo.brokeragePrice || 0) / 100;
-    if (!price || price < 200) {
-      sheep.$helper.toast('提现金额不得小于200元');
+    const minLimit = Number(state.minPrice || 0) || 0;
+    const maxLimit = Number(state.maxPrice || 0) || 0;
+    const actualMax = maxLimit > 0 ? Math.min(maxLimit, maxPrice) : maxPrice;
+    const actualMin = minLimit > 0 ? minLimit : 200;
+    if (!price || price < actualMin) {
+      sheep.$helper.toast(`提现金额不得小于${actualMin}元`);
       return;
     }
-    if (price > maxPrice) {
-      sheep.$helper.toast('请输入正确的提现金额');
+    if (price > actualMax) {
+      sheep.$helper.toast(`提现金额不得大于${actualMax}元`);
       return;
     }
     if (!state.accountInfo.type) {
@@ -219,6 +305,12 @@
     if (String(state.accountInfo.type) === '5') {
       const wechatProvider = sheep.$platform.useProvider('wechat');
       openid = await wechatProvider.getOpenid();
+
+      const realName = String(state.accountInfo.userName || '').trim();
+      if (!realName) {
+        sheep.$helper.toast('请输入微信提现真实姓名');
+        return;
+      }
 
       let isBound = true;
       if (wechatProvider.getInfo) {
@@ -258,7 +350,7 @@
     if (String(state.accountInfo.type) === '5') {
       data.userAccount = openid;
       data.transferChannelCode = getWeixinPayChannelCode();
-      data.userName = 'wechat'; // 补充的参数
+      data.userName = String(state.accountInfo.userName || '').trim();
     } else {
       delete data.userAccount;
       delete data.transferChannelCode;
@@ -322,7 +414,6 @@
       return;
     }
     if (data) {
-      state.minPrice = data.brokerageWithdrawMinPrice || 0;
       state.frozenDays = data.brokerageFrozenDays || 0;
       const enabled = (data.brokerageWithdrawTypes || []).filter((v) => [1, 5].includes(Number(v)));
       state.withdrawTypes = enabled.length ? enabled : [1, 5];
@@ -413,6 +504,15 @@
     box-sizing: border-box;
   }
 
+  .realname-card {
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 30rpx;
+    width: 680rpx;
+    margin: 18rpx 38rpx 0 32rpx;
+    padding: 35rpx 24rpx 35rpx 24rpx;
+    box-sizing: border-box;
+  }
+
   .account-label {
     overflow-wrap: break-word;
     color: rgba(61, 61, 60, 1);
@@ -422,6 +522,14 @@
     text-align: center;
     white-space: nowrap;
     line-height: 40rpx;
+  }
+
+  .realname-input {
+    flex: 1;
+    text-align: right;
+    font-size: 28rpx;
+    color: rgba(102, 102, 102, 1);
+    margin-left: 20rpx;
   }
 
   .account-value {

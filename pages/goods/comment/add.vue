@@ -145,10 +145,14 @@
       return;
     }
     const commentableItems = Array.isArray(data.items)
-      ? data.items.filter((item) => Number(item?.afterSaleStatus) !== 20)
+      ? data.items.filter((item) => {
+          const afterSaleStatus = Number(item?.afterSaleStatus ?? 0);
+          const commentStatus = Boolean(item?.commentStatus);
+          return afterSaleStatus === 0 && commentStatus === false;
+        })
       : [];
     if (commentableItems.length === 0) {
-      sheep.$helper.toast('已退款商品不支持评价');
+      sheep.$helper.toast('暂无可评价商品');
       sheep.$router.back();
       return;
     }

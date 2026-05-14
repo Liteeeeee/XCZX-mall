@@ -146,7 +146,7 @@
             <button
               v-if="order.buttons.includes('comment')"
               class="tool-btn ss-reset-button"
-              @tap.stop="onComment(order.id)"
+              @tap.stop="onComment(order)"
             >
               评价
             </button>
@@ -305,9 +305,19 @@
   }
 
   // 评价
-  function onComment(id) {
+  function onComment(order) {
+    const items = Array.isArray(order?.items) ? order.items : [];
+    const commentableItems = items.filter((item) => {
+      const afterSaleStatus = Number(item?.afterSaleStatus ?? 0);
+      const commentStatus = Boolean(item?.commentStatus);
+      return afterSaleStatus === 0 && commentStatus === false;
+    });
+    if (commentableItems.length === 0) {
+      sheep.$helper.toast('暂无可评价商品');
+      return;
+    }
     sheep.$router.go('/pages/goods/comment/add', {
-      id,
+      id: order.id,
     });
   }
 
