@@ -351,14 +351,14 @@
       }
 
       .side-menu-wrap {
-        width: 200rpx;
+        width: 166rpx;
         height: 100%;
         background-color: #f6f6f6;
         position: fixed;
         left: 0;
 
         .menu-item {
-          width: 100%;
+          // width: 100%;
           min-height: 180rpx;
           padding: 24rpx 10rpx 20rpx 10rpx;
           flex-direction: column;
@@ -425,13 +425,13 @@
 
       .goods-list-box {
         background-color: #fff;
-        width: calc(100vw - 200rpx);
+        width: calc(100vw - 166rpx);
         padding: 10px;
-        margin-left: 200rpx;
+        margin-left: 166rpx;
       }
 
       .banner-img {
-        width: calc(100vw - 130px);
+        width: calc(100vw - 200rpx);
         border-radius: 5px;
       }
     }

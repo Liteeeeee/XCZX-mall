@@ -3,8 +3,13 @@
     <view v-for="item in list" :key="item.id" class="group_49 flex-col" @tap="onItemTap(item)">
       <image class="box_51 flex-col" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
       <text class="paragraph_1">
-        {{ item.name && item.name.length > 8 ? item.name.substring(0, 8) + '...' : item.name }}
+        {{ item.name }}
       </text>
+      <text class="paragraph_2">{{
+        item.introduction && item.introduction.length > 8
+          ? item.introduction.substring(0, 8) + '...'
+          : item.introduction
+      }}</text>
       <view class="section_30 flex-row justify-between">
         <view class="text-wrapper_8">
           <text class="text_28">¥</text>
@@ -73,20 +78,24 @@
     background-color: rgba(248, 249, 243, 1);
     border-radius: 10px;
     padding-bottom: 27rpx;
-    width: 245rpx;
+    width: 266rpx;
     margin-bottom: 24rpx;
   }
 
   .box_51 {
     border-radius: 10px 10px 0px 0px;
-    width: 245rpx;
+    width: 266rpx;
     height: 245rpx;
   }
 
   .paragraph_1 {
-    width: 216rpx;
-    height: 66rpx;
-    overflow-wrap: break-word;
+    width: 256rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
     color: rgba(0, 0, 0, 1);
     font-size: 24rpx;
     font-weight: normal;
@@ -96,12 +105,20 @@
   }
 
   .section_30 {
-    width: 211rpx;
-    margin: 24rpx 14rpx 0 20rpx;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    flex-wrap: nowrap;
+    width: 100%;
+    margin: 24rpx 0 0;
+    padding: 0 14rpx 0 20rpx;
+    box-sizing: border-box;
+    align-items: flex-end;
   }
 
   .text-wrapper_8 {
-    width: 78rpx;
+    flex: 1;
+    width: auto;
     height: 32rpx;
     overflow-wrap: break-word;
     font-size: 0;
@@ -110,6 +127,7 @@
     text-align: left;
     white-space: nowrap;
     line-height: 32rpx;
+    min-width: 0;
   }
 
   .text_28 {
@@ -135,13 +153,19 @@
   }
 
   .text_30 {
+    flex-shrink: 0;
     overflow-wrap: break-word;
     color: rgba(157, 156, 150, 1);
     font-size: 22rpx;
     font-weight: normal;
     text-align: left;
     white-space: nowrap;
-    line-height: 30rpx;
+    line-height: 22rpx;
     margin-top: 2rpx;
+  }
+  .paragraph_2 {
+    font-size: 24rpx;
+    color: #9d9c96;
+    margin: 11rpx 14rpx 0 15rpx;
   }
 </style>
