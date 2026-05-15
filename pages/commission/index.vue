@@ -160,8 +160,8 @@
 <script setup>
   import sheep from '@/sheep';
   import $share from '@/sheep/platform/share';
-  import { computed, reactive } from 'vue';
-  import { onLoad, onReachBottom } from '@dcloudio/uni-app';
+  import { computed, reactive, ref } from 'vue';
+  import { onLoad, onReachBottom, onShow } from '@dcloudio/uni-app';
   import { concat } from 'lodash-es';
   import { showShareModal } from '@/sheep/hooks/useModal';
   import SpuApi from '@/sheep/api/product/spu';
@@ -227,6 +227,34 @@
   const todayBrokerageYuan = computed(() => {
     return fen2yuanFixed(Number(state.summary?.todayBrokeragePrice || 0));
   });
+
+  // const hasTriggeredMerchantTransfer = ref(false);
+
+  // function triggerMerchantTransfer() {
+  //   const wxApi = typeof wx !== 'undefined' ? wx : null;
+  //   if (!wxApi || typeof wxApi.canIUse !== 'function') {
+  //     return;
+  //   }
+
+  //   if (wxApi.canIUse('requestMerchantTransfer')) {
+  //     wxApi.requestMerchantTransfer({
+  //       mchId: '1107417267',
+  //       appId: 'wxfe718def7b02b185',
+  //       package: '0002-CgoxMTA3NDE3MjY3Eg9wbm8yMDI2MDUxNDE2MjIYAQ==',
+  //       success: (res) => {
+  //         console.log('success:', res);
+  //       },
+  //       fail: (res) => {
+  //         console.log('fail:', res);
+  //       },
+  //     });
+  //   } else {
+  //     wxApi.showModal({
+  //       content: '你的微信版本过低，请更新至最新版本。',
+  //       showCancel: false,
+  //     });
+  //   }
+  // }
 
   function onInviteMember() {
     state.shareInfo = sheep.$platform.share.getShareInfo(
@@ -361,6 +389,14 @@
     getSummary();
     getGoodsList();
   });
+
+  // onShow(() => {
+  //   if (hasTriggeredMerchantTransfer.value) {
+  //     return;
+  //   }
+  //   hasTriggeredMerchantTransfer.value = true;
+  //   triggerMerchantTransfer();
+  // });
 
   onReachBottom(() => {
     loadMore();

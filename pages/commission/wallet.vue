@@ -374,8 +374,10 @@
   });
 
   onShow(() => {
-    state.today = dayjs().format('YYYY-MM-DD');
-    state.date = [state.today, state.today];
+    const end = dayjs().format('YYYY-MM-DD');
+    const start = dayjs().subtract(7, 'day').format('YYYY-MM-DD');
+    state.today = end;
+    state.date = [start, end];
     resetPagination(state.pagination);
     getLogList();
     getAgentInfo();

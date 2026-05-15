@@ -161,6 +161,8 @@
   import BrokerageWithdrawConfigApi from '@/sheep/api/trade/brokerageWithdrawConfig';
   import { getWeixinPayChannelCode, goBindWeixin } from '@/sheep/platform/pay';
 
+  const WITHDRAW_SUBSCRIBE_TEMPLATE_ID = '9_HMmiB6fKcwt6_FwhZ8l4Q-uvnrkA8MKwRst9Ka-GY';
+
   const state = reactive({
     isAgree: false,
     showStatement: false,
@@ -304,6 +306,18 @@
     let openid;
     if (String(state.accountInfo.type) === '5') {
       const wechatProvider = sheep.$platform.useProvider('wechat');
+      if (WITHDRAW_SUBSCRIBE_TEMPLATE_ID && typeof uni?.requestSubscribeMessage === 'function') {
+        uni.requestSubscribeMessage({
+          tmplIds: [WITHDRAW_SUBSCRIBE_TEMPLATE_ID],
+          success: () => {},
+          fail: () => {},
+        });
+      } else if (typeof uni?.showModal === 'function') {
+        uni.showModal({
+          content: '你的微信版本过低，请更新至最新版本。',
+          showCancel: false,
+        });
+      }
       openid = await wechatProvider.getOpenid();
 
       const realName = String(state.accountInfo.userName || '').trim();

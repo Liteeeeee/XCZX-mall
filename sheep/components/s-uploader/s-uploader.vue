@@ -22,7 +22,12 @@
     >
       <slot>
         <view class="is-add">
-          <image :src="imgsrc" class="add-icon"></image>
+          <image
+            class="add-icon"
+            src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/upload.webp"
+            mode="aspectFit"
+          ></image>
+          <view class="add-text">上传凭证</view>
         </view>
       </slot>
     </upload-image>
@@ -668,12 +673,25 @@
     /* #ifndef APP-NVUE */
     display: flex;
     /* #endif */
+    width: 100%;
+    height: 100%;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
   }
   .add-icon {
-    width: 57rpx;
-    height: 49rpx;
+    width: 74rpx;
+    height: 74rpx;
+  }
+  .add-text {
+    margin-top: 12rpx;
+    font-family: PingFangSC, PingFang SC;
+    font-weight: 400;
+    font-size: 28rpx;
+    color: #9d9c96;
+    line-height: 40rpx;
+    text-align: left;
+    font-style: normal;
   }
   .file-subtitle {
     position: absolute;

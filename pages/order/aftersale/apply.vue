@@ -90,7 +90,12 @@
               fileMediatype="image"
               limit="9"
               mode="grid"
-              :imageStyles="{ width: '168rpx', height: '168rpx' }"
+              :imageStyles="{
+                borderRadius: uni.upx2px(10),
+                width: uni.upx2px(210),
+                height: uni.upx2px(210),
+                border: { width: uni.upx2px(2), style: 'dashed', color: '#9D9C96' },
+              }"
             />
           </view>
         </view>

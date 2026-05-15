@@ -10,7 +10,7 @@
         ></image>
         <view v-if="delIcon && !readonly" class="icon-del-box" @click.stop="delFile(index)">
           <view class="icon-del"></view>
-          <view class="icon-del rotate"></view>
+          <view class="icon-del icon-del-rotate"></view>
         </view>
         <!-- <view v-if="item.errMsg" class="file-picker__mask" @click.stop="uploadFiles(item, index)">
           点击重试
@@ -19,10 +19,12 @@
     </view>
     <view v-if="list.length < limit && !readonly" class="file-picker__box" :style="boxStyle">
       <view class="file-picker__box-content is-add" :style="borderStyle" @click="choose">
-        <slot>
-          <view class="icon-add"></view>
-          <view class="icon-add rotate"></view>
-        </slot>
+        <view class="add-inner">
+          <slot>
+            <view class="icon-add"></view>
+            <view class="icon-add icon-add-rotate"></view>
+          </slot>
+        </view>
       </view>
     </view>
   </view>
@@ -268,11 +270,25 @@
     justify-content: center;
   }
 
-  .icon-add {
-    width: 50px;
-    height: 5px;
-    background-color: #f1f1f1;
-    border-radius: 2px;
+  .add-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .add-inner .icon-add {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 52rpx;
+    height: 8rpx;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0, 0, 0, 0.35);
+    border-radius: 4rpx;
+  }
+
+  .icon-add-rotate {
+    transform: translate(-50%, -50%) rotate(90deg);
   }
 
   .rotate {
@@ -298,9 +314,17 @@
   }
 
   .icon-del {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 15px;
     height: 2px;
     background-color: #fff;
     border-radius: 2px;
+  }
+
+  .icon-del-rotate {
+    transform: translate(-50%, -50%) rotate(90deg);
   }
 </style>
