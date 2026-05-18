@@ -98,7 +98,7 @@
             <view class="radio ss-flex ss-col-center" @tap="onAgree">
               <radio
                 :checked="state.protocol === true"
-                color="var(--ui-BG-Main)"
+                color="#1E3F1C"
                 style="transform: scale(0.8)"
                 @tap.stop="onAgree"
               />
@@ -241,7 +241,7 @@
       font-weight: 400;
     }
     .login-btn {
-      color: var(--ui-BG-Main);
+      color: #1e3f1c;
       font-size: 30rpx;
       font-weight: 500;
     }
@@ -252,7 +252,7 @@
       width: 8rpx;
       height: 8rpx;
       border-radius: 8rpx;
-      background: var(--ui-BG-Main);
+      background: #1e3f1c;
     }
   }
   .safe-box {
@@ -261,7 +261,7 @@
   }
 
   .tcp-text {
-    color: var(--ui-BG-Main);
+    color: #1e3f1c;
   }
 
   .agreement-text {

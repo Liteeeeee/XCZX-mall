@@ -34,40 +34,38 @@
       </view>
     </view>
     <!-- tab -->
-    <su-sticky :customNavHeight="sys_navBar">
-      <view class="section_2 flex-col">
-        <view class="text-wrapper_4 flex-row justify-between">
-          <text
-            class="tab-item"
-            :class="state.currentTab === 0 ? 'text_6' : 'text_7'"
-            @tap="onTabChange(0)"
-            >明细</text
-          >
-          <text
-            class="tab-item"
-            :class="state.currentTab === 1 ? 'text_6' : 'text_7'"
-            @tap="onTabChange(1)"
-            >收入</text
-          >
-          <text
-            class="tab-item"
-            :class="state.currentTab === 2 ? 'text_6' : 'text_7'"
-            @tap="onTabChange(2)"
-            >支出</text
-          >
-        </view>
-        <view class="group_39 flex-row">
-          <view
-            class="block_12 flex-col"
-            :style="{ transform: `translateX(${state.currentTab * 229}rpx)` }"
-          ></view>
-        </view>
+    <view class="section_2 flex-col">
+      <view class="text-wrapper_4 flex-row justify-between">
+        <text
+          class="tab-item"
+          :class="state.currentTab === 0 ? 'text_6' : 'text_7'"
+          @tap="onTabChange(0)"
+          >明细</text
+        >
+        <text
+          class="tab-item"
+          :class="state.currentTab === 1 ? 'text_6' : 'text_7'"
+          @tap="onTabChange(1)"
+          >收入</text
+        >
+        <text
+          class="tab-item"
+          :class="state.currentTab === 2 ? 'text_6' : 'text_7'"
+          @tap="onTabChange(2)"
+          >支出</text
+        >
       </view>
-    </su-sticky>
+      <view class="group_39 flex-row">
+        <view
+          class="block_12 flex-col"
+          :style="{ transform: `translateX(${state.currentTab * 229}rpx)` }"
+        ></view>
+      </view>
+    </view>
 
     <!-- list -->
     <view class="list-box">
-      <view v-if="state.pagination.total > 0">
+      <view v-if="state.pagination.list.length > 0">
         <view
           class="list-item ss-flex ss-col-center ss-row-between"
           v-for="item in state.pagination.list"
@@ -94,7 +92,7 @@
     </view>
 
     <uni-load-more
-      v-if="state.pagination.total > 0"
+      v-if="state.pagination.list.length > 0"
       :status="state.loadStatus"
       :content-text="{
         contentdown: '上拉加载更多',
@@ -117,6 +115,7 @@
   const sys_navBar = sheep.$platform.navbar;
 
   const state = reactive({
+    loading: false,
     currentTab: 0,
     pagination: {
       list: [],
@@ -153,18 +152,28 @@
   });
 
   async function getLogList() {
+    if (state.loading) return;
+    state.loading = true;
     state.loadStatus = 'loading';
     let { code, data } = await PointApi.getPointRecordPage({
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
       addStatus: state.currentTab > 0 ? tabMaps[state.currentTab].value : undefined,
     });
+    state.loading = false;
     if (code !== 0) {
       return;
     }
-    state.pagination.list = concat(state.pagination.list, data.list);
-    state.pagination.total = data.total;
-    state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
+    const originList = data?.list || data?.records || [];
+    const total = Number(data?.total ?? data?.totalCount ?? data?.count ?? 0);
+    const hasTotal = total > 0;
+    const isLastPage =
+      originList.length < state.pagination.pageSize ||
+      (hasTotal && state.pagination.pageNo * state.pagination.pageSize >= total);
+
+    state.pagination.list = concat(state.pagination.list, originList);
+    state.pagination.total = hasTotal ? total : state.pagination.list.length;
+    state.loadStatus = isLastPage ? 'noMore' : 'more';
   }
 
   onLoad(() => {
@@ -174,6 +183,7 @@
   function onTabChange(index) {
     state.currentTab = index;
     resetPagination(state.pagination);
+    state.loadStatus = '';
     getLogList();
   }
 
@@ -181,6 +191,7 @@
     state.date[0] = e[0];
     state.date[1] = e[e.length - 1];
     resetPagination(state.pagination);
+    state.loadStatus = '';
     getLogList();
   }
 
@@ -188,6 +199,7 @@
     if (state.loadStatus === 'noMore') {
       return;
     }
+    if (state.loading) return;
     state.pagination.pageNo++;
     getLogList();
   }

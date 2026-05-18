@@ -53,7 +53,7 @@
     //主题色
     buttonColor: {
       type: String,
-      default: 'var(--ui-BG-Main)',
+      default: '#1E3F1C',
     },
   });
 

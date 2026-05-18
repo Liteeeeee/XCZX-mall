@@ -817,8 +817,8 @@
           margin-left: 16rpx;
           font-size: 24rpx;
           height: 36rpx;
-          color: var(--ui-BG-Main);
-          border: 2rpx solid var(--ui-BG-Main);
+          color: #1e3f1c;
+          border: 2rpx solid #1e3f1c;
           border-radius: 14rpx;
           padding: 0 4rpx;
         }

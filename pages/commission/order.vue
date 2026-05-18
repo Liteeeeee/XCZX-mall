@@ -89,7 +89,7 @@
                   <text class="text_8"
                     >下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text
                   >
-                  <text class="text_9">付款金额：¥{{ fen2yuan(item._payPrice) }}</text>
+                  <text class="text_9">实付金额：¥{{ fen2yuan(item._payPrice) }}</text>
                 </view>
                 <view class="order-meta flex-row justify-between">
                   <text class="order-qty">数量*{{ item._totalCount || item._count || 1 }}</text>

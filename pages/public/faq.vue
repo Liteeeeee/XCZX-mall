@@ -81,7 +81,7 @@
         top: 0;
         width: 40rpx;
         height: 36rpx;
-        background: var(--ui-BG-Main);
+        background: #1e3f1c;
         border-radius: 4px;
 
         .num {
@@ -99,7 +99,7 @@
         height: 0;
         border-left: 4rpx solid transparent;
         border-right: 4rpx solid transparent;
-        border-top: 8rpx solid var(--ui-BG-Main);
+        border-top: 8rpx solid #1e3f1c;
         position: absolute;
         left: 16rpx;
         bottom: -4rpx;

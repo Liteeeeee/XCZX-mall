@@ -87,7 +87,7 @@
     width: 710rpx;
     margin-left: 20rpx;
     height: 80rpx;
-    background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+    background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
     border-radius: 40rpx;
     color: #fff;
   }
@@ -97,7 +97,7 @@
     padding: 0 16rpx;
     height: 50rpx;
     border-radius: 40rpx;
-    background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+    background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
     color: #ffffff;
     font-size: 24rpx;
     font-weight: 400;

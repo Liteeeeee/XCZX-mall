@@ -248,7 +248,7 @@
     word-wrap: break-word;
     padding: 20rpx;
     color: #fff;
-    background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+    background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
     margin-top: 3px;
     margin-bottom: 9px;
     border-top-left-radius: 10px;

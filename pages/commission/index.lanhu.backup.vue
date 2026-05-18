@@ -266,7 +266,14 @@
       return;
     }
 
-    let list = res.data?.list || [];
+    const originList = res.data?.list || [];
+    const total = Number(res.data?.total ?? res.data?.totalCount ?? res.data?.count ?? 0);
+    const hasTotal = total > 0;
+    const isLastPage =
+      originList.length < state.pagination.pageSize ||
+      (hasTotal && state.pagination.pageNo * state.pagination.pageSize >= total);
+
+    let list = originList;
 
     // 前端根据当前 tab 过滤数据 (假设 bizType: 1-收入, 2-提现/支出 等)
     // 注意：如果分页是后端处理的，前端过滤会导致每一页数量不固定。
@@ -286,8 +293,8 @@
         _key: `r-${it.id}`,
       })),
     );
-    state.pagination.total = res.data?.total || 0;
-    state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
+    state.pagination.total = total;
+    state.loadStatus = isLastPage ? 'noMore' : 'more';
   }
 
   function onTabChange(idx) {

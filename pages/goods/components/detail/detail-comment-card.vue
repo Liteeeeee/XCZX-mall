@@ -67,7 +67,7 @@
       .line {
         width: 6rpx;
         height: 30rpx;
-        background: linear-gradient(180deg, var(--ui-BG-Main) 0%, var(--ui-BG-Main-gradient) 100%);
+        background: linear-gradient(180deg, #1e3f1c 0%, var(--ui-BG-Main-gradient) 100%);
         border-radius: 3rpx;
       }
 

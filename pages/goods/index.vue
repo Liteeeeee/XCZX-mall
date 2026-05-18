@@ -38,13 +38,13 @@
               <view class="ss-flex ss-col-bottom">
                 <view class="price-unit">￥</view>
                 <view class="price-value count-font">{{
-                  fen2yuan(state.selectedSku.price || state.goodsInfo.price)
+                  fen2yuan(displaySku.price || state.goodsInfo.price)
                 }}</view>
                 <!-- 会员价标签 -->
                 <view class="group_51 ss-flex ss-row-between ss-col-center">
                   <text class="text_66"
                     >¥{{
-                      fen2yuan((state.selectedSku.price || state.goodsInfo.price) * vipDiscount)
+                      fen2yuan((displaySku.price || state.goodsInfo.price) * vipDiscount)
                     }}</text
                   >
                   <view class="text-wrapper_21 ss-flex-col ss-row-center ss-col-center">
@@ -94,7 +94,19 @@
           <view class="subtitle-text ss-line-2">{{ state.goodsInfo.introduction }}</view>
         </view>
 
-        <!-- VIP 卡片 -->
+        <view class="detail-card ss-flex-col" v-if="state.goodsInfo?.skus?.length">
+          <detail-cell-sku :sku="state.selectedSku" @tap="state.showSelectSku = true" />
+        </view>
+
+        <s-select-sku
+          v-if="state.goodsInfo?.skus?.length"
+          :show="state.showSelectSku"
+          :goodsInfo="state.goodsInfo"
+          @change="onSkuChange"
+          @addCart="onAddCartBySku"
+          @buy="onBuyBySku"
+          @close="state.showSelectSku = false"
+        />
 
         <!-- 功能卡片 -->
         <view class="detail-card ss-flex-col">
@@ -257,6 +269,7 @@
   import detailCommentCard from './components/detail/detail-comment-card.vue';
   import detailContentCard from './components/detail/detail-content-card.vue';
   import detailActivityTip from './components/detail/detail-activity-tip.vue';
+  import detailCellSku from './components/detail/detail-cell-sku.vue';
   import { isEmpty } from 'lodash-es';
   import SpuApi from '@/sheep/api/product/spu';
 
@@ -329,6 +342,7 @@
     goodsInfo: {}, // SPU 信息
     selectedSku: {}, // 选中的 SKU
     settlementSku: {}, // 结算的 SKU：由于 selectedSku 不进行默认选中，所以初始使用结算价格最低的 SKU 作为基础展示
+    showSelectSku: false, // 是否展示规格弹窗
     showModel: false, // 是否展示 Coupon 优惠劵的弹窗
     showServiceModal: false, // 是否展示服务说明弹窗
     couponInfo: [], // 可领取的 Coupon 优惠劵的列表
@@ -337,6 +351,53 @@
     activityList: [], // 【秒杀/拼团/砍价】可参与的 Activity 营销活动的列表
     showBackTop: false,
   });
+
+  const displaySku = computed(() => {
+    if (state.selectedSku?.id) return state.selectedSku;
+    if (state.settlementSku?.id) return state.settlementSku;
+    return {};
+  });
+
+  function onSkuChange(sku) {
+    state.selectedSku = sku || {};
+  }
+
+  function getDefaultSku() {
+    return (
+      state.goodsInfo?.skus?.find((item) => item.stock > 0) || state.goodsInfo?.skus?.[0] || {}
+    );
+  }
+
+  function onAddCartBySku(sku) {
+    if (!sku?.id) {
+      sheep.$helper.toast('请选择规格');
+      return;
+    }
+    sheep.$store('cart').add({
+      id: sku.id,
+      goods_num: sku.goods_num || 1,
+    });
+    state.showSelectSku = false;
+  }
+
+  function onBuyBySku(sku) {
+    if (!sku?.id) {
+      sheep.$helper.toast('请选择规格');
+      return;
+    }
+    sheep.$router.go('/pages/order/confirm', {
+      data: JSON.stringify({
+        items: [
+          {
+            skuId: sku.id,
+            count: sku.goods_num || 1,
+            categoryId: state.goodsInfo.categoryId,
+          },
+        ],
+      }),
+    });
+    state.showSelectSku = false;
+  }
 
   function openServiceModal() {
     state.showServiceModal = true;
@@ -384,37 +445,40 @@
 
   // 添加购物车
   function onAddCart() {
-    const sku =
-      state.goodsInfo?.skus?.find((item) => item.stock > 0) || state.goodsInfo?.skus?.[0] || {};
-    if (!sku.id) {
+    if (state.goodsInfo?.skus?.length > 1 && !state.selectedSku?.id) {
+      state.showSelectSku = true;
+      return;
+    }
+    const sku = state.selectedSku?.id ? state.selectedSku : getDefaultSku();
+    if (!sku?.id) {
       sheep.$helper.toast('商品暂不可购买');
       return;
     }
-    sheep.$store('cart').add({
-      id: sku.id,
-      goods_num: 1,
-    });
+    if (sku.stock <= 0) {
+      state.showSelectSku = true;
+      sheep.$helper.toast('库存不足');
+      return;
+    }
+    onAddCartBySku({ ...sku, goods_num: sku.goods_num || 1 });
   }
 
   // 立即购买
   function onBuy() {
-    const sku =
-      state.goodsInfo?.skus?.find((item) => item.stock > 0) || state.goodsInfo?.skus?.[0] || {};
-    if (!sku.id) {
+    if (state.goodsInfo?.skus?.length > 1 && !state.selectedSku?.id) {
+      state.showSelectSku = true;
+      return;
+    }
+    const sku = state.selectedSku?.id ? state.selectedSku : getDefaultSku();
+    if (!sku?.id) {
       sheep.$helper.toast('商品暂不可购买');
       return;
     }
-    sheep.$router.go('/pages/order/confirm', {
-      data: JSON.stringify({
-        items: [
-          {
-            skuId: sku.id,
-            count: 1,
-            categoryId: state.goodsInfo.categoryId,
-          },
-        ],
-      }),
-    });
+    if (sku.stock <= 0) {
+      state.showSelectSku = true;
+      sheep.$helper.toast('库存不足');
+      return;
+    }
+    onBuyBySku({ ...sku, goods_num: sku.goods_num || 1 });
   }
 
   // 立即领取优惠劵
@@ -519,8 +583,14 @@
         return;
       }
       // 加载到商品
-      state.skeletonLoading = false;
       state.goodsInfo = res.data;
+      if (state.goodsInfo?.skus?.length === 1) {
+        state.selectedSku = {
+          ...state.goodsInfo.skus[0],
+          goods_num: state.goodsInfo.skus[0].goods_num || 1,
+        };
+      }
+      state.skeletonLoading = false;
       // 获取结算信息
       getSettlementByIds(state.goodsId);
       // 加载是否收藏

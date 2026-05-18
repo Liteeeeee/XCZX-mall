@@ -498,7 +498,7 @@
 
   .cicon-checkbox {
     font-size: 36rpx;
-    color: var(--ui-BG-Main);
+    color: #1e3f1c;
   }
 
   .cicon-box {

@@ -17,7 +17,7 @@
           >
             <text class="sicon-back"></text>
           </view>
-          <view class="title">收益明细</view>
+          <view class="title">提现记录</view>
         </view>
       </view>
 
@@ -602,7 +602,7 @@
           font-size: 32rpx;
           font-family: Helvetica;
           font-weight: normal;
-          color: rgba(255, 0, 0, 1);
+          color: rgb(0, 0, 0);
         }
       }
 

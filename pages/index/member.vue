@@ -132,13 +132,13 @@
                 </view>
               </view>
               <view class="text-wrapper_5">
-                <text class="text_25">开通即代表同意</text>
+                <text class="text_25">我已阅读并同意</text>
                 <text class="text_26" @tap="sheep.$router.go('/pages/index/userAgreement')"
-                  >《服务协议》</text
+                  >《用户服务协议》</text
                 >
                 <text class="text_27">和</text>
                 <text class="text_28" @tap="sheep.$router.go('/pages/index/privacyPolicy')"
-                  >《隐私协议》</text
+                  >《隐私政策》</text
                 >
               </view>
             </view>
@@ -293,7 +293,7 @@
   });
 
   const state = reactive({
-    isAgreement: true,
+    isAgreement: false,
     currentLevelIndex: 0,
     levelList: [],
     rightsAll: [],

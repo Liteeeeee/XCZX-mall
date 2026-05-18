@@ -45,7 +45,7 @@
               form-type="submit"
               :style="{
                 background:
-                  'linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient)) !important',
+                  'linear-gradient(90deg, #1E3F1C, var(--ui-BG-Main-gradient)) !important',
               }"
               >提交</button
             >

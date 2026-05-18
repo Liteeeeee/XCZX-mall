@@ -132,7 +132,7 @@
   .authorization-btn {
     width: 686rpx;
     height: 80rpx;
-    background-color: var(--ui-BG-Main);
+    background-color: #1e3f1c;
     border-radius: 40rpx;
     color: #fff;
   }

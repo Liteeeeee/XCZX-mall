@@ -528,9 +528,9 @@
     }
 
     .cell-content {
-      font-size: 28rpx;
+      font-size: 26rpx;
       font-weight: 500;
-      color: $dark-6;
+      color: #1d2129;
     }
 
     .right-forwrad-icon {

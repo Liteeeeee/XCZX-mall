@@ -324,7 +324,7 @@
       }
 
       .ui-tab-mark {
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
         height: 100%;
       }
     }

@@ -159,7 +159,7 @@
         font-size: 28rpx;
         border-radius: 40rpx 0 0 40rpx;
         background-color: var(--ui-BG-Main-light);
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
       }
 
       .buy-btn {
@@ -169,7 +169,7 @@
         font-size: 28rpx;
 
         border-radius: 0 40rpx 40rpx 0;
-        background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+        background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
         color: $white;
       }
     }

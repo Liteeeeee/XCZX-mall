@@ -125,7 +125,7 @@
           position: absolute;
           left: 0;
           bottom: -15px;
-          background: var(--ui-BG-Main);
+          background: #1e3f1c;
           pointer-events: none;
         }
       }

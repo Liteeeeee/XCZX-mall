@@ -116,7 +116,7 @@
 
   .wallet-num-box {
     padding: 0 40rpx 80rpx;
-    background: var(--ui-BG-Main) v-bind(headerBg) center/750rpx 100% no-repeat;
+    background: #1e3f1c v-bind(headerBg) center/750rpx 100% no-repeat;
     border-radius: 0 0 5% 5%;
 
     .num-title {
@@ -193,7 +193,7 @@
     .face-value-btn {
       width: 200rpx;
       height: 144rpx;
-      border: 1px solid var(--ui-BG-Main);
+      border: 1px solid #1e3f1c;
       border-radius: 10rpx;
       position: relative;
       z-index: 1;
@@ -207,7 +207,7 @@
       .face-value-title {
         font-size: 36rpx;
         font-weight: 500;
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
         font-family: OPPOSANS;
 
         &::after {
@@ -222,7 +222,7 @@
         z-index: 2;
         height: 40rpx;
         line-height: 40rpx;
-        background: var(--ui-BG-Main);
+        background: #1e3f1c;
         opacity: 0.8;
         border-radius: 10rpx 0 20rpx 0;
         top: 0;
@@ -238,7 +238,7 @@
         content: ' ';
         width: 100%;
         height: 100%;
-        background: var(--ui-BG-Main);
+        background: #1e3f1c;
         opacity: 0.1;
         z-index: 0;
         left: 0;
@@ -251,7 +251,7 @@
 
       &::before {
         content: '';
-        background: var(--ui-BG-Main);
+        background: #1e3f1c;
         opacity: 1;
       }
 
@@ -264,7 +264,7 @@
 
       .face-value-tag {
         background: $white;
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
         font-family: OPPOSANS;
       }
     }

@@ -821,7 +821,7 @@
       border-top: 1rpx solid #eee;
       position: relative;
       z-index: 12;
-      top: -10rpx;
+      top: -6rpx;
       .footer-left {
         flex-shrink: 0;
       }

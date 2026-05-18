@@ -80,7 +80,7 @@
       // 背景颜色
       bgColor: {
         type: String,
-        default: 'linear-gradient(90deg, var(--ui-BG-Main) 0%, var(--ui-BG-Main-gradient) 100%)',
+        default: 'linear-gradient(90deg, #1E3F1C 0%, var(--ui-BG-Main-gradient) 100%)',
       },
       // 是否不显示数据
       noData: {

@@ -250,6 +250,7 @@
   import auditReject from '@/sheep/components/s-audit-reject/s-audit-reject.vue';
 
   const userInfo = computed(() => sheep.$store('user').userInfo || {});
+  const APPLY_SUBSCRIBE_TEMPLATE_ID = 'XCdVypoptHJ0Fzynr4f6GQ6ezU8_ldEymL9SSbIS9ZA';
   function fallbackOptions() {
     return ['自由职业', '上班族', '个体经营', '宝妈', '学生', '公务员', '医生', '教师', '其他'];
   }
@@ -411,6 +412,29 @@
       });
   }
 
+  function requestApplySubscribeMessage() {
+    return new Promise((resolve) => {
+      if (APPLY_SUBSCRIBE_TEMPLATE_ID && typeof uni?.requestSubscribeMessage === 'function') {
+        uni.requestSubscribeMessage({
+          tmplIds: [APPLY_SUBSCRIBE_TEMPLATE_ID],
+          success: () => resolve(),
+          fail: () => resolve(),
+        });
+        return;
+      }
+      if (typeof uni?.showModal === 'function') {
+        uni.showModal({
+          content: '你的微信版本过低，请更新至最新版本。',
+          showCancel: false,
+          success: () => resolve(),
+          fail: () => resolve(),
+        });
+        return;
+      }
+      resolve();
+    });
+  }
+
   async function onSubmit() {
     const mobile = normalizeMobile(state.mobile);
     if (!mobile) {
@@ -461,9 +485,20 @@
     const additionalInfo = {
       reason: state.reason,
     };
+    try {
+      const wechatProvider = sheep.$platform.useProvider('wechat');
+      if (wechatProvider?.getOpenid) {
+        additionalInfo.openId = (await wechatProvider.getOpenid()) || '';
+      } else {
+        additionalInfo.openId = '';
+      }
+    } catch {
+      additionalInfo.openId = '';
+    }
     if (Array.isArray(state.images) && state.images.length > 0) {
       additionalInfo.qualificationImages = state.images.map(extractKey).filter(Boolean);
     }
+    await requestApplySubscribeMessage();
     uni.getLocation({
       type: 'gcj02',
       success: (res) => {

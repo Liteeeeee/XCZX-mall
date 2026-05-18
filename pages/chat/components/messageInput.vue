@@ -100,7 +100,7 @@
       height: 60rpx;
       line-height: 60rpx;
       border-radius: 30rpx;
-      background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+      background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
       font-size: 26rpx;
       color: #fff;
       margin-left: 11rpx;

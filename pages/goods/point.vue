@@ -334,7 +334,7 @@
         font-size: 24rpx;
         font-weight: 500;
         border-radius: 4rpx;
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
         // background: rgba(#2aae67, 0.05);
         background: var(--ui-BG-Main-tag);
       }
@@ -342,12 +342,12 @@
       .discounts-title {
         font-size: 24rpx;
         font-weight: 500;
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
         line-height: normal;
       }
 
       .cicon-forward {
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
         font-size: 24rpx;
         line-height: normal;
         margin-top: 4rpx;

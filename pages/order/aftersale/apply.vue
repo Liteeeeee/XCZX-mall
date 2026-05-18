@@ -426,7 +426,7 @@
     .success-btn {
       width: 492rpx;
       height: 70rpx;
-      background: linear-gradient(90deg, var(--ui-BG-Main-gradient), var(--ui-BG-Main));
+      background: linear-gradient(90deg, var(--ui-BG-Main-gradient), #1e3f1c);
       border-radius: 35rpx;
     }
   }

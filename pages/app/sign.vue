@@ -319,7 +319,7 @@
     width: 520rpx;
     // height: 590rpx;
     background: linear-gradient(177deg, #ff6000 0%, #fe832a 100%);
-    // background: linear-gradient(177deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+    // background: linear-gradient(177deg, #1E3F1C, var(--ui-BG-Main-gradient));
     border-radius: 10rpx;
 
     .cicon-check-round {

@@ -321,7 +321,7 @@
         left: 50%;
         transform: translateX(-50%);
         bottom: 2rpx;
-        background-color: var(--ui-BG-Main);
+        background-color: #1e3f1c;
       }
     }
   }
@@ -385,7 +385,7 @@
       }
 
       .minus {
-        color: rgba(255, 0, 0, 1);
+        color: rgb(1, 1, 1);
       }
     }
   }

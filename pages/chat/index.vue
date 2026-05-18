@@ -261,7 +261,7 @@
       align-items: center;
       font-size: 30rpx;
       font-weight: 400;
-      color: var(--ui-BG-Main);
+      color: #1e3f1c;
     }
   }
 </style>

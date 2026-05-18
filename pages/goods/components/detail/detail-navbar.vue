@@ -181,7 +181,7 @@
         left: 50%;
         transform: translateX(-50%);
         bottom: 10rpx;
-        background-color: var(--ui-BG-Main);
+        background-color: #1e3f1c;
         z-index: 12;
       }
     }

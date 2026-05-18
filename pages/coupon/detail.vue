@@ -280,13 +280,7 @@
   }
 
   .detail-wrap {
-    background: linear-gradient(
-      180deg,
-      var(--ui-BG-Main),
-      var(--ui-BG-Main-gradient),
-      var(--ui-BG-Main),
-      #fff
-    );
+    background: linear-gradient(180deg, #1e3f1c, var(--ui-BG-Main-gradient), #1e3f1c, #fff);
   }
 
   .detail-box {
@@ -335,7 +329,7 @@
         width: 386rpx;
         height: 80rpx;
         line-height: 80rpx;
-        background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+        background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
         border-radius: 40rpx;
         color: $white;
       }

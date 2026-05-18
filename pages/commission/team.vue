@@ -376,7 +376,7 @@
     z-index: 3;
     position: relative;
     background: v-bind(headerBg) no-repeat,
-      linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+      linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
     background-size: 750rpx 100%;
 
     // 团队信息总览
@@ -480,7 +480,7 @@
   .promoter-list .nav .item.on {
     border-bottom: 5rpx solid;
     // $theme-color
-    color: var(--ui-BG-Main);
+    color: #1e3f1c;
     // $theme-color
   }
 

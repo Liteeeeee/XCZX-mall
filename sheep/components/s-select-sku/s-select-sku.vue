@@ -34,11 +34,17 @@
                 </text>
               </view>
             </view>
-            <view class="stock-text ss-m-l-20">
+            <!-- <view class="stock-text ss-m-l-20">
               {{ formatStock('exact', state.selectedSku.stock || goodsInfo.stock) }}
-            </view>
+            </view> -->
           </view>
         </view>
+        <image
+          class="close-btn"
+          src="https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/close.webp"
+          mode="aspectFit"
+          @tap.stop="emits('close')"
+        />
       </view>
 
       <!-- 属性选择 -->
@@ -338,7 +344,7 @@
       margin: 0 20rpx;
       height: 80rpx;
       border-radius: 40rpx;
-      background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+      background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
       color: #fff;
     }
   }
@@ -361,12 +367,12 @@
         height: 160rpx;
       }
 
-      .close-icon {
+      .close-btn {
         position: absolute;
-        top: 10rpx;
+        top: 20rpx;
         right: 20rpx;
-        font-size: 46rpx;
-        opacity: 0.2;
+        width: 40rpx;
+        height: 40rpx;
       }
 
       .goods-title {

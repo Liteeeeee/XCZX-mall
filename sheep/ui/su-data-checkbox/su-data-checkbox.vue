@@ -526,7 +526,7 @@
 </script>
 
 <style lang="scss">
-  $checked-color: var(--ui-BG-Main);
+  $checked-color: #1e3f1c;
   $border-color: #dcdfe6;
   $disable: 0.4;
 

@@ -277,7 +277,7 @@
 
 <style lang="scss" scoped>
   .bg-main {
-    background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient)) !important;
+    background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient)) !important;
     color: #fff !important;
   }
   .icon-box {

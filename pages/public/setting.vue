@@ -186,7 +186,7 @@
       font-weight: 500;
 
       .tcp-text {
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
       }
 
       .agreement-text {

@@ -115,7 +115,7 @@
 <style lang="scss" scoped>
   :deep() {
     .uni-checkbox-input {
-      background-color: var(--ui-BG-Main);
+      background-color: #1e3f1c;
     }
   }
 

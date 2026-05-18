@@ -344,7 +344,7 @@
       // 选中的时间段
       &.active {
         .time {
-          color: var(--ui-BG-Main);
+          color: #1e3f1c;
         }
 
         // 状态
@@ -353,7 +353,7 @@
           line-height: 30rpx;
           border-radius: 15rpx;
           width: 128rpx;
-          background: linear-gradient(90deg, var(--ui-BG-Main) 0%, var(--ui-BG-Main-gradient) 100%);
+          background: linear-gradient(90deg, #1e3f1c 0%, var(--ui-BG-Main-gradient) 100%);
           color: #fff;
         }
       }

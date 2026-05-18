@@ -207,12 +207,12 @@
 
   .cicon-move-round {
     font-size: 44rpx;
-    color: var(--ui-BG-Main);
+    color: #1e3f1c;
   }
 
   .cicon-add-round {
     font-size: 44rpx;
-    color: var(--ui-BG-Main);
+    color: #1e3f1c;
   }
 
   .groupon-btn {

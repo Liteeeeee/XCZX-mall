@@ -165,6 +165,6 @@
   }
 
   .cur-subtitle {
-    color: var(--ui-BG-Main);
+    color: #1e3f1c;
   }
 </style>

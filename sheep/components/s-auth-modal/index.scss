@@ -64,11 +64,11 @@
   width: 160rpx;
   height: 56rpx;
   line-height: normal;
-  border: 2rpx solid var(--ui-BG-Main);
+  border: 2rpx solid #1e3f1c;
   border-radius: 28rpx;
   font-size: 26rpx;
   font-weight: 400;
-  color: var(--ui-BG-Main);
+  color: #1e3f1c;
   opacity: 1;
 }
 
@@ -84,7 +84,7 @@
   width: 158rpx;
   height: 56rpx;
   line-height: normal;
-  background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+  background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
   border-radius: 28rpx;
   font-size: 26rpx;
   font-weight: 500;
@@ -125,7 +125,7 @@
     font-weight: 500;
     color: #999999;
     .tcp-text {
-      color: var(--ui-BG-Main);
+      color: #1e3f1c;
     }
   }
 }
@@ -135,7 +135,7 @@
   .save-btn {
     width: 690rpx;
     line-height: 70rpx;
-    background: linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+    background: linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
     border-radius: 35rpx;
     font-size: 28rpx;
     font-weight: 500;

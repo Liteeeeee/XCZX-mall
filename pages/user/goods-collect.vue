@@ -40,7 +40,7 @@
             >
               <radio
                 :checked="state.selectedCollectList.includes(item.spuId)"
-                color="var(--ui-BG-Main)"
+                color="#1E3F1C"
                 style="transform: scale(0.8)"
                 @tap.stop="onSelect(item.spuId)"
               />
@@ -68,7 +68,7 @@
             <label class="check-box ss-flex ss-col-center ss-p-r-30" @tap="onSelectAll">
               <radio
                 :checked="state.selectAll"
-                color="var(--ui-BG-Main)"
+                color="#1E3F1C"
                 style="transform: scale(0.7)"
                 @tap.stop="onSelectAll"
               />

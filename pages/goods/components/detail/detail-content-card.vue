@@ -98,7 +98,7 @@
 
       .more-btn {
         font-size: 24rpx;
-        color: var(--ui-BG-Main);
+        color: #1e3f1c;
       }
     }
   }

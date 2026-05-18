@@ -73,7 +73,7 @@
     // "确定"按钮的颜色
     confirmColor: {
       type: String,
-      default: 'var(--ui-BG-Main)',
+      default: '#1E3F1C',
     },
     // 取消按钮的文字
     cancelText: {

@@ -39,22 +39,19 @@
     // min-height: 60rpx;
 
     .label-text {
-      font-size: 28rpx;
-      font-weight: 500;
-      color: $dark-9;
+      font-size: 26rpx;
+      color: #999;
       margin-right: 38rpx;
     }
 
     .cell-content {
-      font-size: 28rpx;
-      font-weight: 500;
-      color: $dark-6;
+      font-size: 26rpx;
+      color: #333;
     }
 
     .right-forwrad-icon {
-      font-size: 28rpx;
-      font-weight: 500;
-      color: $dark-9;
+      font-size: 26rpx;
+      color: #999;
     }
   }
 </style>

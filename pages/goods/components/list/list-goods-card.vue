@@ -91,7 +91,7 @@
     }
     .md-goods-subtitle {
       background-color: var(--ui-BG-Main-tag);
-      color: var(--ui-BG-Main);
+      color: #1e3f1c;
       font-size: 20rpx;
     }
 

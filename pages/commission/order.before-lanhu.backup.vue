@@ -172,7 +172,7 @@
     padding: 0 20rpx 20rpx 20rpx;
     width: 750rpx;
     background: v-bind(headerBg) no-repeat,
-      linear-gradient(90deg, var(--ui-BG-Main), var(--ui-BG-Main-gradient));
+      linear-gradient(90deg, #1e3f1c, var(--ui-BG-Main-gradient));
     background-size: 750rpx 100%;
   }
 

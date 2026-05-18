@@ -64,7 +64,7 @@
         'uni-fab__content--other-platform': !isAndroidNvue,
       }"
       class="uni-fab__circle uni-fab__plus"
-      :style="{ 'background-color': 'var(--ui-BG-Main)' }"
+      :style="{ 'background-color': '#1E3F1C' }"
       @click="_onClick"
     >
       <uni-icons
