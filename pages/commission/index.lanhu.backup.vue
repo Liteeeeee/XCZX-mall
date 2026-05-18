@@ -47,7 +47,15 @@
           <text class="text_4 count-font">{{ showMoney ? fen2yuan(totalEarnedFen) : '***' }}</text>
         </view>
         <view class="text-group_11 flex-col">
-          <text class="text_3">冻结中</text>
+          <view class="frozen-label-row flex-row align-center">
+            <text class="text_3">冻结中</text>
+            <view class="frozen-tip-trigger" @tap.stop="onToggleFrozenTip">
+              <uni-icons type="info" size="16" color="rgba(102, 102, 102, 0.8)" />
+            </view>
+            <view v-if="state.showFrozenTip" class="frozen-tip">
+              <text class="frozen-tip-text">7天售后冻结期，确认收货无纠纷后自动解冻</text>
+            </view>
+          </view>
           <text class="text_4 count-font">{{ showMoney ? fen2yuan(withdrawingFen) : '***' }}</text>
         </view>
       </view>
@@ -175,6 +183,7 @@
     todayStatistics: {},
     brokerageUser: {},
     currentTab: 0, // 0 明细 1 收入 2 支出
+    showFrozenTip: false,
     pagination: {
       list: [],
       total: 0,
@@ -371,6 +380,17 @@
     sheep.$router.go('/pages/commission/wallet', { type: 2 });
   }
 
+  let frozenTipTimer;
+  function onToggleFrozenTip() {
+    state.showFrozenTip = !state.showFrozenTip;
+    if (state.showFrozenTip) {
+      clearTimeout(frozenTipTimer);
+      frozenTipTimer = setTimeout(() => {
+        state.showFrozenTip = false;
+      }, 3000);
+    }
+  }
+
   onShow(async () => {
     resetPagination();
     await Promise.all([loadSummary(), loadTodayStatistics(), loadBrokerageUser()]);
@@ -467,6 +487,51 @@
     text-align: left;
     white-space: nowrap;
     line-height: 37rpx;
+  }
+
+  .frozen-label-row {
+    position: relative;
+  }
+
+  .frozen-tip-trigger {
+    margin-left: 10rpx;
+    height: 32rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .frozen-tip {
+    position: absolute;
+    left: 50%;
+    top: 44rpx;
+    width: 217rpx;
+    transform: translateX(-50%);
+    padding: 14rpx 16rpx;
+    background: rgba(255, 255, 255, 1);
+    border-radius: 14rpx;
+    box-shadow: 0 8rpx 24rpx rgba(0, 0, 0, 0.08);
+    z-index: 10;
+  }
+
+  .frozen-tip::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -14rpx;
+    transform: translateX(-50%);
+    width: 0;
+    height: 0;
+    border-left: 14rpx solid transparent;
+    border-right: 14rpx solid transparent;
+    border-bottom: 14rpx solid rgba(255, 255, 255, 1);
+  }
+
+  .frozen-tip-text {
+    color: rgba(61, 61, 60, 1);
+    font-size: 20rpx;
+    line-height: 28rpx;
+    white-space: normal;
   }
 
   .text_4,

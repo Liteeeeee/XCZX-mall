@@ -82,11 +82,11 @@
             </view>
             <text class="text_57">邀请{{ platinumItem.needInvite }}人开通会员升级到铂金会员</text>
           </view>
-          <view class="achieve-check" v-if="platinumItem.achieved">
-            <text class="achieve-check-icon">✓</text>
+          <view class="achieve-check over" v-if="platinumItem.achieved">
+            <text class="achieve-check-icon">已完成</text>
           </view>
           <button class="achieve-check is-dim" v-else open-type="share">
-            <text class="achieve-check-icon">分享邀请</text>
+            <text class="achieve-check-icon">去邀请</text>
           </button>
         </view>
         <view class="box_94 flex-row">
@@ -122,11 +122,11 @@
               ></view>
             </view>
           </view>
-          <view class="achieve-check" v-if="diamondItem.achieved">
-            <text class="achieve-check-icon">✓</text>
+          <view class="achieve-check over" v-if="diamondItem.achieved">
+            <text class="achieve-check-icon">已完成</text>
           </view>
           <button class="achieve-check is-dim" v-else open-type="share">
-            <text class="achieve-check-icon">分享邀请</text>
+            <text class="achieve-check-icon">去邀请</text>
           </button>
         </view>
       </view>
@@ -621,16 +621,14 @@
     border-radius: 30rpx;
     background-image: linear-gradient(90deg, #fffee0 0%, #ffe8a5 100%);
     margin: 21rpx 21rpx 20rpx 18rpx;
-    padding: 0 16rpx;
     display: flex;
     align-items: center;
     justify-content: center;
     flex: none;
   }
-
-  .achieve-check.is-dim {
+  .over {
+    opacity: 0.5;
   }
-
   .achieve-check-icon {
     color: #562a08;
     font-size: 28rpx;

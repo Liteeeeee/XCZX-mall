@@ -427,6 +427,8 @@
 
         .buy-num-box {
           height: 100rpx;
+          padding-right: 40rpx;
+          box-sizing: border-box;
         }
 
         .spec-btn {
