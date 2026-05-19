@@ -576,7 +576,7 @@ export function initDefaultSelect(propertyList, onSelectSku) {
   }
   // 遍历每一个属性
   for (const property of propertyList) {
-    const firstValue = (property.values || [])[0];
+    const firstValue = (property.values || []).find((it) => it && !it.disabled);
     // 不是禁用直接选中
     if (firstValue && !firstValue.disabled) {
       onSelectSku(property.id, firstValue.id);
