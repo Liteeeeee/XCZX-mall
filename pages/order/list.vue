@@ -260,15 +260,16 @@
       name: '待收货',
       value: 20,
     },
-    {
-      name: '待评价',
-      value: 30,
-      commentStatus: false,
-    },
+
     {
       name: '已完成',
       value: 30,
       commentStatus: true,
+    },
+    {
+      name: '待评价',
+      value: 30,
+      commentStatus: false,
     },
   ];
 
@@ -454,7 +455,9 @@
       pageSize: state.pagination.pageSize,
       status: currentTabConfig.value,
       commentStatus:
-        currentTabConfig.commentStatus === undefined ? null : currentTabConfig.commentStatus,
+        currentTabConfig.commentStatus === undefined || currentTabConfig.commentStatus === true
+          ? null
+          : currentTabConfig.commentStatus,
     });
     if (code !== 0) {
       return;

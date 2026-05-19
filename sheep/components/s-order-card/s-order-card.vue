@@ -120,14 +120,14 @@
       names: ['待评价'],
       icon: '/mp/static/myPageIcon/待评价@2x.png',
       path: '/pages/order/list',
-      value: '4',
+      value: '5',
       count: 'uncommentedCount',
     },
     {
       names: ['已完成'],
       icon: '/mp/static/myPageIcon/已完成@2x.png',
       path: '/pages/order/list',
-      value: '5',
+      value: '4',
     },
     {
       names: ['售后/退款', '退款/售后', '售后', '退款'],
