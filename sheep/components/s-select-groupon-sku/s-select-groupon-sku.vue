@@ -111,7 +111,7 @@
 <script setup>
   import { computed, reactive, watch } from 'vue';
   import sheep from '@/sheep';
-  import { convertProductPropertyList, initDefaultSelect, fen2yuan } from '@/sheep/hooks/useGoods';
+  import { convertProductPropertyList, fen2yuan } from '@/sheep/hooks/useGoods';
 
   const headerBg = sheep.$url.css('/static/img/shop/goods/groupon-btn-long.webp');
   const emits = defineEmits(['change', 'addCart', 'buy', 'close', 'ladder']);
@@ -182,143 +182,71 @@
   }
 
   // 改变禁用状态：计算每个 property 属性值的按钮，是否禁用
-  function changeDisabled(isChecked = false, propertyId = 0, valueId = 0) {
-    let newSkus = []; // 所有可以选择的 sku 数组
-    if (isChecked) {
-      // 情况一：选中 property
-      // 获得当前点击选中 property 的、所有可用 SKU
-      for (let price of skuList.value) {
-        if (price.stock <= 0) {
-          continue;
-        }
-        if (price.value_id_array.indexOf(valueId) >= 0) {
-          newSkus.push(price);
-        }
-      }
-    } else {
-      // 情况二：取消选中 property
-      // 当前所选 property 下，所有可以选择的 SKU
-      newSkus = getCanUseSkuList();
-    }
-
-    // 所有存在并且有库存未选择的 SKU 的 value 属性值 id
-    let noChooseValueIds = [];
-    for (let price of newSkus) {
-      noChooseValueIds = noChooseValueIds.concat(price.value_id_array);
-    }
-    noChooseValueIds = Array.from(new Set(noChooseValueIds)); // 去重
-
-    if (isChecked) {
-      // 去除当前选中的 value 属性值 id
-      let index = noChooseValueIds.indexOf(valueId);
-      noChooseValueIds.splice(index, 1);
-    } else {
-      // 循环去除当前已选择的 value 属性值 id
-      Object.entries(state.currentPropertyArray).forEach(([propertyId, currentPropertyId]) => {
-        if (currentPropertyId.toString() !== '') {
-          return;
-        }
-        // currentPropertyId 为空是反选 填充的
-        let index = noChooseValueIds.indexOf(currentPropertyId);
-        if (index >= 0) {
-          // currentPropertyId 存在于 noChooseValueIds
-          noChooseValueIds.splice(index, 1);
-        }
+  function refreshDisabled() {
+    const propertyIds = propertyList.map((p) => p.id);
+    propertyList.forEach((property) => {
+      const otherSelectedValueIds = propertyIds
+        .filter((pid) => pid !== property.id)
+        .map((pid) => state.currentPropertyArray[pid])
+        .filter((vid) => vid !== undefined && String(vid) !== '');
+      (property.values || []).forEach((value) => {
+        const requiredValueIds = [...otherSelectedValueIds, value.id];
+        const ok = (skuList.value || []).some((sku) => {
+          if (Number(sku?.stock || 0) <= 0) return false;
+          const ids = sku.value_id_array || [];
+          return requiredValueIds.every((id) => ids.indexOf(id) >= 0);
+        });
+        value.disabled = !ok;
       });
-    }
-
-    // 当前已选择的 property 数组
-    let choosePropertyIds = [];
-    if (!isChecked) {
-      // 当前已选择的 property
-      Object.entries(state.currentPropertyArray).forEach(([propertyId, currentValueId]) => {
-        if (currentValueId !== '') {
-          // currentPropertyId 为空是反选 填充的
-          choosePropertyIds.push(currentValueId);
-        }
-      });
-    } else {
-      // 当前点击选择的 property
-      choosePropertyIds = [propertyId];
-    }
-
-    for (let propertyIndex in propertyList) {
-      // 当前点击的 property、或者取消选择时候，已选中的 property 不进行处理
-      if (choosePropertyIds.indexOf(propertyList[propertyIndex]['id']) >= 0) {
-        continue;
-      }
-      // 如果当前 property id 不存在于有库存的 SKU 中，则禁用
-      for (let valueIndex in propertyList[propertyIndex]['values']) {
-        propertyList[propertyIndex]['values'][valueIndex]['disabled'] =
-          noChooseValueIds.indexOf(propertyList[propertyIndex]['values'][valueIndex]['id']) < 0; // true 禁用 or false 不禁用
-      }
-    }
+    });
   }
 
-  // 当前所选属性下，获取所有有库存的 SKU 们
-  function getCanUseSkuList() {
-    let newSkus = [];
-    for (let sku of skuList.value) {
-      if (sku.stock <= 0) {
-        continue;
-      }
-      let isOk = true;
-      Object.entries(state.currentPropertyArray).forEach(([propertyId, valueId]) => {
-        // valueId 不为空，并且，这个 条 sku 没有被选中，则排除
-        if (valueId.toString() !== '' && sku.value_id_array.indexOf(valueId) < 0) {
-          isOk = false;
-        }
-      });
-      if (isOk) {
-        newSkus.push(sku);
-      }
+  function refreshSelectedSku() {
+    const selectedValueIds = propertyList
+      .map((p) => state.currentPropertyArray[p.id])
+      .filter((vid) => vid !== undefined && String(vid) !== '');
+    if (selectedValueIds.length !== propertyList.length) {
+      state.selectedSku = {};
+      return;
     }
-    return newSkus;
+    const sku = (skuList.value || []).find((it) => {
+      if (Number(it?.stock || 0) <= 0) return false;
+      const ids = it.value_id_array || [];
+      return selectedValueIds.every((id) => ids.indexOf(id) >= 0);
+    });
+    if (!sku) {
+      state.selectedSku = {};
+      return;
+    }
+    sku.count = state.selectedSku.count || 1;
+    state.selectedSku = sku;
   }
 
   // 选择规格
   function onSelectSku(propertyId, valueId) {
-    // 清空已选择
-    let isChecked = true; // 选中 or 取消选中
     if (
       state.currentPropertyArray[propertyId] !== undefined &&
       state.currentPropertyArray[propertyId] === valueId
     ) {
-      // 点击已被选中的，删除并填充 ''
-      isChecked = false;
-      state.currentPropertyArray.splice(propertyId, 1, '');
-    } else {
-      // 选中
-      state.currentPropertyArray[propertyId] = valueId;
+      return;
     }
-
-    // 选中的 property 大类
-    let choosePropertyId = [];
-    Object.entries(state.currentPropertyArray).forEach(([propertyId, currentPropertyId]) => {
-      if (currentPropertyId !== '') {
-        // currentPropertyId 为空是反选 填充的
-        choosePropertyId.push(currentPropertyId);
-      }
-    });
-
-    // 当前所选 property 下，所有可以选择的 SKU 们
-    let newSkuList = getCanUseSkuList();
-
-    // 判断所有 property 大类是否选择完成
-    if (choosePropertyId.length === propertyList.length && newSkuList.length) {
-      newSkuList[0].count = state.selectedSku.count || 1;
-      state.selectedSku = newSkuList[0];
-    } else {
-      state.selectedSku = {};
-    }
-
-    // 改变 property 禁用状态
-    changeDisabled(isChecked, propertyId, valueId);
+    state.currentPropertyArray[propertyId] = valueId;
+    refreshDisabled();
+    refreshSelectedSku();
   }
 
-  changeDisabled(false);
-  // 初始化默认选中规格中的第一个，如果不需要，注释这段代码即可
-  initDefaultSelect(propertyList, onSelectSku);
+  refreshDisabled();
+  function autoSelectFirstInStockSku() {
+    const firstSku = (skuList.value || []).find((sku) => Number(sku?.stock || 0) > 0);
+    const properties = firstSku?.properties;
+    if (!Array.isArray(properties) || properties.length === 0) return;
+    properties.forEach((p) => {
+      if (p?.propertyId && p?.valueId) {
+        onSelectSku(p.propertyId, p.valueId);
+      }
+    });
+  }
+  autoSelectFirstInStockSku();
 </script>
 
 <style lang="scss" scoped>
@@ -445,13 +373,14 @@
       }
 
       .price-text {
-        font-size: 30rpx;
+        font-size: 50rpx;
         font-weight: 500;
-        color: $red;
-        font-family: OPPOSANS;
+        color: #f53f3f;
+        font-family: DINAlternate-Bold;
 
         &::before {
           content: '￥';
+          color: #f53f3f;
           font-size: 24rpx;
         }
       }

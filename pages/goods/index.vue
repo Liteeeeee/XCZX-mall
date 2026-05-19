@@ -102,10 +102,14 @@
           v-if="state.goodsInfo?.skus?.length"
           :show="state.showSelectSku"
           :goodsInfo="state.goodsInfo"
+          :action="state.skuAction"
           @change="onSkuChange"
           @addCart="onAddCartBySku"
           @buy="onBuyBySku"
-          @close="state.showSelectSku = false"
+          @close="
+            state.showSelectSku = false;
+            state.skuAction = 'both';
+          "
         />
 
         <!-- 功能卡片 -->
@@ -343,6 +347,7 @@
     selectedSku: {}, // 选中的 SKU
     settlementSku: {}, // 结算的 SKU：由于 selectedSku 不进行默认选中，所以初始使用结算价格最低的 SKU 作为基础展示
     showSelectSku: false, // 是否展示规格弹窗
+    skuAction: 'both',
     showModel: false, // 是否展示 Coupon 优惠劵的弹窗
     showServiceModal: false, // 是否展示服务说明弹窗
     couponInfo: [], // 可领取的 Coupon 优惠劵的列表
@@ -445,7 +450,8 @@
 
   // 添加购物车
   function onAddCart() {
-    if (state.goodsInfo?.skus?.length > 1 && !state.selectedSku?.id) {
+    if (state.goodsInfo?.skus?.length > 1) {
+      state.skuAction = 'addCart';
       state.showSelectSku = true;
       return;
     }
@@ -464,7 +470,8 @@
 
   // 立即购买
   function onBuy() {
-    if (state.goodsInfo?.skus?.length > 1 && !state.selectedSku?.id) {
+    if (state.goodsInfo?.skus?.length > 1) {
+      state.skuAction = 'buy';
       state.showSelectSku = true;
       return;
     }
