@@ -121,7 +121,7 @@
 
   .apply-return .list .item {
     min-height: 90rpx;
-    border-bottom: 1rpx solid #eee;
+    border-bottom: 2rpx solid #eee;
     font-size: 30rpx;
     color: #333;
   }
@@ -203,7 +203,7 @@
   }
 
   .apply-return .list .item .upload .pictrue:nth-last-child(1) {
-    border: 1rpx solid #ddd;
+    border: 2rpx solid #ddd;
     box-sizing: border-box;
   }
 

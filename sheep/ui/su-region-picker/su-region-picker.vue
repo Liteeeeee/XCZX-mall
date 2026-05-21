@@ -198,7 +198,7 @@
   .ui-picker-header::after {
     content: '';
     position: absolute;
-    border-bottom: 1rpx solid #eaeef1;
+    border-bottom: 2rpx solid #eaeef1;
     -webkit-transform: scaleY(0.5);
     transform: scaleY(0.5);
     bottom: 0;

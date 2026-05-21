@@ -47,7 +47,13 @@
       <view v-else class="card flex-col">
         <view class="row flex-row">
           <text class="row-label">昵称</text>
-          <text class="row-value">{{ userInfo?.nickname || '' }}</text>
+          <input
+            class="row-input"
+            v-model="state.nickname"
+            maxlength="20"
+            placeholder="请输入昵称"
+            placeholder-class="placeholder"
+          />
         </view>
         <view class="divider"></view>
 
@@ -256,6 +262,7 @@
   }
 
   const state = reactive({
+    nickname: '',
     mobile: '',
     idCardNo: '',
     idCardFrontUrl: '',
@@ -373,6 +380,7 @@
   function hydrateForm(data) {
     if (!data) return;
     const additionalInfo = parseAdditionalInfo(data.additionalInfo);
+    state.nickname = data.nickname || additionalInfo.nickname || state.nickname || '';
     state.mobile = data.mobile || state.mobile || '';
     state.idCardNo = data.idCardNo || '';
     state.idCardFrontUrl = normalizeUploadUrl(data.idCardFrontUrl);
@@ -473,6 +481,7 @@
     };
 
     const payload = {
+      nickname: String(state.nickname || userInfo.value?.nickname || '').trim(),
       mobile,
       idCardNo: '',
       idCardFrontUrl: '',
@@ -517,6 +526,7 @@
   }
 
   onLoad(async () => {
+    state.nickname = userInfo.value?.nickname || '';
     state.mobile = userInfo.value?.mobile || '';
     loadCareerOptions();
 
@@ -581,7 +591,7 @@
     background-color: rgba(255, 255, 255, 0.594);
     border-radius: 100rpx;
     width: 174rpx;
-    border: 1rpx solid rgba(151, 151, 151, 0.198);
+    border: 2rpx solid rgba(151, 151, 151, 0.198);
     padding: 12rpx 26rpx 13rpx 26rpx;
     margin-left: auto;
     margin-right: 16rpx;
@@ -675,7 +685,7 @@
   .divider {
     width: 639rpx;
     height: 1rpx;
-    border-top: 1rpx solid rgba(157, 156, 150, 0.3);
+    border-top: 2rpx solid rgba(157, 156, 150, 0.3);
     margin: 34rpx 0 35rpx 1rpx;
   }
 
@@ -821,7 +831,7 @@
   .submit-btn {
     background-color: rgba(30, 63, 28, 1);
     border-radius: 20rpx;
-    border: 1rpx solid rgba(157, 156, 150, 1);
+    border: 2rpx solid rgba(157, 156, 150, 1);
     width: 686rpx;
     height: 88rpx;
     display: flex;

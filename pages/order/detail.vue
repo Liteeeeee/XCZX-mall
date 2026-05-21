@@ -858,7 +858,7 @@
       font-weight: 500;
       color: rgba(51, 51, 51, 1);
       line-height: 80rpx;
-      border-bottom: 1rpx solid #dfdfdf;
+      border-bottom: 2rpx solid #dfdfdf;
       padding: 0 25rpx;
     }
 

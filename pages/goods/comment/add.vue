@@ -119,7 +119,9 @@
       await OrderApi.createOrderItemComment(comment);
     }
     // 都评论好，返回
-    sheep.$router.back();
+    setTimeout(() => {
+      sheep.$router.back();
+    }, 2000);
   }
 
   /**
@@ -225,7 +227,7 @@
 
   .commont-from-wrap {
     padding-bottom: 20rpx;
-    border-bottom: 1rpx solid #f0f0f0;
+    border-bottom: 2rpx solid #f0f0f0;
   }
 
   .form-item {

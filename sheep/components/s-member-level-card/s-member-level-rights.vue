@@ -427,7 +427,7 @@
     width: 100%;
     height: 152rpx;
     background: #ffffff;
-    border: 1rpx solid #f0f0f0;
+    border: 2rpx solid #f0f0f0;
     border-radius: 16rpx;
     margin-bottom: 40rpx;
     display: flex;
@@ -496,7 +496,7 @@
     height: 48rpx;
     background: #3a3642;
     border-radius: 10rpx;
-    border: 1rpx solid rgba(181, 158, 109, 0.2);
+    border: 2rpx solid rgba(181, 158, 109, 0.2);
     box-sizing: border-box;
     margin: 16rpx 0 16rpx 0;
     padding: 0 18rpx;

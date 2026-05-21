@@ -816,7 +816,7 @@
     .cart-footer {
       height: 120rpx;
       background-color: #fff;
-      border-top: 1rpx solid #eee;
+      border-top: 2rpx solid #eee;
       position: relative;
       z-index: 12;
       top: -6rpx;

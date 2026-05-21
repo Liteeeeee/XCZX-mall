@@ -309,7 +309,7 @@
   // 售后项目
   .refund-item {
     background-color: #fff;
-    border-bottom: 1rpx solid #f5f5f5;
+    border-bottom: 2rpx solid #f5f5f5;
     padding: 30rpx;
 
     &:last-child {
@@ -441,7 +441,7 @@
 
   .drawer-header {
     height: 100rpx;
-    border-bottom: 1rpx solid #f5f5f5;
+    border-bottom: 2rpx solid #f5f5f5;
   }
 
   .drawer-title {

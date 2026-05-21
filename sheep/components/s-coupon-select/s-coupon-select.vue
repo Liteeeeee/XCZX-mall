@@ -165,7 +165,7 @@
   .confirm-btn {
     background-color: rgba(30, 63, 28, 1);
     border-radius: 46rpx;
-    border: 1rpx solid rgba(157, 156, 150, 1);
+    border: 2rpx solid rgba(157, 156, 150, 1);
     width: 686rpx;
     height: 88rpx;
     display: flex;

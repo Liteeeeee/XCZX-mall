@@ -631,7 +631,7 @@
 
   .divider-line {
     width: 639rpx;
-    border: 1rpx solid rgba(151, 151, 151, 0.2);
+    border: 2rpx solid rgba(151, 151, 151, 0.2);
     margin-top: 12rpx;
   }
 
@@ -749,7 +749,7 @@
   .apply-btn {
     background-color: rgba(30, 63, 28, 1);
     border-radius: 20rpx;
-    border: 1rpx solid rgba(157, 156, 150, 1);
+    border: 2rpx solid rgba(157, 156, 150, 1);
     height: 88rpx;
     display: flex;
     align-items: center;

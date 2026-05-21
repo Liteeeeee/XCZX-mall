@@ -112,7 +112,7 @@
     .head {
       padding: 0 35rpx;
       height: 80rpx;
-      border-bottom: 1rpx solid $gray-e;
+      border-bottom: 2rpx solid $gray-e;
       margin-bottom: 20rpx;
 
       .title {

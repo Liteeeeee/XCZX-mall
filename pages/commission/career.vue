@@ -231,7 +231,7 @@
 
   .chip-normal {
     background-color: rgba(255, 254, 250, 1);
-    border: 1rpx solid rgba(157, 156, 150, 1);
+    border: 2rpx solid rgba(157, 156, 150, 1);
   }
 
   .chip-text-active {
@@ -306,7 +306,7 @@
   .submit-btn {
     background-color: rgba(30, 63, 28, 1);
     border-radius: 20rpx;
-    border: 1rpx solid rgba(157, 156, 150, 1);
+    border: 2rpx solid rgba(157, 156, 150, 1);
     width: 686rpx;
     height: 88rpx;
     display: flex;

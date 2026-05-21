@@ -344,7 +344,7 @@
     z-index: 1;
 
     .list-item {
-      border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
+      border-bottom: 2rpx solid rgba(157, 156, 150, 0.3);
       padding: 30rpx 0;
       &:last-child {
         border-bottom: none;

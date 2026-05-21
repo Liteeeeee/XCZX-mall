@@ -458,7 +458,7 @@
     background-color: rgba(255, 255, 255, 0.594);
     border-radius: 50rpx;
     width: 174rpx;
-    border: 1rpx solid rgba(151, 151, 151, 0.198);
+    border: 2rpx solid rgba(151, 151, 151, 0.198);
     padding: 12rpx 26rpx 13rpx 26rpx;
     margin-left: auto;
     margin-right: 16rpx;
@@ -785,7 +785,7 @@
   .profit-tag {
     background-color: rgba(255, 247, 245, 1);
     border-radius: 10rpx;
-    border: 1rpx solid rgba(252, 231, 224, 1);
+    border: 2rpx solid rgba(252, 231, 224, 1);
     padding-left: 25rpx;
     padding-right: 25rpx;
   }

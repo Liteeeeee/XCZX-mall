@@ -362,7 +362,7 @@
     line-height: 86rpx;
     font-size: 28rpx;
     color: #282828;
-    border-bottom: 1rpx solid #eee;
+    border-bottom: 2rpx solid #eee;
     border-top-left-radius: 14rpx;
     border-top-right-radius: 14rpx;
     display: flex;
@@ -471,7 +471,7 @@
     line-height: 86rpx;
     font-size: 28rpx;
     color: #282828;
-    border-bottom: 1rpx solid #eee;
+    border-bottom: 2rpx solid #eee;
     border-top-left-radius: 14rpx;
     border-top-right-radius: 14rpx;
     margin-top: -30rpx;
@@ -537,7 +537,7 @@
   .promoter-list .list .sortNav {
     background-color: #fff;
     height: 76rpx;
-    border-bottom: 1rpx solid #eee;
+    border-bottom: 2rpx solid #eee;
     color: #333;
     font-size: 28rpx;
     border-top-left-radius: 14rpx;
@@ -558,7 +558,7 @@
 
   .promoter-list .list .item {
     background-color: #fff;
-    border-bottom: 1rpx solid #eee;
+    border-bottom: 2rpx solid #eee;
     height: 152rpx;
     padding: 0 24rpx;
     font-size: 24rpx;

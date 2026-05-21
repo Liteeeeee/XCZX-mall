@@ -256,7 +256,7 @@
       return '已取消不计分佣';
     }
     if (reason === 'afterSale') {
-      return '售后商品不计分佣';
+      return '售后中';
     }
     const g = goods || {};
     const fen = Number(
@@ -275,7 +275,7 @@
       return '已取消不计分佣';
     }
     if (reason === 'afterSale') {
-      return '售后商品不计分佣';
+      return '售后中';
     }
     const g = goods || {};
     const fen = Number(g.brokeragePrice ?? g.price ?? 0);
@@ -465,7 +465,7 @@
     background-color: rgba(255, 255, 255, 0.594);
     border-radius: 50rpx;
     width: 174rpx;
-    border: 1rpx solid rgba(151, 151, 151, 0.198);
+    border: 2rpx solid rgba(151, 151, 151, 0.198);
     padding: 12rpx 26rpx 13rpx 26rpx;
     margin-left: auto;
     margin-right: 16rpx;
@@ -651,7 +651,7 @@
   }
 
   .order-divider {
-    border-bottom: 1rpx solid rgba(151, 151, 151, 0.2);
+    border-bottom: 2rpx solid rgba(151, 151, 151, 0.2);
   }
 
   .order-body {

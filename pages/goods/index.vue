@@ -899,7 +899,7 @@
 
   // 功能单元格
   .info-cell {
-    border-bottom: 1rpx solid #f5f5f5;
+    border-bottom: 2rpx solid #f5f5f5;
 
     &:last-child {
       border-bottom: none;

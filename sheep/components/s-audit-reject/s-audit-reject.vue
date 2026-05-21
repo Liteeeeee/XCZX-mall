@@ -92,7 +92,7 @@
   .btn-outline {
     background-color: rgba(248, 249, 243, 1);
     color: rgba(30, 63, 28, 1);
-    border: 1rpx solid rgba(30, 63, 28, 1);
+    border: 2rpx solid rgba(30, 63, 28, 1);
   }
   .btn-solid {
     background-color: rgba(30, 63, 28, 1);

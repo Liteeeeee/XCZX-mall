@@ -290,7 +290,7 @@
     justify-content: center;
     color: #ffffff;
     background: rgba(0, 0, 0, 0.22);
-    border: 1rpx solid rgba(255, 255, 255, 0.42);
+    border: 2rpx solid rgba(255, 255, 255, 0.42);
     box-shadow: 0 6rpx 18rpx rgba(0, 0, 0, 0.12);
     padding: 10rpx 24rpx;
     border-radius: 999rpx;

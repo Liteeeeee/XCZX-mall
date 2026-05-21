@@ -5,11 +5,7 @@
       <text class="paragraph_1">
         {{ item.name }}
       </text>
-      <text class="paragraph_2">{{
-        item.introduction && item.introduction.length > 8
-          ? item.introduction.substring(0, 8) + '...'
-          : item.introduction
-      }}</text>
+      <text class="paragraph_2">{{ item.introduction }}</text>
       <view class="section_30 flex-row justify-between">
         <view class="text-wrapper_8">
           <text class="text_28">¥</text>
@@ -90,6 +86,7 @@
 
   .paragraph_1 {
     width: 256rpx;
+    min-height: 66rpx;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -110,7 +107,7 @@
     justify-content: space-between;
     flex-wrap: nowrap;
     width: 100%;
-    margin: 24rpx 0 0;
+    margin: 4rpx 0 0;
     padding: 0 14rpx 0 20rpx;
     box-sizing: border-box;
     align-items: flex-end;
@@ -167,5 +164,14 @@
     font-size: 24rpx;
     color: #9d9c96;
     margin: 11rpx 14rpx 0 15rpx;
+    width: 256rpx;
+    min-height: 66rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    line-height: 33rpx;
   }
 </style>

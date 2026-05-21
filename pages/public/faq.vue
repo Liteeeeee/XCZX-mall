@@ -108,7 +108,7 @@
   }
 
   .content {
-    border-bottom: 1rpx solid #dfdfdf;
+    border-bottom: 2rpx solid #dfdfdf;
 
     .text {
       font-size: 26rpx;

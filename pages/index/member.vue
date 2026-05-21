@@ -773,7 +773,7 @@
     flex-direction: row;
     align-items: stretch;
     /* 加深边框颜色，确保在高亮背景下也清晰可见 */
-    border-bottom: 1rpx solid rgba(30, 63, 28, 0.1);
+    border-bottom: 2rpx solid rgba(30, 63, 28, 0.1);
     padding: 0;
 
     &:last-child {

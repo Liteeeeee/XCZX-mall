@@ -137,7 +137,7 @@
       width: 170rpx;
       height: 60rpx;
       line-height: 60rpx;
-      border: 1rpx solid $white;
+      border: 2rpx solid $white;
       border-radius: 30rpx;
       padding: 0;
       font-size: 26rpx;

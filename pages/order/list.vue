@@ -602,7 +602,7 @@
 
     .order-card-header {
       height: 88rpx;
-      border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
+      border-bottom: 2rpx solid rgba(157, 156, 150, 0.3);
       .order-no {
         font-size: 28rpx;
         color: #9d9c96;

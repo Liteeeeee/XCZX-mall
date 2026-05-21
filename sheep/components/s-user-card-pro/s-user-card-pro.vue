@@ -486,7 +486,7 @@
         background: #c3fba7;
         padding: 4rpx 16rpx;
         border-radius: 10rpx 30rpx 30rpx 10rpx;
-        border: 1rpx solid #52c41a;
+        border: 2rpx solid #52c41a;
         .level-text {
           font-size: 24rpx;
           color: #52c41a;

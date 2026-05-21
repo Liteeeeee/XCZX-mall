@@ -345,7 +345,7 @@
     width: 630rpx;
     height: 92rpx;
     background-color: rgba(255, 255, 250, 1);
-    border: 1rpx solid rgba(238, 238, 238, 1);
+    border: 2rpx solid rgba(238, 238, 238, 1);
     border-radius: 20rpx;
     padding: 0 28rpx;
   }

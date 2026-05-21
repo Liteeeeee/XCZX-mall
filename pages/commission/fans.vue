@@ -244,7 +244,7 @@
     flex-direction: row;
     align-items: center;
     min-height: 180rpx;
-    border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
+    border-bottom: 2rpx solid rgba(157, 156, 150, 0.3);
   }
 
   .fan-row:last-child {

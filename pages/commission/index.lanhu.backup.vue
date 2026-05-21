@@ -642,7 +642,7 @@
   .text-wrapper_3 {
     background-color: rgba(30, 63, 28, 1);
     border-radius: 20rpx;
-    border: 1rpx solid rgba(157, 156, 150, 1);
+    border: 2rpx solid rgba(157, 156, 150, 1);
     padding: 21rpx 0 20rpx 0;
     margin: 39rpx 0 0 0;
     display: flex;
@@ -854,7 +854,7 @@
     display: flex;
     flex-direction: row;
     align-items: center;
-    border-bottom: 1rpx solid rgba(157, 156, 150, 0.3);
+    border-bottom: 2rpx solid rgba(157, 156, 150, 0.3);
   }
 
   .box_21:last-child {
