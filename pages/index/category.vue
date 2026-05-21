@@ -81,7 +81,7 @@
         </view>
         <!-- 商品分类（右） -->
         <view class="goods-list-box" v-if="state.categoryList?.length">
-          <scroll-view scroll-y :style="[{ height: menuScrollHeight + 'px' }]">
+          <scroll-view scroll-y>
             <image v-if="bannerPicUrl" class="banner-img" :src="bannerPicUrl" mode="widthFix" />
             <view class="group_60 flex-row">
               <view class="section_26 flex-col"></view>

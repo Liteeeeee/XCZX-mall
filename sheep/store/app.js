@@ -118,7 +118,7 @@ const app = defineStore({
         };
         this.platform = {
           share: {
-            methods: ['forward', 'poster', 'link'],
+            methods: ['forward', 'timeline', 'poster', 'link'],
             linkAddress: h5Url,
             posterInfo: {
               user_bg: '/static/img/shop/config/user-poster-bg.webp',

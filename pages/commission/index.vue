@@ -48,9 +48,20 @@
             <text class="text_2">{{ userInfo?.nickname || '' }}</text>
             <text class="text_3">{{ maskedMobile }}</text>
           </view>
+          <!-- #ifdef MP-WEIXIN -->
+          <button
+            class="ss-reset-button text-wrapper_1 flex-col"
+            open-type="share"
+            @tap="onInviteMemberShare"
+          >
+            <text class="text_4">邀请会员</text>
+          </button>
+          <!-- #endif -->
+          <!-- #ifndef MP-WEIXIN -->
           <view class="text-wrapper_1 flex-col" @tap="onInviteMember">
             <text class="text_4">邀请会员</text>
           </view>
+          <!-- #endif -->
         </view>
 
         <view class="box_15 flex-col">
@@ -256,7 +267,7 @@
   //   }
   // }
 
-  function onInviteMember() {
+  function onInviteMemberShare() {
     state.shareInfo = sheep.$platform.share.getShareInfo(
       {
         title: `${sheep.$store('app').info.name || '仙草甄选'}邀请你成为会员`,
@@ -270,6 +281,10 @@
         type: 'user',
       },
     );
+  }
+
+  function onInviteMember() {
+    onInviteMemberShare();
     showShareModal();
   }
 
@@ -542,7 +557,7 @@
   .text-wrapper_1 {
     background-color: rgba(248, 249, 243, 1);
     border-radius: 34rpx;
-    border: 1rpx solid rgba(30, 63, 28, 1);
+    border: 2rpx solid rgba(30, 63, 28, 1);
     margin: 35rpx 0 35rpx auto;
     padding: 4rpx 28rpx 4rpx 28rpx;
   }

@@ -28,7 +28,7 @@
       scroll-y
       class="empty-scroll"
       :style="{
-        paddingTop: (sys_capsule.bottom || 80) + 20 + 'px',
+        paddingTop: '20rpx',
       }"
     >
       <s-empty
@@ -73,7 +73,7 @@
       class="cart-box ss-flex ss-flex-col"
       :style="[
         {
-          paddingTop: (sys_capsule.bottom || 80) + 20 + 'px',
+          paddingTop: '20rpx',
           paddingLeft: '30rpx',
           paddingRight: '30rpx',
         },
@@ -772,14 +772,12 @@
   }
 
   .cart-header {
-    height: v-bind('sys_capsule.height + "px"');
+    height: v-bind('sys_capsule.bottom + "px"');
     width: 100%;
-    position: fixed;
-    left: 0;
-    top: v-bind('sys_capsule.top + "px"');
-    z-index: 10000;
+    position: relative;
     box-sizing: border-box;
     pointer-events: auto;
+    padding-top: v-bind('sys_capsule.top + "px"');
     padding-right: v-bind(
       'sys_capsule.width + (sheep.$platform.device.windowWidth - sys_capsule.right) + "px"'
     );

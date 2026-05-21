@@ -63,6 +63,7 @@ const getShareInfo = (
     path: '', // 分享页面+参数
     link: '', // 分享Url+参数
     query: '', // 分享参数
+    timelineQuery: '',
     poster, // 海报所需数据
     forward: {}, // 转发所需参数
   };
@@ -76,6 +77,7 @@ const getShareInfo = (
   // 自动拼接分享用户参数
   const query = buildSpmQuery(scene.params);
   shareInfo.query = query;
+  shareInfo.timelineQuery = buildTimelineQuery(scene.params, query);
 
   // 配置分享链接地址
   shareInfo.link = buildSpmLink(query, shareConfig.linkAddress);
@@ -88,6 +90,22 @@ const getShareInfo = (
   }
 
   return shareInfo;
+};
+
+const buildTimelineQuery = (params = {}, spmQuery = '') => {
+  const page = typeof params.page !== 'undefined' ? String(params.page) : SharePageEnum.HOME.value;
+  const rawQuery = typeof params.query !== 'undefined' ? String(params.query) : '';
+  const needId = [
+    SharePageEnum.GOODS.value,
+    SharePageEnum.GROUPON.value,
+    SharePageEnum.SECKILL.value,
+    SharePageEnum.GROUPON_DETAIL.value,
+    SharePageEnum.POINT.value,
+  ].includes(page);
+  if (needId && rawQuery) {
+    return `id=${encodeURIComponent(rawQuery)}${spmQuery ? `&${spmQuery}` : ''}`;
+  }
+  return spmQuery || '';
 };
 
 /**

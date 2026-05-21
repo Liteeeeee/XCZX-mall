@@ -48,16 +48,21 @@
             <text class="share-text">微信好友</text>
           </button>
 
-          <!-- 暂时隐藏朋友圈分享入口 -->
-          <!--
-          <button v-if="shareConfig.methods.includes('forward')" class="share-item" @tap="onShareByTimeline">
-            <image class="share-icon" :src="sheep.$url.cdn('/mp/static/share/sharePyq.webp')" mode="aspectFit" />
+          <button
+            v-if="shareConfig.methods.includes('timeline')"
+            class="share-item"
+            @tap="onShareByTimeline"
+          >
+            <image
+              class="share-icon"
+              :src="sheep.$url.cdn('/mp/static/share/sharePyq.webp')"
+              mode="aspectFit"
+            />
             <text class="share-text">朋友圈</text>
           </button>
-          -->
 
           <!-- 只有在非 user 类型（即非邀请会员场景）时，才显示生成海报按钮 -->
-          <button
+          <!-- <button
             v-if="shareConfig.methods.includes('poster') && shareInfo?.poster?.type !== 'user'"
             class="share-item"
             @tap="onShareByPoster"
@@ -68,7 +73,7 @@
               mode="aspectFit"
             />
             <text class="share-text">生成海报</text>
-          </button>
+          </button> -->
         </view>
       </view>
     </su-popup>
@@ -86,12 +91,13 @@
   /**
    * 分享弹窗
    */
-  import { ref, unref, reactive, computed, nextTick } from 'vue';
+  import { ref, unref, reactive, computed, nextTick, watch } from 'vue';
   import sheep from '@/sheep';
   import canvasPoster from './canvas-poster/index.vue';
   import { closeShareModal, showAuthModal } from '@/sheep/hooks/useModal';
 
   const show = computed(() => sheep.$store('modal').share);
+  const shareScene = computed(() => sheep.$store('modal').shareScene);
   const shareConfig = computed(() => sheep.$store('app').platform.share);
   const SharePosterRef = ref('');
 
@@ -107,6 +113,16 @@
     showPosterModal: false, // 海报弹窗
     guideImageError: false,
   });
+
+  watch(
+    () => [show.value, shareScene.value],
+    async ([visible, scene]) => {
+      if (!visible) return;
+      if (scene !== 'timeline') return;
+      await nextTick();
+      onShareByTimeline();
+    },
+  );
 
   // 操作 ②：生成海报分享
   const onShareByPoster = async () => {
@@ -166,16 +182,27 @@
     closeShareModal();
 
     // #ifdef MP-WEIXIN
-    // 微信小程序点击朋友圈时，直接调用生成海报逻辑
     if (!sheep.$store('user').isLogin) {
       showAuthModal();
       return;
     }
     uni.showLoading({ title: '生成中' });
     try {
-      state.showPosterModal = true;
       await nextTick();
-      await unref(SharePosterRef).getPoster();
+      const posterPath = await unref(SharePosterRef).getPoster();
+      const showImageMenu =
+        typeof wx !== 'undefined' && typeof wx.showShareImageMenu === 'function';
+      if (!posterPath || !showImageMenu) {
+        state.showPosterModal = true;
+        return;
+      }
+      await new Promise((resolve) => {
+        wx.showShareImageMenu({
+          path: posterPath,
+          success: () => resolve(true),
+          fail: () => resolve(false),
+        });
+      });
     } catch (e) {
       const msg = e?.message || '';
       sheep.$helper.toast(msg ? `海报生成失败：${msg}` : '海报生成失败，请重试');

@@ -626,7 +626,7 @@
   const advantageRows = [
     {
       title: '会员基础礼包',
-      desc: ['试用包邮', '推荐有礼', '会员费抵扣'],
+      desc: ['试用/包邮', '推荐有礼', '会员费抵扣'],
       backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shichiBg.png',
     },
 

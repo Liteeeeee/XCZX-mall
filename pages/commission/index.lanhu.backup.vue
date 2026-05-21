@@ -143,7 +143,7 @@
 
 <script setup>
   import { computed, reactive } from 'vue';
-  import { onShow, onReachBottom } from '@dcloudio/uni-app';
+  import { onShow, onReachBottom, onPullDownRefresh } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import { SharePageEnum } from '@/sheep/helper/const';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
@@ -260,13 +260,14 @@
       pageSize: state.pagination.pageSize,
     };
 
-    // 只调用 BrokerageApi.getBrokerageRecordPage
-    const res = await BrokerageApi.getBrokerageRecordPage({
-      ...baseParams,
-      // 根据不同的 tab 传递参数（如果有的话，通常业务上可能会根据 type 或 status 过滤）
-      // 这里如果接口不支持传类型，就只能拉全部或者依赖后端的筛选支持
-      // 假设暂时全拉取由后端返回的列表，前端再处理显示，或者如果接口支持传 bizType，可以在这里传
-    });
+    const queryParams = { ...baseParams };
+    if (state.currentTab === 1) {
+      queryParams.priceType = 1;
+    } else if (state.currentTab === 2) {
+      queryParams.priceType = 2;
+    }
+
+    const res = await BrokerageApi.getBrokerageRecordPage(queryParams);
 
     state.loading = false;
 
@@ -282,17 +283,7 @@
       originList.length < state.pagination.pageSize ||
       (hasTotal && state.pagination.pageNo * state.pagination.pageSize >= total);
 
-    let list = originList;
-
-    // 前端根据当前 tab 过滤数据 (假设 bizType: 1-收入, 2-提现/支出 等)
-    // 注意：如果分页是后端处理的，前端过滤会导致每一页数量不固定。
-    // 如果后端接口 getBrokerageRecordPage 支持传 bizType 参数，最好将过滤逻辑放在参数中。
-    // 假设记录中有 price 字段：正数为收入，负数为支出
-    if (state.currentTab === 1) {
-      list = list.filter((item) => item.price > 0);
-    } else if (state.currentTab === 2) {
-      list = list.filter((item) => item.price <= 0);
-    }
+    const list = originList;
 
     state.pagination.list = concat(
       state.pagination.list,
@@ -395,6 +386,16 @@
     resetPagination();
     await Promise.all([loadSummary(), loadTodayStatistics(), loadBrokerageUser()]);
     await loadList();
+  });
+
+  onPullDownRefresh(async () => {
+    try {
+      resetPagination();
+      await Promise.all([loadSummary(), loadTodayStatistics(), loadBrokerageUser()]);
+      await loadList();
+    } finally {
+      uni.stopPullDownRefresh();
+    }
   });
 
   onReachBottom(() => {

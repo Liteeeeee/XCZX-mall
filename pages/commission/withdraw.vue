@@ -291,6 +291,10 @@
       sheep.$helper.toast(`提现金额不得小于${actualMin}元`);
       return;
     }
+    if (price > maxPrice) {
+      sheep.$helper.toast('提现金额不得大于可提现余额');
+      return;
+    }
     if (price > actualMax) {
       sheep.$helper.toast(`提现金额不得大于${actualMax}元`);
       return;

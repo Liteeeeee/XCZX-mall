@@ -439,6 +439,7 @@
       shareInfo: props.shareInfo,
     });
     await withTimeout(renderPoster(), 35000, '海报生成超时');
+    return painterImageUrl.value;
   }
 
   defineExpose({

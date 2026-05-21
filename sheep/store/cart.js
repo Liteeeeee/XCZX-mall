@@ -2,6 +2,13 @@ import { defineStore } from 'pinia';
 import CartApi from '@/sheep/api/trade/cart';
 import user from './user';
 
+function isItemInStock(item) {
+  const spuStatus = Number(item?.spu?.status ?? 0);
+  const skuStock = Number(item?.sku?.stock ?? 0);
+  const spuStock = Number(item?.spu?.stock ?? 0);
+  return spuStatus === 1 && skuStock > 0 && spuStock > 0;
+}
+
 const cart = defineStore({
   id: 'cart',
   state: () => ({
@@ -31,7 +38,14 @@ const cart = defineStore({
         this.selectedIds = [];
         this.isAllSelected = true;
         this.totalPriceSelected = 0;
-        (this.editMode ? this.list : this.newList).forEach((item) => {
+        const currentList = this.editMode ? this.list : this.newList;
+        let hasSelectable = false;
+        currentList.forEach((item) => {
+          const selectable = this.editMode ? true : isItemInStock(item);
+          if (!selectable) {
+            return;
+          }
+          hasSelectable = true;
           if (item.selected) {
             this.selectedIds.push(item.id);
             this.totalPriceSelected += item.count * (item.sku?.price || 0);
@@ -39,6 +53,9 @@ const cart = defineStore({
             this.isAllSelected = false;
           }
         });
+        if (!hasSelectable) {
+          this.isAllSelected = false;
+        }
       }
     },
 
@@ -88,6 +105,11 @@ const cart = defineStore({
 
     // 单选购物车商品
     async selectSingle(goodsId) {
+      const item = this.list.find((it) => it.id === goodsId);
+      if (!item) return;
+      if (!this.editMode && !isItemInStock(item)) {
+        return;
+      }
       const { code } = await CartApi.updateCartSelected({
         ids: [goodsId],
         selected: !this.selectedIds.includes(goodsId), // 取反
@@ -99,8 +121,11 @@ const cart = defineStore({
 
     // 全选购物车商品
     async selectAll(flag) {
+      const ids = this.editMode
+        ? this.list.map((item) => item.id)
+        : this.newList.filter((it) => isItemInStock(it)).map((item) => item.id);
       const { code } = await CartApi.updateCartSelected({
-        ids: this.list.map((item) => item.id),
+        ids,
         selected: flag,
       });
       if (code === 0) {

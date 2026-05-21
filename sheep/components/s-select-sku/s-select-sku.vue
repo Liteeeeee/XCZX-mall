@@ -434,7 +434,6 @@
           color: #c6c6c6 !important;
           background: #f8f8f8 !important;
           border-color: #eeeeee !important;
-          opacity: 0.5;
         }
       }
     }

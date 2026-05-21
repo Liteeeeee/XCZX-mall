@@ -20,7 +20,7 @@
   });
   const value = computed(() => {
     if (!props.sku?.id) {
-      return '请选择商品规格';
+      return '默认';
     }
     let str = '';
     props.sku.properties.forEach((property) => {

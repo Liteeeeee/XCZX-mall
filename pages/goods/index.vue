@@ -95,7 +95,10 @@
         </view>
 
         <view class="detail-card ss-flex-col" v-if="state.goodsInfo?.skus?.length">
-          <detail-cell-sku :sku="state.selectedSku" @tap="state.showSelectSku = true" />
+          <detail-cell-sku
+            :sku="displaySku"
+            @tap="state.goodsInfo?.skus?.length > 1 && (state.showSelectSku = true)"
+          />
         </view>
 
         <s-select-sku
@@ -250,6 +253,23 @@
         </su-popup>
       </block>
 
+      <!-- #ifdef MP-WEIXIN -->
+      <button
+        v-if="!state.skeletonLoading && state.goodsInfo"
+        class="ss-reset-button share-timeline-btn"
+        @tap="onShareTimeline"
+      >
+        <image :src="sheep.$url.cdn('/mp/static/share/sharePyq.webp')" mode="aspectFill" />
+      </button>
+      <!-- <button
+        v-if="!state.skeletonLoading && state.goodsInfo"
+        class="ss-reset-button share-mini-btn"
+        open-type="share"
+      >
+        <image :src="sheep.$url.cdn('/mp/static/share/shareWechat.webp')" mode="aspectFill" />
+      </button> -->
+      <!-- #endif -->
+
       <!-- 返回顶部按钮 -->
       <view class="back-top-btn" v-if="state.showBackTop" @tap="onBackTop">
         <image :src="sheep.$url.static('/static/goods/top.webp')" mode="aspectFill" />
@@ -288,8 +308,14 @@
     });
   }
 
+  function onShareTimeline() {
+    showShareModal();
+  }
+
   import OrderApi from '@/sheep/api/trade/order';
   import { SharePageEnum } from '@/sheep/helper/const';
+  import { showShareModal } from '@/sheep/hooks/useModal';
+  import $share from '@/sheep/platform/share';
 
   const isLogin = computed(() => sheep.$store('user').isLogin);
   const userInfo = computed(() => sheep.$store('user').userInfo);
@@ -576,6 +602,9 @@
 
   onLoad((options) => {
     // 非法参数
+    if (options.spm) {
+      $share.decryptSpm(options.spm, { currentPath: SharePageEnum.GOODS.page });
+    }
     if (!options.id) {
       state.goodsInfo = null;
       state.skeletonLoading = false;
@@ -636,6 +665,46 @@
     image {
       width: 100%;
       height: 100%;
+    }
+  }
+
+  .share-mini-btn {
+    position: fixed;
+    right: 20rpx;
+    bottom: 290rpx;
+    z-index: 99;
+    width: 72rpx;
+    height: 72rpx;
+    border-radius: 50%;
+    background: #fffffa;
+    box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    image {
+      width: 44rpx;
+      height: 44rpx;
+    }
+  }
+
+  .share-timeline-btn {
+    position: fixed;
+    right: 20rpx;
+    bottom: 290rpx;
+    z-index: 99;
+    width: 72rpx;
+    height: 72rpx;
+    border-radius: 50%;
+    background: #fffffa;
+    box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.12);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    image {
+      width: 44rpx;
+      height: 44rpx;
     }
   }
 

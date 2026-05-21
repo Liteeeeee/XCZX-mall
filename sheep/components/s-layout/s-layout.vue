@@ -226,7 +226,7 @@
   onShareTimeline(() => {
     return {
       title: shareInfo.value.title,
-      query: shareInfo.value.query || '',
+      query: shareInfo.value.timelineQuery || shareInfo.value.query || '',
       imageUrl: shareInfo.value.image,
     };
   });

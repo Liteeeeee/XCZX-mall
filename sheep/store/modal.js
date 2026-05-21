@@ -5,6 +5,7 @@ const modal = defineStore({
   state: () => ({
     auth: '', // 授权弹框 accountLogin|smsLogin|resetPassword|changeMobile|changePassword|changeUsername
     share: false, // 分享弹框
+    shareScene: '',
     menu: false, // 快捷菜单弹框
     advHistory: [], // 广告弹框记录
     lastTimer: {

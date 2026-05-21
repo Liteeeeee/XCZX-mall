@@ -48,9 +48,10 @@ export function closeAuthModal() {
 }
 
 // 打开分享弹框
-export function showShareModal() {
+export function showShareModal(scene = '') {
   $store('modal').$patch((state) => {
     state.share = true;
+    state.shareScene = scene || '';
   });
 }
 
@@ -58,6 +59,7 @@ export function showShareModal() {
 export function closeShareModal() {
   $store('modal').$patch((state) => {
     state.share = false;
+    state.shareScene = '';
   });
 }
 
