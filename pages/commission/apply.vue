@@ -497,7 +497,7 @@
     try {
       const wechatProvider = sheep.$platform.useProvider('wechat');
       if (wechatProvider?.getOpenid) {
-        additionalInfo.openId = (await wechatProvider.getOpenid()) || '';
+        additionalInfo.openId = (await wechatProvider.getOpenid(true)) || '';
       } else {
         additionalInfo.openId = '';
       }

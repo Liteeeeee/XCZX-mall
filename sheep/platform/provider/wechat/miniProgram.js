@@ -108,6 +108,19 @@ function setOpenid(openid) {
 // 获得 openid
 async function getOpenid(force = false) {
   let openid = uni.getStorageSync('openid');
+  if (force) {
+    try {
+      const codeResult = await uni.login();
+      if (codeResult.errMsg === 'login:ok') {
+        const bindResult = await SocialApi.socialBind(socialType, codeResult.code, 'default');
+        if (bindResult.code === 0 && bindResult.data) {
+          openid = bindResult.data;
+          setOpenid(openid);
+          return openid;
+        }
+      }
+    } catch (e) {}
+  }
   if (!openid && force) {
     const info = await getInfo();
     if (info && info.openid) {

@@ -322,7 +322,7 @@
           showCancel: false,
         });
       }
-      openid = await wechatProvider.getOpenid();
+      openid = await wechatProvider.getOpenid(true);
 
       const realName = String(state.accountInfo.userName || '').trim();
       if (!realName) {
