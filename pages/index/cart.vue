@@ -50,7 +50,10 @@
             @tap="onTapRecommend(item)"
           >
             <image class="recommend-img" :src="getRecommendPicUrl(item)" mode="aspectFill" />
-            <text class="recommend-name ss-line-1">{{ getRecommendName(item) }}</text>
+            <text class="recommend-name">{{ getRecommendName(item) }}</text>
+            <text class="recommend-subtitle" v-if="getRecommendIntro(item)">{{
+              getRecommendIntro(item)
+            }}</text>
             <view class="recommend-bottom ss-flex ss-row-between ss-col-center">
               <view class="recommend-price">
                 <text class="recommend-price-unit">¥</text>
@@ -172,7 +175,10 @@
             @tap="onTapRecommend(item)"
           >
             <image class="recommend-img" :src="getRecommendPicUrl(item)" mode="aspectFill" />
-            <text class="recommend-name ss-line-1">{{ getRecommendName(item) }}</text>
+            <text class="recommend-name">{{ getRecommendName(item) }}</text>
+            <text class="recommend-subtitle" v-if="getRecommendIntro(item)">{{
+              getRecommendIntro(item)
+            }}</text>
             <view class="recommend-bottom ss-flex ss-row-between ss-col-center">
               <view class="recommend-price">
                 <text class="recommend-price-unit">¥</text>
@@ -393,7 +399,20 @@
   }
 
   function getRecommendName(item) {
-    return item?.name || item?.spuName || item?.title || '';
+    const raw = item?.name || item?.spuName || item?.title || '';
+    const text = typeof raw === 'string' ? raw : String(raw || '');
+    return text.length > 13 ? text.slice(0, 13) + '...' : text;
+  }
+
+  function getRecommendIntro(item) {
+    return (
+      item?.introduction ||
+      item?.spuIntroduction ||
+      item?.desc ||
+      item?.description ||
+      item?.subTitle ||
+      ''
+    );
   }
 
   function getRecommendPriceFen(item) {
@@ -1161,34 +1180,54 @@
   }
 
   .recommend-card {
-    background-color: rgba(255, 255, 250, 1);
-    border-radius: 10rpx;
-    padding-bottom: 19rpx;
+    background-color: #fffffa;
+    border-radius: 10px;
+    padding-bottom: 27rpx;
     width: 331rpx;
     margin-bottom: 20rpx;
   }
 
   .recommend-img {
-    border-radius: 10rpx 10rpx 0 0;
+    border-radius: 10px 10px 0px 0px;
     width: 331rpx;
     height: 331rpx;
   }
 
   .recommend-name {
+    width: 302rpx;
+    min-height: 33rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     overflow-wrap: break-word;
     color: rgba(0, 0, 0, 1);
-    font-size: 28rpx;
-    font-family: PingFangSC-Regular;
+    font-size: 24rpx;
     font-weight: normal;
     text-align: left;
-    white-space: nowrap;
-    line-height: 40rpx;
-    margin: 19rpx 27rpx 0 24rpx;
+    line-height: 33rpx;
+    margin: 11rpx 14rpx 0 15rpx;
+  }
+
+  .recommend-subtitle {
+    width: 302rpx;
+    min-height: 66rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    font-size: 24rpx;
+    color: #9d9c96;
+    margin: 11rpx 14rpx 0 15rpx;
+    line-height: 33rpx;
   }
 
   .recommend-bottom {
-    width: 284rpx;
-    margin: 22rpx 23rpx 0 24rpx;
+    width: 100%;
+    margin: 4rpx 0 0;
+    padding: 0 14rpx 0 20rpx;
+    box-sizing: border-box;
   }
 
   .recommend-price {
@@ -1200,9 +1239,11 @@
 
   .recommend-price-unit {
     color: rgba(245, 63, 63, 1);
-    font-size: 28rpx;
+    font-size: 28rpx !important;
     font-family: DINAlternate-Bold;
     font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
     line-height: 32rpx;
   }
 
@@ -1211,13 +1252,16 @@
     font-size: 40rpx;
     font-family: DINAlternate-Bold;
     font-weight: 700;
+    text-align: left;
+    white-space: nowrap;
     line-height: 32rpx;
   }
 
   .recommend-sold {
+    flex-shrink: 0;
+    overflow-wrap: break-word;
     color: rgba(157, 156, 150, 1);
-    font-size: 24rpx;
-    font-family: PingFangSC-Regular;
+    font-size: 22rpx;
     font-weight: normal;
     text-align: left;
     white-space: nowrap;
