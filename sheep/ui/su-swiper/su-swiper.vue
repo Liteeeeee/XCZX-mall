@@ -44,7 +44,12 @@
         </swiper-item>
       </swiper>
       <template v-if="!state.videoPlaySataus">
-        <view class="ui-swiper-dot" :class="props.dotStyle" v-if="props.dotStyle != 'tag'">
+        <view class="ui-swiper-dot" :class="props.dotStyle" v-if="props.dotStyle === 'progress'">
+          <view class="progress-track">
+            <view class="progress-bar" :style="{ width: progressWidth }"></view>
+          </view>
+        </view>
+        <view class="ui-swiper-dot" :class="props.dotStyle" v-else-if="props.dotStyle != 'tag'">
           <view
             class="line-box"
             v-for="(item, index) in props.list"
@@ -223,6 +228,13 @@
   };
   //
 
+  const progressWidth = computed(() => {
+    const total = Array.isArray(props.list) ? props.list.length : 0;
+    if (total <= 0) return '0%';
+    const percent = ((state.cur + 1) / total) * 100;
+    return `${Math.max(0, Math.min(100, percent))}%`;
+  });
+
   // swiper-item 的位置发生改变时会触发 transition
   const transition = (e) => {
     // #ifdef APP-PLUS
@@ -363,6 +375,26 @@
         position: absolute;
         bottom: 20rpx;
         right: 20rpx;
+      }
+
+      &.progress {
+        height: 4rpx;
+        left: 50%;
+        transform: translateX(-50%);
+
+        .progress-track {
+          width: 200rpx;
+          height: 4rpx;
+          border-radius: 80rpx;
+          background: rgba(204, 204, 204, 0.4);
+          overflow: hidden;
+        }
+
+        .progress-bar {
+          height: 4rpx;
+          border-radius: 80rpx;
+          background: #fffffa;
+        }
       }
     }
 

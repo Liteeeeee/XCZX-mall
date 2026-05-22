@@ -11,7 +11,8 @@
 			"aliasPath": "/",
 			"style": {
 				"navigationBarTitleText": "首页",
-				"enablePullDownRefresh": true
+				"enablePullDownRefresh": false,
+				"disableScroll": true
 			},
 			"meta": {
 				"auth": false,

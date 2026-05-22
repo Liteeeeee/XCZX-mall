@@ -2,14 +2,14 @@
 <template>
   <su-swiper
     :list="imgList"
-    :dotStyle="data.indicator === 'dot' ? 'long' : 'tag'"
-    imageMode="scaleToFill"
+    :dotStyle="swiperDotStyle"
+    :imageMode="swiperImageMode"
     dotCur="bg-mask-40"
-    :seizeHeight="300"
+    :seizeHeight="swiperHeight"
     :autoplay="data.autoplay"
     :interval="data.interval * 1000"
     :mode="data.type"
-    :height="px2rpx(data.height)"
+    :height="swiperHeight"
   />
 </template>
 
@@ -34,6 +34,30 @@
     let scale = uni.upx2px(100) / 100;
     return px / scale;
   }
+
+  const swiperHeight = computed(() => {
+    if (props.data?.fullScreen) {
+      const device = sheep.$platform?.device || {};
+      const win = Number(device.windowHeight);
+      const screen = Number(device.screenHeight);
+      const navbar = Number(sheep.$platform?.navbar);
+
+      let h =
+        Number.isFinite(win) && win > 0 ? win : Number(uni.getSystemInfoSync().windowHeight) || 667;
+      if (Number.isFinite(navbar) && navbar > 0) h += navbar;
+      if (Number.isFinite(screen) && screen > 0) h = Math.min(h, screen);
+
+      return px2rpx(h);
+    }
+    return px2rpx(props.data?.height || 300);
+  });
+
+  const swiperDotStyle = computed(() => {
+    if (props.data?.fullScreen) return 'progress';
+    return props.data?.indicator === 'dot' ? 'long' : 'tag';
+  });
+
+  const swiperImageMode = computed(() => (props.data?.fullScreen ? 'aspectFill' : 'scaleToFill'));
 
   const imgList = computed(() =>
     props.data.items.map((item) => {

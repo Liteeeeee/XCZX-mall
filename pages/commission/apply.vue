@@ -422,23 +422,16 @@
 
   function requestApplySubscribeMessage() {
     return new Promise((resolve) => {
+      // #ifdef MP-WEIXIN
       if (APPLY_SUBSCRIBE_TEMPLATE_ID && typeof uni?.requestSubscribeMessage === 'function') {
         uni.requestSubscribeMessage({
           tmplIds: [APPLY_SUBSCRIBE_TEMPLATE_ID],
-          success: () => resolve(),
-          fail: () => resolve(),
+          success: (res) => resolve(res),
+          fail: (err) => resolve(err),
         });
         return;
       }
-      if (typeof uni?.showModal === 'function') {
-        uni.showModal({
-          content: '你的微信版本过低，请更新至最新版本。',
-          showCancel: false,
-          success: () => resolve(),
-          fail: () => resolve(),
-        });
-        return;
-      }
+      // #endif
       resolve();
     });
   }
@@ -494,6 +487,7 @@
     const additionalInfo = {
       reason: state.reason,
     };
+    await requestApplySubscribeMessage();
     try {
       const wechatProvider = sheep.$platform.useProvider('wechat');
       if (wechatProvider?.getOpenid) {
@@ -507,7 +501,6 @@
     if (Array.isArray(state.images) && state.images.length > 0) {
       additionalInfo.qualificationImages = state.images.map(extractKey).filter(Boolean);
     }
-    await requestApplySubscribeMessage();
     uni.getLocation({
       type: 'gcj02',
       success: (res) => {

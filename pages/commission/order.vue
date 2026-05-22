@@ -85,7 +85,9 @@
               />
               <view class="group_26 flex-col">
                 <view class="text-group_2 flex-col">
-                  <text class="text_7 ss-ellipsis-1">{{ item._spuName || item.title || '' }}</text>
+                  <text class="text_7 ss-ellipsis-1">{{
+                    truncateTitle(item._spuName || item.title || '')
+                  }}</text>
                   <text class="text_8"
                     >下单时间：{{ formatDateTime(item._orderCreateTime || item.createTime) }}</text
                   >
@@ -116,7 +118,7 @@
                   mode="aspectFill"
                 />
                 <view class="group_26 flex-col">
-                  <text class="text_7 ss-ellipsis-1">{{ goods.spuName || '' }}</text>
+                  <text class="text_7 ss-ellipsis-1">{{ truncateTitle(goods.spuName || '') }}</text>
                   <text class="text_8">商品原价：¥{{ fen2yuan(goods.originalPrice) }}</text>
                   <text class="text_8">实付金额：¥{{ fen2yuan(goods.payPrice) }}</text>
                   <view class="order-meta flex-row justify-between">
@@ -169,6 +171,11 @@
   import BrokerageApi from '@/sheep/api/trade/brokerage';
   import commissionAuth from './components/commission-auth.vue';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
+
+  function truncateTitle(text) {
+    const raw = typeof text === 'string' ? text : String(text || '');
+    return raw.length > 13 ? raw.slice(0, 13) + '...' : raw;
+  }
 
   const state = reactive({
     currentTab: 0,

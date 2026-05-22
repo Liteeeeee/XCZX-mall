@@ -9,35 +9,59 @@
       :navbarStyle="homeNavbarStyle"
       onShareAppMessage
     >
-      <!-- 首页自定义导航左侧 -->
-      <template #navbarLeft>
-        <view class="navbar-left-box ss-flex ss-row-left ss-col-center">
-          <image class="logo" :src="sheep.$url.static('/static/log.webp')" mode="aspectFit"></image>
-        </view>
-      </template>
-      <view class="home-content">
-        <s-block
-          v-for="(item, index) in template.components"
-          :key="index"
-          :styles="item.property.style"
-        >
+      <view class="home-content" :style="{ height: pageHeightPx + 'px' }">
+        <s-block v-for="(item, index) in homeComponents" :key="index" :styles="item.property.style">
           <s-block-item :type="item.id" :data="item.property" :styles="item.property.style" />
         </s-block>
-
-        <image
-          v-show="showDownGuide"
-          class="down-guide"
-          :src="sheep.$url.static('/static/down.gif')"
-          mode="aspectFit"
-        ></image>
+      </view>
+      <view v-if="showHomeStickyPanel" class="home-sticky-panel">
+        <view
+          class="home-sticky-top"
+          :style="{ backgroundImage: `url(${stickyLongBgUrl})` }"
+          @tap="onTapHomeMember"
+        >
+          <view class="home-sticky-top-left">
+            <image class="home-sticky-top-left-icon" :src="stickyMemberIconUrl" mode="aspectFit" />
+            <text class="home-sticky-top-left-text">成为仙草会员，尊享会员权益</text>
+          </view>
+          <image class="home-sticky-top-right-icon" :src="stickyGroupIconUrl" mode="aspectFit" />
+        </view>
+        <view class="home-sticky-bottom">
+          <view
+            class="home-sticky-bottom-item"
+            :style="{ backgroundImage: `url(${stickyShortBgUrl})` }"
+            @tap="onTapHomeBrandStory"
+          >
+            <view class="home-sticky-bottom-left">
+              <text class="home-sticky-bottom-title">仙草品牌</text>
+              <text class="home-sticky-bottom-subtitle">以本草匠心滋养</text>
+            </view>
+            <image
+              class="home-sticky-bottom-right-icon"
+              :src="stickyBrandIconUrl"
+              mode="aspectFit"
+            />
+          </view>
+          <view
+            class="home-sticky-bottom-item"
+            :style="{ backgroundImage: `url(${stickyShortBgUrl})` }"
+            @tap="onTapHomeCategory"
+          >
+            <view class="home-sticky-bottom-left">
+              <text class="home-sticky-bottom-title">仙草甄品</text>
+              <text class="home-sticky-bottom-subtitle">仙草甄选产品</text>
+            </view>
+            <image class="home-sticky-bottom-right-icon" :src="stickyIconUrl" mode="aspectFit" />
+          </view>
+        </view>
       </view>
     </s-layout>
   </view>
 </template>
 
 <script setup>
-  import { computed, ref } from 'vue';
-  import { onLoad, onShow, onPageScroll, onPullDownRefresh } from '@dcloudio/uni-app';
+  import { computed } from 'vue';
+  import { onLoad, onShow } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import $share from '@/sheep/platform/share';
   // 隐藏原生tabBar
@@ -52,11 +76,87 @@
       nav.bgColor && nav.bgColor !== 'transparent' ? nav.bgColor : 'rgba(248, 249, 243, 1.0)';
     return {
       ...nav,
-      styleType: 'normal',
+      styleType: 'inner',
       bgColor,
     };
   });
-  const showDownGuide = ref(true);
+
+  const pageHeightPx = computed(() => {
+    const device = sheep.$platform?.device || {};
+    const win = Number(device.windowHeight);
+    const screen = Number(device.screenHeight);
+    const navbar = Number(sheep.$platform?.navbar);
+
+    let h =
+      Number.isFinite(win) && win > 0 ? win : Number(uni.getSystemInfoSync().windowHeight) || 667;
+    if (homeNavbarStyle.value?.styleType === 'inner' && Number.isFinite(navbar) && navbar > 0)
+      h += navbar;
+    if (Number.isFinite(screen) && screen > 0) h = Math.min(h, screen);
+
+    return h;
+  });
+
+  const homeComponents = computed(() => {
+    const list = template.value?.components || [];
+    if (!Array.isArray(list)) return [];
+    return list.map((item, index) => {
+      if (index !== 0 || item?.id !== 'Carousel') return item;
+      const style = item?.property?.style || {};
+      return {
+        ...item,
+        property: {
+          ...item.property,
+          style: {
+            ...style,
+            marginTop: 0,
+            marginBottom: 0,
+            marginLeft: 0,
+            marginRight: 0,
+            paddingTop: 0,
+            paddingRight: 0,
+            paddingBottom: 0,
+            paddingLeft: 0,
+            borderTopLeftRadius: 0,
+            borderTopRightRadius: 0,
+            borderBottomRightRadius: 0,
+            borderBottomLeftRadius: 0,
+          },
+          fullScreen: true,
+          height: pageHeightPx.value,
+        },
+      };
+    });
+  });
+
+  const showHomeStickyPanel = computed(() => {
+    const first = homeComponents.value?.[0];
+    return first?.id === 'Carousel' && !!first?.property?.fullScreen;
+  });
+
+  const stickyLongBgUrl = computed(() => sheep.$url.cdn('/mp/static/version2Index/长框@2x.webp'));
+  const stickyShortBgUrl = computed(() => sheep.$url.cdn('/mp/static/version2Index/短框@2x.webp'));
+  const stickyMemberIconUrl = computed(() =>
+    sheep.$url.cdn('/mp/static/version2Index/会员@2x.webp'),
+  );
+  const stickyGroupIconUrl = computed(() =>
+    sheep.$url.cdn('/mp/static/version2Index/编组@2x.webp'),
+  );
+  const stickyBrandIconUrl = computed(() =>
+    sheep.$url.cdn('/mp/static/version2Index/品牌图标@2x.webp'),
+  );
+  const stickyIconUrl = computed(() => sheep.$url.cdn('/mp/static/version2Index/产品图标@2x.webp'));
+
+  function onTapHomeBrandStory() {
+    sheep.$router.go('/pages/index/story');
+  }
+
+  function onTapHomeMember() {
+    sheep.$router.go('/pages/index/member');
+  }
+
+  function onTapHomeCategory() {
+    sheep.$router.go('/pages/index/category');
+  }
 
   // 在此处拦截改变一下首页轮播图 此处先写死后期复活 放到启动函数里
   // (async function() {
@@ -158,60 +258,13 @@
       }
     }
     // #endif
-
-    // 首次进入上滑引导逻辑
-    const hasShownSwipeUp = uni.getStorageSync('hasShownSwipeUpGuide');
-    if (!hasShownSwipeUp) {
-      // 标记为已展示
-      uni.setStorageSync('hasShownSwipeUpGuide', true);
-      // 页面渲染完成后，延迟一会儿进行滑动
-      setTimeout(() => {
-        // 1. 缓慢向下滑动一段距离（比如200像素），耗时400ms
-        uni.pageScrollTo({
-          scrollTop: 200,
-          duration: 400,
-          success: () => {
-            // 2. 停顿一会儿(200ms)后，再缓慢滑回到顶部，耗时400ms
-            setTimeout(() => {
-              uni.pageScrollTo({
-                scrollTop: 0,
-                duration: 400,
-              });
-            }, 200);
-          },
-        });
-      }, 800);
-    }
-  });
-
-  // 下拉刷新
-  onPullDownRefresh(() => {
-    sheep.$store('app').init();
-    setTimeout(function () {
-      uni.stopPullDownRefresh();
-    }, 800);
-  });
-
-  onPageScroll((e) => {
-    // 根据滚动距离判断是否展示下拉引导动图
-    showDownGuide.value = e.scrollTop < 50;
   });
 </script>
 
 <style lang="scss" scoped>
   .home-content {
     position: relative;
-  }
-
-  .down-guide {
-    position: absolute;
-    top: calc(1282rpx - 170rpx);
-    left: 50%;
-    transform: translateX(-50%);
-    width: 110rpx;
-    height: 110rpx;
-    z-index: 20;
-    pointer-events: none; /* 防止遮挡用户点击事件 */
+    overflow: hidden;
   }
 
   .navbar-left-box {
@@ -231,24 +284,109 @@
     }
   }
 
-  // 强制首页的轮播图容器高度
-  :deep(.ui-swiper) {
-    height: 1282rpx !important; // 你可以调整这个容器的高度
-    swiper {
-      height: 1282rpx !important;
-    }
-    .swiper-image {
-      // 关键：保持原图比例，多出部分被裁剪，不会拉伸变形
-      object-fit: cover !important;
-    }
+  .home-sticky-panel {
+    width: 100%;
+    height: 292rpx;
+    padding: 0 32rpx 58rpx;
+    box-sizing: border-box;
+    position: fixed;
+    left: 0;
+    bottom: 142rpx;
+    z-index: 15;
+    display: flex;
+    flex-direction: column;
   }
 
-  :deep(.ui-swiper .ui-swiper-dot) {
+  .home-sticky-top {
+    width: 100%;
+    height: 90rpx;
+    margin-bottom: 24rpx;
+    padding: 0 24rpx;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+  }
+
+  .home-sticky-top-left {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .home-sticky-top-left-icon {
+    width: 42rpx;
+    height: 36rpx;
+  }
+
+  .home-sticky-top-left-text {
+    font-size: 28rpx;
+    color: #ffffff;
+    margin-left: 12rpx;
+  }
+
+  .home-sticky-top-right-icon {
+    width: 120rpx;
+    height: 44rpx;
+  }
+
+  .home-sticky-bottom {
+    width: 100%;
+    height: 120rpx;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .home-sticky-bottom-item {
+    width: 49%;
+    height: 120rpx;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    padding: 0 24rpx;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .home-sticky-bottom-left {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .home-sticky-bottom-title {
+    font-size: 28rpx;
+    color: #ffffff;
+    line-height: 1.2;
+  }
+
+  .home-sticky-bottom-subtitle {
+    margin-top: 8rpx;
+    font-size: 22rpx;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.2;
+  }
+
+  .home-sticky-bottom-right-icon {
+    width: 78rpx;
+    height: 78rpx;
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot.progress) {
+    position: fixed;
     left: 50%;
     right: auto;
     transform: translateX(-50%);
     justify-content: center;
-    bottom: 36rpx;
+    bottom: 470rpx;
+    z-index: 20;
   }
 
   :deep(.ui-swiper .ui-swiper-dot.default .line-box),
