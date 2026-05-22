@@ -82,7 +82,13 @@
         <!-- 商品分类（右） -->
         <view class="goods-list-box" v-if="state.categoryList?.length">
           <scroll-view scroll-y>
-            <image v-if="bannerPicUrl" class="banner-img" :src="bannerPicUrl" mode="widthFix" />
+            <image
+              v-if="bannerPicUrl"
+              class="banner-img"
+              :src="bannerPicUrl"
+              mode="widthFix"
+              @tap="onPreviewBanner"
+            />
             <view class="group_60 flex-row">
               <view class="section_26 flex-col"></view>
               <text class="text_27">{{ state.categoryList[state.activeMenu]?.name || '' }}</text>
@@ -112,6 +118,24 @@
         </view>
       </view>
     </view>
+    <su-popup
+      :show="state.showBannerPreviewVideo"
+      type="center"
+      round="10"
+      showClose
+      backgroundColor="transparent"
+      @close="closeBannerPreviewVideo"
+    >
+      <view class="banner-preview-video-wrap">
+        <video
+          class="banner-preview-video"
+          :src="state.bannerPreviewVideoUrl"
+          controls
+          autoplay
+          object-fit="contain"
+        />
+      </view>
+    </su-popup>
   </s-layout>
 </template>
 
@@ -141,6 +165,8 @@
     loadStatus: '',
     keyword: '',
     bannerPicUrl: '',
+    showBannerPreviewVideo: false,
+    bannerPreviewVideoUrl: '',
   });
 
   const bannerPicUrl = computed(() => {
@@ -261,6 +287,31 @@
       banner?.imgUrl ||
       banner?.bannerUrl ||
       '';
+  }
+
+  function isVideoUrl(url) {
+    const raw = typeof url === 'string' ? url : '';
+    if (!raw) return false;
+    return /\.(mp4|mov|m4v|avi|m3u8|webm)(\?.*)?$/i.test(raw);
+  }
+
+  function closeBannerPreviewVideo() {
+    state.showBannerPreviewVideo = false;
+    state.bannerPreviewVideoUrl = '';
+  }
+
+  function onPreviewBanner() {
+    const url = bannerPicUrl.value;
+    if (!url) return;
+    if (isVideoUrl(url)) {
+      state.bannerPreviewVideoUrl = url;
+      state.showBannerPreviewVideo = true;
+      return;
+    }
+    uni.previewImage({
+      urls: [url],
+      current: url,
+    });
   }
 </script>
 
@@ -435,5 +486,17 @@
         border-radius: 5px;
       }
     }
+  }
+
+  .banner-preview-video-wrap {
+    width: 650rpx;
+    background: rgba(0, 0, 0, 0.85);
+    border-radius: 10rpx;
+    overflow: hidden;
+  }
+
+  .banner-preview-video {
+    width: 650rpx;
+    height: 720rpx;
   }
 </style>

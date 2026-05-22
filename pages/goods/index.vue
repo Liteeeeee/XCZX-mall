@@ -38,22 +38,21 @@
               <view class="ss-flex ss-col-bottom">
                 <view class="price-unit">￥</view>
                 <view class="price-value count-font">{{
-                  fen2yuan(displaySku.price || state.goodsInfo.price)
+                  fen2yuan((displaySku.price || state.goodsInfo.price) * vipDiscount)
                 }}</view>
+                <image
+                  class="vip-price-icon"
+                  :src="sheep.$url.cdn('/mp/static/vipPrice.png')"
+                  mode="aspectFit"
+                />
                 <!-- 会员价标签 -->
-                <view class="group_51 ss-flex ss-row-between ss-col-center">
-                  <text class="text_66"
-                    >¥{{
-                      fen2yuan((displaySku.price || state.goodsInfo.price) * vipDiscount)
-                    }}</text
-                  >
-                  <view class="text-wrapper_21 ss-flex-col ss-row-center ss-col-center">
-                    <text class="text_67">会员价</text>
-                  </view>
-                </view>
+                <view class="group_51 ss-flex ss-row-between ss-col-center"> </view>
               </view>
-              <view class="sales-text">
-                {{ formatSales('exact', state.goodsInfo.salesCount) }}
+              <view class="sales-row ss-flex ss-col-center">
+                <text class="origin-price-text">原价￥{{ originPriceText }}</text>
+                <view class="sales-text">
+                  ｜ {{ formatSales('exact', state.goodsInfo.salesCount) }}
+                </view>
               </view>
             </view>
             <view class="banner-right ss-flex-col ss-col-end ss-row-between">
@@ -315,7 +314,6 @@
   import OrderApi from '@/sheep/api/trade/order';
   import { SharePageEnum } from '@/sheep/helper/const';
   import { showShareModal } from '@/sheep/hooks/useModal';
-  import $share from '@/sheep/platform/share';
 
   const isLogin = computed(() => sheep.$store('user').isLogin);
   const userInfo = computed(() => sheep.$store('user').userInfo);
@@ -387,6 +385,18 @@
     if (state.selectedSku?.id) return state.selectedSku;
     if (state.settlementSku?.id) return state.settlementSku;
     return {};
+  });
+
+  const originPriceText = computed(() => {
+    const raw = displaySku.value?.price ?? state.goodsInfo?.price ?? state.goodsInfo?.marketPrice;
+    const n = Number(raw);
+    if (!Number.isFinite(n)) return '';
+    if (n % 100 === 0) return String(n / 100);
+    if (n % 10 === 0 && n >= 100) return String(n / 10);
+    if (n > 0 && n < 1000 && n % 1 === 0) return String(n);
+    const text = fen2yuan(n);
+    const parts = String(text).split('.');
+    return parts[0] || text;
   });
 
   function onSkuChange(sku) {
@@ -602,9 +612,6 @@
 
   onLoad((options) => {
     // 非法参数
-    if (options.spm) {
-      $share.decryptSpm(options.spm, { currentPath: SharePageEnum.GOODS.page });
-    }
     if (!options.id) {
       state.goodsInfo = null;
       state.skeletonLoading = false;
@@ -755,6 +762,11 @@
         font-family: OPPOSANS;
       }
 
+      .vip-price-icon {
+        width: 56rpx;
+        height: 62rpx;
+      }
+
       .group_51 {
         background-color: rgba(251, 233, 192, 1);
         border-radius: 8rpx;
@@ -799,7 +811,18 @@
 
       .sales-text {
         font-size: 24rpx;
+      }
+
+      .sales-row {
         margin-top: 4rpx;
+        gap: 12rpx;
+      }
+
+      .origin-price-text {
+        color: #ffffff;
+        font-size: 24rpx;
+        line-height: 24rpx;
+        white-space: nowrap;
       }
     }
 
@@ -899,7 +922,7 @@
 
   // 功能单元格
   .info-cell {
-    border-bottom: 2rpx solid #f5f5f5;
+    border-bottom: 1rpx solid #f5f5f5;
 
     &:last-child {
       border-bottom: none;
