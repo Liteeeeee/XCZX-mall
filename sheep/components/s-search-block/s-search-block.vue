@@ -50,7 +50,7 @@
         <view
           class="ss-m-r-16"
           :style="[{ color: data.textColor }]"
-          @tap.stop="sheep.$router.go('/pages/goods/list', { keyword: item })"
+          @tap.stop="sheep.$router.go('/pages/index/category', { keyword: item })"
         >
           {{ item }}
         </view>
@@ -156,7 +156,7 @@
 
   function onSearch(e) {
     if (e.value) {
-      sheep.$router.go('/pages/goods/list', { keyword: e.value });
+      sheep.$router.go('/pages/index/category', { keyword: e.value });
       setTimeout(() => {
         state.searchVal = '';
       }, 100);

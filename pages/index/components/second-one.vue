@@ -113,7 +113,7 @@
       sheep.$router.go('/pages/goods/index', { id: item.id });
       return;
     }
-    sheep.$router.go('/pages/goods/list', { categoryId: item.id });
+    sheep.$router.go('/pages/index/category', { categoryId: item.id });
   };
 
   async function onAddCart(item) {

@@ -317,7 +317,7 @@
     showWeWorkQr: false,
   });
 
-  const WEWORK_QR_CDN_PATH = '/mp/static/企业微信QR.jpg';
+  const WEWORK_QR_CDN_PATH = '/mp/static/二维码@2x.webp';
   const weWorkQrUrl = computed(() =>
     WEWORK_QR_CDN_PATH ? sheep.$url.cdn(WEWORK_QR_CDN_PATH) : '',
   );

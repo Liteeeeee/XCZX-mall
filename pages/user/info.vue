@@ -59,7 +59,7 @@
               :class="{ 'has-value': state.model.nickname }"
               v-model="state.model.nickname"
               type="nickname"
-              placeholder="未填写"
+              placeholder="请设置昵称"
               placeholder-class="placeholder-text"
             />
             <text class="_icon-forward ss-m-l-10 arrow-icon"></text>
@@ -187,6 +187,21 @@
     return mobile.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
   };
 
+  const DEFAULT_NICKNAMES = ['微信用户', '默认用户'];
+
+  const isDefaultNickname = (name) => {
+    const n = (name || '').trim();
+    if (!n) return true;
+    if (DEFAULT_NICKNAMES.includes(n)) return true;
+    if (/^用户\d{4,}$/.test(n)) return true;
+    return false;
+  };
+
+  const getNicknameTipKey = () => {
+    const userId = userInfo.value?.id || '';
+    return `user_info_nickname_tip_shown_${userId}`;
+  };
+
   // 格式化生日
   const formatBirthday = (date) => {
     if (!date) return '';
@@ -274,9 +289,25 @@
 
   // 保存信息
   async function onSubmit() {
+    const nickname = (state.model.nickname || '').trim();
+    const hasShownTip = uni.getStorageSync(getNicknameTipKey());
+    if (isDefaultNickname(nickname) && !hasShownTip) {
+      const res = await new Promise((resolve) => {
+        uni.showModal({
+          title: '提示',
+          content: '为了更好地为您提供会员服务，建议您设置昵称。',
+          confirmText: '去填写',
+          cancelText: '暂不设置',
+          success: resolve,
+        });
+      });
+      uni.setStorageSync(getNicknameTipKey(), true);
+      if (res.confirm) return;
+    }
+
     const { code } = await UserApi.updateUser({
       avatar: state.model.avatar,
-      nickname: state.model.nickname,
+      nickname,
       sex: state.model.sex,
       birthday: state.model.birthday ? new Date(state.model.birthday).getTime() : 0,
     });
@@ -312,6 +343,9 @@
     // 将获取到的时间戳转换为 YYYY-MM-DD 字符串，供 picker 使用
     if (userInfo.birthday) {
       state.model.birthday = sheep.$helper.timeFormat(userInfo.birthday, 'yyyy-mm-dd');
+    }
+    if (isDefaultNickname(state.model.nickname)) {
+      state.model.nickname = '';
     }
 
     // 获取微信绑定状态

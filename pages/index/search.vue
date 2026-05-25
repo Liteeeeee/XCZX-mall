@@ -46,7 +46,7 @@
     }
     saveSearchHistory(keyword);
     // 前往商品列表（带搜索条件）
-    sheep.$router.go('/pages/goods/list', { keyword });
+    sheep.$router.go('/pages/index/category', { keyword });
   }
 
   // 保存搜索历史

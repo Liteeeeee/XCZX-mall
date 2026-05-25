@@ -15,7 +15,7 @@
       :icon="sheep.$url.static('/static/soldout-empty.webp')"
       showAction
       actionText="再逛逛"
-      actionUrl="/pages/goods/list"
+      actionUrl="/pages/index/category"
     />
     <block v-else>
       <view class="detail-swiper-selector">
