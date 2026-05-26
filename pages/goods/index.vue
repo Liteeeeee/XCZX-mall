@@ -542,7 +542,7 @@
     if (isEmpty(state.goodsInfo)) return {};
     return sheep.$platform.share.getShareInfo(
       {
-        title: state.goodsInfo.name,
+        title: '时节更替，此款正当时，愿您顺时安康，诚邀品鉴。',
         image: sheep.$url.cdn(state.goodsInfo.picUrl),
         desc: state.goodsInfo.introduction,
         params: {

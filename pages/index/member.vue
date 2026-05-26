@@ -291,7 +291,7 @@
   const shareInfo = computed(() => {
     return sheep.$platform.share.getShareInfo(
       {
-        title: '加入会员，开启专属权益',
+        title: '您的好友已加入仙草会员，特为您预留同等礼遇。',
         desc: '更多优惠等你来领',
         image: sheep.$url.cdn('/mp/static/sharePage.png'),
         params: {

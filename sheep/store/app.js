@@ -126,7 +126,7 @@ const app = defineStore({
               groupon_bg: '/static/img/shop/config/groupon-poster-bg.webp',
             },
             forwardInfo: {
-              title: '',
+              title: '以食疗之本，养当代之身。您的好友邀您体验道地好物。',
               image: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/首页分享.jpg',
               desc: '',
             },
