@@ -334,6 +334,18 @@
     );
   });
 
+  const normalizeTimestamp = (value) => {
+    const n = Number(value);
+    if (!n) return 0;
+    return n < 1e12 ? n * 1000 : n;
+  };
+
+  const isAfterSaleExpired = computed(() => {
+    const finishTime = normalizeTimestamp(state.orderInfo.finishTime);
+    if (!finishTime) return false;
+    return state.now.diff(dayjs(finishTime), 'day', true) > 7;
+  });
+
   let timer = null;
 
   // 格式化订单状态的描述
@@ -540,7 +552,9 @@
 
   function canApplyAfterSale(item) {
     return (
-      [10, 20, 30].includes(Number(state.orderInfo.status)) && Number(item?.afterSaleStatus) === 0
+      !isAfterSaleExpired.value &&
+      [10, 20, 30].includes(Number(state.orderInfo.status)) &&
+      Number(item?.afterSaleStatus) === 0
     );
   }
 
