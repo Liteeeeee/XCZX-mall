@@ -733,6 +733,11 @@
     font-weight: normal;
     text-align: left;
     line-height: 40rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
 
   .text-wrapper_7 {

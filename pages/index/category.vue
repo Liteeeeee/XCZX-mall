@@ -35,7 +35,7 @@
     <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
 
     <view class="s-category">
-      <!-- <view class="search-wrap">
+      <view class="search-wrap">
         <view class="search-inner ss-flex ss-col-center">
           <uni-icons
             type="search"
@@ -53,7 +53,7 @@
             @confirm="onSearch"
           />
         </view>
-      </view> -->
+      </view>
       <view class="three-level-wrap ss-flex ss-col-top">
         <!-- 商品分类（左） -->
         <view class="side-menu-wrap">
