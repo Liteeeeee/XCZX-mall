@@ -92,6 +92,7 @@
     commentItems: [],
     commentList: [],
     id: null,
+    submitLocked: false,
   });
 
   /**
@@ -110,6 +111,14 @@
    * @returns {Promise<void>}
    */
   async function onSubmit() {
+    if (state.submitLocked) {
+      return;
+    }
+    state.submitLocked = true;
+    setTimeout(() => {
+      state.submitLocked = false;
+    }, 2000);
+
     if (state.commentList.length === 0) {
       sheep.$helper.toast('暂无可评价商品');
       return;

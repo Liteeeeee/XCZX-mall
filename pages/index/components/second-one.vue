@@ -164,7 +164,7 @@
   }
 
   .paragraph_1 {
-    width: 256rpx;
+    width: 236rpx;
     min-height: 66rpx;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -285,7 +285,7 @@
     font-size: 24rpx;
     color: #9d9c96;
     margin: 11rpx 14rpx 0 15rpx;
-    width: 256rpx;
+    width: 236rpx;
     min-height: 66rpx;
     overflow: hidden;
     text-overflow: ellipsis;

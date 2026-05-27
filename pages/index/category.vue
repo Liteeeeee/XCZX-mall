@@ -35,7 +35,7 @@
     <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
 
     <view class="s-category">
-      <view class="search-wrap">
+      <view class="search-wrap" :style="{ top: sheep.$platform.navbar + 'px' }">
         <view class="search-inner ss-flex ss-col-center">
           <uni-icons
             type="search"
@@ -81,7 +81,12 @@
         </view>
         <!-- 商品分类（右） -->
         <view class="goods-list-box" v-if="state.categoryList?.length">
-          <scroll-view scroll-y>
+          <scroll-view
+            scroll-y
+            :style="[{ height: menuScrollHeight + 'px' }]"
+            :lower-threshold="50"
+            @scrolltolower="loadMore"
+          >
             <image
               v-if="bannerPicUrl"
               class="banner-img"
@@ -110,9 +115,8 @@
               "
               :status="state.loadStatus"
               :content-text="{
-                contentdown: '点击查看更多',
+                contentdown: '上滑查看更多',
               }"
-              @tap="loadMore"
             />
           </scroll-view>
         </view>
@@ -145,7 +149,7 @@
   import CategoryApi from '@/sheep/api/product/category';
   import BannerApi from '@/sheep/api/promotion/banner';
   import SpuApi from '@/sheep/api/product/spu';
-  import { onShow } from '@dcloudio/uni-app';
+  import { onReachBottom, onShow } from '@dcloudio/uni-app';
   import { computed, reactive } from 'vue';
   import { concat } from 'lodash-es';
   import { handleTree } from '@/sheep/helper/utils';
@@ -233,6 +237,12 @@
     state.pagination.pageNo++;
     getGoodsList();
   }
+
+  onReachBottom(() => {
+    if (state.style === 'first_one' || state.style === 'first_two') {
+      loadMore();
+    }
+  });
   function initMenuIndex() {
     const appStore = sheep.$store('app');
     // 处理 tabbar 传参的情况
@@ -370,6 +380,9 @@
     }
 
     .search-wrap {
+      position: sticky;
+      z-index: 1001;
+      top: 0;
       margin: 22rpx 32rpx 18rpx 32rpx;
       background: rgba(157, 156, 150, 0.1);
       border-radius: 20rpx;

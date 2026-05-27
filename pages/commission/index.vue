@@ -788,11 +788,6 @@
   }
 
   .profit-tag {
-    background-color: rgba(255, 247, 245, 1);
-    border-radius: 10rpx;
-    border: 2rpx solid rgba(252, 231, 224, 1);
-    padding-left: 25rpx;
-    padding-right: 25rpx;
   }
 
   .text_18 {

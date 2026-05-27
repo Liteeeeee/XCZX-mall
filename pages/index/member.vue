@@ -148,18 +148,6 @@
         <view style="height: 130rpx; width: 100%"></view>
       </view>
     </view>
-    <su-popup
-      :show="state.showWeWorkQr"
-      type="center"
-      round="10"
-      showClose
-      backgroundColor="transparent"
-      @close="state.showWeWorkQr = false"
-    >
-      <view class="wework-qr-popup">
-        <image class="wework-qr-img" :src="weWorkQrUrl" mode="aspectFit" @tap="previewWeWorkQr" />
-      </view>
-    </su-popup>
   </s-layout>
 </template>
 
@@ -314,25 +302,10 @@
     rightsUnlockedLevelId: null,
     hasAutoLocated: false,
     hasUserInteracted: false,
-    showWeWorkQr: false,
   });
 
-  const WEWORK_QR_CDN_PATH = '/mp/static/二维码@2x.webp';
-  const weWorkQrUrl = computed(() =>
-    WEWORK_QR_CDN_PATH ? sheep.$url.cdn(WEWORK_QR_CDN_PATH) : '',
-  );
-
   function openWeWorkQr() {
-    if (!weWorkQrUrl.value) {
-      sheep.$helper.toast('请先配置企业微信二维码');
-      return;
-    }
-    state.showWeWorkQr = true;
-  }
-
-  function previewWeWorkQr() {
-    if (!weWorkQrUrl.value) return;
-    uni.previewImage({ urls: [weWorkQrUrl.value], current: weWorkQrUrl.value });
+    sheep.$router.go('/pages/index/customerService');
   }
 
   // 获取装修模板，用于导航栏样式
@@ -723,19 +696,6 @@
     width: 100% !important;
     height: 480rpx !important;
     margin: 0 0 !important; // 确保没有水平外边距
-  }
-
-  .wework-qr-popup {
-    width: 560rpx;
-    padding: 24rpx;
-    box-sizing: border-box;
-    background: #ffffff;
-    border-radius: 10rpx;
-  }
-
-  .wework-qr-img {
-    width: 100%;
-    height: 560rpx;
   }
 
   .swiper-item-inner {

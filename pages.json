@@ -109,6 +109,18 @@
 			}
 		},
 		{
+			"path": "pages/index/customerService",
+			"style": {
+				"navigationBarTitleText": "专属客服"
+			},
+			"meta": {
+				"auth": false,
+				"sync": true,
+				"title": "专属客服",
+				"group": "用户中心"
+			}
+		},
+		{
 			"path": "pages/index/privacyPolicy",
 			"style": {
 				"navigationBarTitleText": "隐私协议"
