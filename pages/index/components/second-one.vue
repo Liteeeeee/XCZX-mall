@@ -211,8 +211,8 @@
   }
 
   .vip-price-icon {
-    width: 56rpx;
-    height: 30rpx;
+    width: 46rpx;
+    height: 22rpx;
     margin-left: 0rpx;
   }
 
