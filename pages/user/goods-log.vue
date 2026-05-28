@@ -104,11 +104,12 @@
     </view>
     <uni-load-more
       v-if="state.pagination.total > 0"
+      :auto="true"
       :status="state.loadStatus"
       :content-text="{
         contentdown: '上拉加载更多',
       }"
-      @tap="loadMore"
+      @clickLoadMore="loadMore"
     />
     <s-empty
       v-if="state.pagination.total === 0"

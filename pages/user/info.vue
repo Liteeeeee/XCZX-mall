@@ -305,12 +305,14 @@
       if (res.confirm) return;
     }
 
-    const { code } = await UserApi.updateUser({
+    const payload = {
       avatar: state.model.avatar,
-      nickname,
       sex: state.model.sex,
       birthday: state.model.birthday ? new Date(state.model.birthday).getTime() : 0,
-    });
+    };
+    if (nickname) payload.nickname = nickname;
+
+    const { code } = await UserApi.updateUser(payload);
     if (code === 0) {
       uni.showToast({
         title: '保存成功',

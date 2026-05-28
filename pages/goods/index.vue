@@ -46,7 +46,6 @@
                   mode="aspectFit"
                 />
                 <!-- 会员价标签 -->
-                <view class="group_51 ss-flex ss-row-between ss-col-center"> </view>
               </view>
               <view class="sales-row ss-flex ss-col-center">
                 <text class="origin-price-text">原价￥{{ originPriceText }}</text>
@@ -821,7 +820,6 @@
       .origin-price-text {
         color: #ffffff;
         font-size: 24rpx;
-        line-height: 24rpx;
         white-space: nowrap;
       }
     }

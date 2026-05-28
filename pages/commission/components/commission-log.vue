@@ -44,9 +44,10 @@
       <!-- 加载更多 -->
       <uni-load-more
         v-if="state.pagination.total > 0"
+        :auto="true"
         :status="state.loadStatus"
         color="#333333"
-        @tap="loadmore"
+        @clickLoadMore="loadmore"
       />
     </scroll-view>
   </view>

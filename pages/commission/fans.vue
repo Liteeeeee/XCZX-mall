@@ -53,7 +53,7 @@
           <view class="fan-row flex-row" v-for="item in state.pagination.list" :key="item._key">
             <image class="avatar" :src="sheep.$url.avatar(item.avatar)" mode="aspectFill" />
             <view class="fan-text flex-col">
-              <text class="text_6">{{ item.nickname }}</text>
+              <text class="text_6">{{ formatNickname(item.nickname) }}</text>
               <text class="text_7">{{ formatDateTime(item.bindUserTime) }}</text>
             </view>
           </view>
@@ -63,8 +63,10 @@
           >
           <uni-load-more
             v-if="state.pagination.total > 0"
+            :auto="true"
             :status="state.loadStatus"
             :content-text="{ contentdown: '上拉加载更多' }"
+            @clickLoadMore="loadMore"
           />
         </view>
       </view>
@@ -104,6 +106,12 @@
     const d = sheep.$helper.timeFormat(t, 'yyyy.mm.dd');
     const h = sheep.$helper.timeFormat(t, 'hh:MM');
     return `${d}   ${h}`;
+  }
+
+  function formatNickname(name) {
+    const n = String(name || '').trim();
+    if (n.length <= 12) return n;
+    return `${n.slice(0, 12)}...`;
   }
 
   function resetPagination() {
@@ -154,11 +162,15 @@
     loadList();
   });
 
-  onReachBottom(() => {
+  function loadMore() {
     if (state.loadStatus === 'noMore') return;
     if (state.loading) return;
     state.pagination.pageNo += 1;
     loadList();
+  }
+
+  onReachBottom(() => {
+    loadMore();
   });
 </script>
 

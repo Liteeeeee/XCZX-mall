@@ -32,7 +32,7 @@
         <view class="info-content" @tap="onUserClick">
           <view class="nickname-row ss-flex ss-col-center ss-m-b-8">
             <view class="nickname" :class="{ 'unlogin-nickname': !isLogin }">
-              {{ isLogin ? userInfo.nickname || '未设置昵称' : '登录/注册' }}
+              {{ isLogin ? formatNickname(userInfo.nickname) : '登录/注册' }}
             </view>
           </view>
           <view v-if="!isLogin" class="unlogin-prompt" style="color: #666; font-size: 26rpx">
@@ -249,6 +249,13 @@
   const formatMobile = (mobile) => {
     if (!mobile) return '';
     return mobile.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+  };
+
+  const formatNickname = (nickname) => {
+    const n = String(nickname || '').trim();
+    const name = n || '未设置昵称';
+    if (name.length <= 8) return name;
+    return `${name.slice(0, 8)}...`;
   };
 
   // 点击卡片

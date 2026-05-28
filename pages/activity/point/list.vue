@@ -7,6 +7,8 @@
       scroll-y="true"
       :scroll-with-animation="false"
       :enable-back-to-top="true"
+      lower-threshold="80"
+      @scrolltolower="loadMore"
     >
       <s-point-card ref="sPointCardRef" class="ss-p-x-20 ss-m-t-20" />
       <s-empty
@@ -16,11 +18,12 @@
       ></s-empty>
       <uni-load-more
         v-if="activityTotal > 0"
+        :auto="true"
         :status="loadStatus"
         :content-text="{
           contentdown: '上拉加载更多',
         }"
-        @tap="loadMore"
+        @clickLoadMore="loadMore"
       />
     </scroll-view>
   </s-layout>

@@ -133,8 +133,10 @@
 
         <uni-load-more
           v-if="state.pagination.list.length > 0"
+          :auto="true"
           :status="state.loadStatus"
           :content-text="{ contentdown: '上拉加载更多' }"
+          @clickLoadMore="loadMore"
         />
       </view>
     </view>
@@ -398,11 +400,15 @@
     }
   });
 
-  onReachBottom(() => {
+  function loadMore() {
     if (state.loadStatus === 'noMore') return;
     if (state.loading) return;
     state.pagination.pageNo += 1;
     loadList();
+  }
+
+  onReachBottom(() => {
+    loadMore();
   });
 </script>
 

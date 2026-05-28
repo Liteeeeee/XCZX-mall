@@ -162,10 +162,12 @@
 
     <uni-load-more
       v-if="state.pagination.total > 0"
+      :auto="true"
       :status="state.loadStatus"
       :content-text="{
         contentdown: '上拉加载更多',
       }"
+      @clickLoadMore="loadMore"
     />
 
     <!-- 转余额弹框 -->
@@ -383,12 +385,16 @@
     getAgentInfo();
   });
 
-  onReachBottom(() => {
+  function loadMore() {
     if (state.loadStatus === 'noMore') {
       return;
     }
     state.pagination.pageNo++;
     getLogList();
+  }
+
+  onReachBottom(() => {
+    loadMore();
   });
 </script>
 

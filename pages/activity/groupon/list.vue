@@ -26,6 +26,8 @@
         scroll-y="true"
         :scroll-with-animation="false"
         :enable-back-to-top="true"
+        lower-threshold="80"
+        @scrolltolower="loadMore"
       >
         <view class="goods-box ss-m-b-20" v-for="item in state.pagination.list" :key="item.id">
           <s-goods-column
@@ -42,11 +44,12 @@
         </view>
         <uni-load-more
           v-if="state.pagination.total > 0"
+          :auto="true"
           :status="state.loadStatus"
           :content-text="{
             contentdown: '上拉加载更多',
           }"
-          @tap="loadMore"
+          @clickLoadMore="loadMore"
         />
       </scroll-view>
     </view>
