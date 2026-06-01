@@ -390,12 +390,9 @@
     const raw = displaySku.value?.price ?? state.goodsInfo?.price ?? state.goodsInfo?.marketPrice;
     const n = Number(raw);
     if (!Number.isFinite(n)) return '';
-    if (n % 100 === 0) return String(n / 100);
-    if (n % 10 === 0 && n >= 100) return String(n / 10);
-    if (n > 0 && n < 1000 && n % 1 === 0) return String(n);
     const text = fen2yuan(n);
-    const parts = String(text).split('.');
-    return parts[0] || text;
+    const s = String(text);
+    return s.replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1');
   });
 
   function onSkuChange(sku) {

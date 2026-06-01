@@ -370,10 +370,18 @@ const extractEntryParams = (options = {}) => {
     }
     params[key] = options[key];
   });
-  const scene = options.scene || params.scene;
-  if (scene) {
-    Object.assign(params, parseSceneParams(scene));
+  const scenes = [];
+  if (typeof params.scene === 'string' && params.scene) {
+    scenes.push(params.scene);
   }
+  if (typeof options.scene === 'string' && options.scene) {
+    scenes.push(options.scene);
+  }
+  scenes.forEach((scene) => {
+    if (scene.includes('=') || scene.includes('&') || scene.includes('%3D') || scene.includes('%26')) {
+      Object.assign(params, parseSceneParams(scene));
+    }
+  });
   return params;
 };
 

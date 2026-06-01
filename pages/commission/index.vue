@@ -45,7 +45,7 @@
         <view class="box_28 flex-row">
           <image class="group_5 flex-col" :src="avatarUrl" mode="aspectFill" />
           <view class="text-group_2 flex-col">
-            <text class="text_2">{{ userInfo?.nickname || '' }}</text>
+            <text class="text_2">{{ formatNickname(userInfo?.nickname) }}</text>
             <text class="text_3">{{ maskedMobile }}</text>
           </view>
           <!-- #ifdef MP-WEIXIN -->
@@ -178,6 +178,12 @@
   import { showShareModal } from '@/sheep/hooks/useModal';
   import SpuApi from '@/sheep/api/product/spu';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
+
+  function formatNickname(name) {
+    const n = String(name || '').trim();
+    if (n.length <= 8) return n;
+    return `${n.slice(0, 8)}...`;
+  }
   import commissionAuth from './components/commission-auth.vue';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import { SharePageEnum } from '@/sheep/helper/const';
