@@ -304,13 +304,16 @@
     }
     // 循环获取活动商品SPU详情并添加到spuList
     for (const activity of list) {
-      state.spuList.push(await getSpuDetail(activity.spuId));
+      const spu = await getSpuDetail(activity.spuId);
+      if (spu) {
+        state.spuList.push(spu);
+      }
     }
 
     // 循环活动列表
     list.forEach((activity) => {
       // 查找对应的 spu 并更新价格
-      const spu = state.spuList.find((spu) => activity.spuId === spu.id);
+      const spu = state.spuList.find((spu) => spu && activity.spuId === spu.id);
       if (spu) {
         spu.pointStock = activity.stock;
         spu.pointTotalStock = activity.totalStock;

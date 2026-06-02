@@ -71,6 +71,7 @@
       平台合伙人: '/mp/static/myPageIcon/平台合伙人@2x.png',
       申请合伙人: '/mp/static/myPageIcon/平台合伙人@2x.png',
       我的设置: '/mp/static/myPageIcon/我的设置@2x.png',
+      积分商城: '/mp/static/积分商城@2x.png',
     };
     if (iconMap[item.name]) {
       return sheep.$url.cdn(iconMap[item.name]);
@@ -79,6 +80,10 @@
   };
 
   const onItemClick = async (item) => {
+    if (item.name === '积分商城') {
+      sheep.$router.go('/pages/activity/point/list');
+      return;
+    }
     if (item.name === '我的设置') {
       sheep.$router.go('/pages/user/info');
       return;

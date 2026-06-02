@@ -28,9 +28,7 @@
           </view>
           <text class="all-num">{{ userInfo.point || 0 }}</text>
         </view>
-        <!-- <view class="use-btn ss-flex ss-row-center ss-col-center" @tap="sheep.$router.go('/pages/goods/index')">
-          去使用
-        </view> -->
+        <view class="use-btn ss-flex ss-row-center ss-col-center" @tap="onGoPointMall">积分商城</view>
       </view>
     </view>
     <!-- tab -->
@@ -203,6 +201,10 @@
     if (state.loading) return;
     state.pagination.pageNo++;
     getLogList();
+  }
+
+  function onGoPointMall() {
+    sheep.$router.go('/pages/activity/point/list');
   }
 
   onReachBottom(() => {

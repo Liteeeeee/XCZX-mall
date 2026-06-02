@@ -820,6 +820,29 @@
                     "title": "积分商城",
                     "group": "营销活动"
                   }
+                },
+                {
+                  "path": "point/coupon",
+                  "style": {
+                    "navigationBarTitleText": "优惠券兑换"
+                  },
+                  "meta": {
+                    "sync": true,
+                    "title": "优惠券兑换",
+                    "group": "营销活动"
+                  }
+                },
+                {
+                  "path": "point/coupon-record",
+                  "style": {
+                    "navigationBarTitleText": "兑换记录"
+                  },
+                  "meta": {
+                    "auth": true,
+                    "sync": true,
+                    "title": "兑换记录",
+                    "group": "营销活动"
+                  }
                 }
 			]
 		}

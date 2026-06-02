@@ -66,12 +66,7 @@
               @tap="onMenu(index)"
             >
               <view class="menu-icon-wrap">
-                <image
-                  class="menu-icon"
-                  :class="{ 'menu-icon-muted': index !== state.activeMenu }"
-                  :src="sheep.$url.cdn(item.picUrl)"
-                  mode="aspectFit"
-                />
+                <image class="menu-icon" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFit" />
               </view>
               <view class="menu-title ss-line-2">
                 {{ item.name }}
@@ -432,8 +427,8 @@
           transition: all linear 0.2s;
 
           .menu-icon-wrap {
-            width: 52rpx;
-            height: 52rpx;
+            width: 98rpx;
+            height: 98rpx;
             position: relative;
             border-radius: 8rpx;
             overflow: hidden;
@@ -442,11 +437,6 @@
           .menu-icon {
             width: 100%;
             height: 100%;
-          }
-
-          .menu-icon-muted {
-            filter: grayscale(100%) brightness(82%);
-            opacity: 0.82;
           }
 
           .menu-title {
