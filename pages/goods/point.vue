@@ -21,7 +21,7 @@
       <view class="detail-swiper-selector">
         <!-- 商品图轮播 -->
         <su-swiper
-          class="ss-m-b-14"
+          class="swiper"
           isPreview
           :list="state.goodsSwiper"
           dotStyle="tag"
@@ -30,30 +30,46 @@
           :seizeHeight="750"
         />
 
-        <!-- 价格+标题 -->
+        <view
+          class="discount-banner"
+          :style="{
+            backgroundImage: 'url(' + sheep.$url.static('/static/goods/moneyBg.png') + ')',
+          }"
+        >
+          <view class="banner-left ss-flex-col ss-row-between">
+            <view class="ss-flex ss-col-bottom">
+              <view class="price-value count-font">{{ getShowPrice.point }}</view>
+              <view class="price-unit">积分</view>
+              <view
+                v-if="getShowPrice.price && getShowPrice.price !== '0'"
+                class="cash-plus count-font"
+                >+¥{{ getShowPrice.price }}</view
+              >
+            </view>
+            <view class="sales-row ss-flex ss-col-center">
+              <text v-if="state.goodsInfo.marketPrice" class="origin-price-text"
+                >原价￥{{
+                  fen2yuan(state.selectedSku.marketPrice || state.goodsInfo.marketPrice)
+                }}</text
+              >
+              <view class="sales-text">
+                <text v-if="state.goodsInfo.marketPrice">｜ </text>剩余{{ state.goodsInfo.stock }}
+              </view>
+            </view>
+          </view>
+          <view class="banner-right ss-flex-col ss-col-end ss-row-between">
+            <view class="brand-name">仙草甄选</view>
+            <view class="brand-desc">药食同源·品质保障</view>
+          </view>
+        </view>
+
+        <!-- 标题 -->
         <view class="title-card detail-card ss-p-y-40 ss-p-x-20">
-          <view class="ss-flex ss-row-between ss-col-center ss-m-b-18">
-            <view class="price-box ss-flex ss-col-bottom">
-              <image
-                :src="sheep.$url.static('/static/img/shop/goods/score1.svg')"
-                class="point-img"
-              ></image>
-              <text class="point-text ss-m-r-16">
-                {{ getShowPrice.point }}
-                {{
-                  !getShowPrice.price || getShowPrice.price === 0 ? '' : `+￥${getShowPrice.price}`
-                }}
-              </text>
-            </view>
-            <view class="sales-text">
-              {{ formatExchange(state.goodsInfo.sales_show_type, state.goodsInfo.sales) }}
-            </view>
-          </view>
-          <view class="origin-price-text ss-m-b-60" v-if="state.goodsInfo.marketPrice">
-            原价：￥{{ fen2yuan(state.selectedSku.marketPrice || state.goodsInfo.marketPrice) }}
-          </view>
           <view class="title-text ss-line-2 ss-m-b-6">{{ state.goodsInfo.name || '' }}</view>
-          <view class="subtitle-text ss-line-1">{{ state.goodsInfo.introduction }}</view>
+          <view class="subtitle-row">
+            <view v-if="isMemberOnly" class="member-tag">会员专属</view>
+            <view class="subtitle-text ss-line-1">{{ state.goodsInfo.introduction }}</view>
+          </view>
         </view>
 
         <!-- 功能卡片 -->
@@ -76,42 +92,16 @@
       <!-- 详情 -->
       <detail-content-card class="detail-content-selector" :content="state.goodsInfo.description" />
 
-      <!-- 详情tabbar -->
-      <detail-tabbar v-model="state.goodsInfo">
-        <view class="buy-box ss-flex ss-col-center ss-p-r-20">
-          <button
-            class="ss-reset-button origin-price-btn ss-flex-col"
-            v-if="state.goodsInfo.marketPrice"
-            @tap="sheep.$router.go('/pages/goods/index', { id: state.goodsInfo.id })"
-          >
-            <view>
-              <view class="btn-price">{{ fen2yuan(state.goodsInfo.marketPrice) }}</view>
-              <view>原价购买</view>
-            </view>
-          </button>
-          <button
-            class="ss-reset-button btn-box ss-flex-col"
-            @tap="state.showSelectSku = true"
-            :class="state.goodsInfo.stock != 0 ? 'check-btn-box' : 'disabled-btn-box'"
-            :disabled="state.goodsInfo.stock === 0"
-          >
-            <view class="price-box ss-flex">
-              <image
-                :src="sheep.$url.static('/static/img/shop/goods/score1.svg')"
-                style="width: 36rpx; height: 36rpx; margin: 0 4rpx"
-              ></image>
-              <text class="point-text ss-m-r-16">
-                {{ getShowPrice.point }}
-                {{
-                  !getShowPrice.price || getShowPrice.price === 0 ? '' : `+￥${getShowPrice.price}`
-                }}
-              </text>
-            </view>
-            <view v-if="state.goodsInfo.stock === 0">已售罄</view>
-            <view v-else>立即兑换</view>
-          </button>
-        </view>
-      </detail-tabbar>
+      <view class="point-sticky">
+        <button
+          class="ss-reset-button exchange-btn"
+          @tap="state.showSelectSku = true"
+          :disabled="state.goodsInfo.stock === 0"
+        >
+          <text v-if="state.goodsInfo.stock === 0">已售罄</text>
+          <text v-else>立即兑换</text>
+        </button>
+      </view>
     </block>
   </s-layout>
 </template>
@@ -121,10 +111,9 @@
   import { onLoad, onPageScroll } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import { isEmpty } from 'lodash-es';
-  import { fen2yuan, formatExchange, formatGoodsSwiper } from '@/sheep/hooks/useGoods';
+  import { fen2yuan, formatGoodsSwiper } from '@/sheep/hooks/useGoods';
   import detailNavbar from './components/detail/detail-navbar.vue';
   import detailCellSku from './components/detail/detail-cell-sku.vue';
-  import detailTabbar from './components/detail/detail-tabbar.vue';
   import detailSkeleton from './components/detail/detail-skeleton.vue';
   import detailCommentCard from './components/detail/detail-comment-card.vue';
   import detailContentCard from './components/detail/detail-content-card.vue';
@@ -132,9 +121,6 @@
   import { PromotionActivityTypeEnum, SharePageEnum } from '@/sheep/helper/const';
   import PointApi from '@/sheep/api/promotion/point';
 
-  const headerBg = sheep.$url.css('/static/img/shop/goods/score-bg.webp');
-  const btnBg = sheep.$url.css('/static/img/shop/goods/seckill-btn.webp');
-  const disabledBtnBg = sheep.$url.css('/static/img/shop/goods/activity-btn-disabled.webp');
   const seckillBg = sheep.$url.css('/static/img/shop/goods/seckill-tip-bg.webp');
   const grouponBg = sheep.$url.css('/static/img/shop/goods/groupon-tip-bg.webp');
 
@@ -196,6 +182,18 @@
   });
 
   const activity = ref();
+
+  const isMemberOnly = computed(() => {
+    const a = unref(activity);
+    const v =
+      a?.memberOnly ??
+      a?.isMemberOnly ??
+      a?.member_only ??
+      a?.vipOnly ??
+      a?.onlyMember ??
+      a?.memberExclusive;
+    return v === true || v === 1 || v === '1';
+  });
 
   const getShowPrice = computed(() => {
     if (!isEmpty(state.selectedSku)) {
@@ -270,10 +268,6 @@
 </script>
 
 <style lang="scss" scoped>
-  .disabled-btn-box[disabled] {
-    background-color: transparent;
-  }
-
   .detail-card {
     background-color: $white;
     margin: 14rpx 20rpx;
@@ -281,14 +275,85 @@
     overflow: hidden;
   }
 
+  .swiper {
+    margin-bottom: 0;
+  }
+
+  .discount-banner {
+    width: 100%;
+    height: 152rpx;
+    box-sizing: border-box;
+    background-size: 100% 100%;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 30rpx;
+    color: #fff;
+    margin: 0 0 14rpx 0;
+
+    .banner-left {
+      justify-content: center;
+
+      .price-unit {
+        font-size: 28rpx;
+        margin: 0 0 10rpx 8rpx;
+        opacity: 0.9;
+      }
+
+      .price-value {
+        font-size: 56rpx;
+        font-weight: bold;
+        font-family: OPPOSANS;
+      }
+
+      .cash-plus {
+        font-size: 32rpx;
+        font-weight: bold;
+        font-family: OPPOSANS;
+        margin: 0 0 10rpx 8rpx;
+      }
+
+      .sales-text {
+        font-size: 24rpx;
+      }
+
+      .sales-row {
+        margin-top: 4rpx;
+        gap: 12rpx;
+      }
+
+      .origin-price-text {
+        color: #ffffff;
+        font-size: 24rpx;
+        white-space: nowrap;
+      }
+    }
+
+    .banner-right {
+      justify-content: space-between;
+      padding: 21rpx;
+
+      .brand-name {
+        font-size: 40rpx;
+        font-weight: bold;
+        text-align: right;
+      }
+
+      .brand-desc {
+        font-size: 24rpx;
+        opacity: 0.8;
+        text-align: right;
+        margin-top: 4rpx;
+      }
+    }
+  }
+
   // 价格标题卡片
   .title-card {
     width: 710rpx;
     box-sizing: border-box;
-    background-size: 100% 100%;
     border-radius: 10rpx;
-    background-image: v-bind(headerBg);
-    background-repeat: no-repeat;
+    background: #ffffff;
 
     .price-box {
       .point-img {
@@ -365,65 +430,56 @@
       font-weight: 400;
       color: $dark-9;
       line-height: 42rpx;
+      flex: 1;
+      min-width: 0;
     }
   }
 
-  // 购买
-  .buy-box {
-    .check-btn-box {
-      width: 248rpx;
-      height: 80rpx;
-      font-size: 24rpx;
-      font-weight: 600;
-      margin-left: -36rpx;
-      background-image: v-bind(btnBg);
-      background-repeat: no-repeat;
-      background-size: 100% 100%;
-      color: #ffffff;
-      line-height: normal;
-      border-radius: 0px 40rpx 40rpx 0px;
-    }
+  .subtitle-row {
+    display: flex;
+    align-items: center;
+    gap: 12rpx;
+  }
 
-    .disabled-btn-box {
-      width: 248rpx;
-      height: 80rpx;
-      font-size: 24rpx;
-      font-weight: 600;
-      margin-left: -36rpx;
-      background-image: v-bind(disabledBtnBg);
-      background-repeat: no-repeat;
-      background-size: 100% 100%;
-      color: #999999;
-      line-height: normal;
-      border-radius: 0px 40rpx 40rpx 0px;
-    }
+  .member-tag {
+    width: 109rpx;
+    height: 30rpx;
+    background: linear-gradient(90deg, #ae806a 0%, #31221d 100%);
+    border-radius: 4rpx;
+    color: #fff2d9;
+    font-size: 22rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    line-height: 30rpx;
+  }
 
-    .btn-price {
-      font-family: OPPOSANS;
+  .point-sticky {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    padding: 24rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+    background: #fff;
+    box-shadow: 0px -6px 10px 0px rgba(51, 51, 51, 0.08);
+  }
 
-      &::before {
-        content: '￥';
-      }
-    }
+  .exchange-btn {
+    width: 100%;
+    height: 88rpx;
+    border-radius: 44rpx;
+    background: #1e3f1c;
+    color: #fff;
+    font-size: 30rpx;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-    .origin-price-btn {
-      width: 236rpx;
-      height: 80rpx;
-      background: rgba(#ff5651, 0.1);
-      color: #ff6000;
-      border-radius: 40rpx 0px 0px 40rpx;
-      line-height: normal;
-      font-size: 24rpx;
-      font-weight: 500;
-
-      .no-original {
-        font-size: 28rpx;
-      }
-
-      .btn-title {
-        font-size: 28rpx;
-      }
-    }
+  .exchange-btn[disabled] {
+    background: #cfd7cf;
+    color: #ffffff;
   }
 
   //秒杀卡片

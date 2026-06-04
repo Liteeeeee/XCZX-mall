@@ -7,7 +7,10 @@
         :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
       >
         <view class="nav-inner ss-flex ss-col-center">
-          <view class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20" @tap="sheep.$router.back()">
+          <view
+            class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20"
+            @tap="sheep.$router.back()"
+          >
             <text class="sicon-back"></text>
           </view>
           <view class="title">优惠券兑换</view>
@@ -22,15 +25,32 @@
       text="兑换配置不存在"
     />
     <view v-else class="content">
-      <view class="card">
-        <view class="amount">{{ formatCouponAmount(state.detail) }}</view>
-        <view class="name">{{ state.detail.couponTemplateName || state.detail.name }}</view>
-        <view class="desc ss-m-t-10">{{ state.detail.couponTemplateDescription || '' }}</view>
-        <view class="point-row ss-m-t-30">
-          <text class="point-num">{{ state.detail.point }}</text>
-          <text class="point-unit">积分</text>
+      <view class="exchange-card">
+        <view class="exchange-main ss-flex-col ss-col-center">
+          <image class="coupon-icon" :src="couponIcon" mode="aspectFit" />
+          <view class="exchange-name ss-line-1">
+            {{ state.detail.couponTemplateName || state.detail.name }}
+          </view>
+          <view class="exchange-valid">领券当日起始{{ validDays }}天内有效</view>
+        </view>
+        <view class="exchange-meta ss-flex ss-row-between ss-col-center">
+          <view class="exchange-point">
+            <text class="point-num">{{ state.detail.point }}</text>
+            <text class="point-unit">积分</text>
+          </view>
+          <view class="exchange-stock">剩余{{ remainText }}份</view>
         </view>
       </view>
+
+      <view class="notice-card">
+        <view class="notice-title">兑换须知</view>
+        <view class="notice-list">
+          <view v-for="(line, idx) in noticeLines" :key="idx" class="notice-item">{{ line }}</view>
+        </view>
+      </view>
+    </view>
+
+    <view v-if="state.detail" class="footer">
       <button class="ss-reset-button exchange-btn" @tap="onExchange">立即兑换</button>
     </view>
   </s-layout>
@@ -39,7 +59,7 @@
 <script setup>
   import sheep from '@/sheep';
   import { onLoad } from '@dcloudio/uni-app';
-  import { reactive } from 'vue';
+  import { computed, reactive } from 'vue';
   import PointCouponExchangeApi from '@/sheep/api/promotion/pointCouponExchange';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
 
@@ -47,6 +67,87 @@
     id: undefined,
     loading: true,
     detail: null,
+  });
+
+  const couponIcon = sheep.$url.cdn('/mp/static/优惠图标@2x.png');
+
+  const validDays = computed(() => {
+    const d = state.detail;
+    return Number(d?.validDays ?? d?.validityDays ?? d?.expireDays ?? 90) || 90;
+  });
+
+  const remainCount = computed(() => {
+    const d = state.detail;
+    const direct =
+      d?.remainCount ?? d?.remainingCount ?? d?.leftCount ?? d?.stock ?? d?.availableCount;
+    if (typeof direct === 'number') return direct;
+    if (typeof direct === 'string' && direct !== '') return Number(direct);
+    const total = d?.totalCount ?? d?.total ?? d?.count;
+    const used = d?.usedCount ?? d?.exchangeCount ?? d?.redeemCount;
+    if (typeof total === 'number' && typeof used === 'number') return total - used;
+    return undefined;
+  });
+
+  const remainText = computed(() => {
+    const v = remainCount.value;
+    return typeof v === 'number' && !Number.isNaN(v) ? v : '--';
+  });
+
+  const totalCount = computed(() => {
+    const d = state.detail;
+    const v = d?.totalCount ?? d?.total ?? d?.count ?? d?.stock;
+    if (typeof v === 'number') return v;
+    if (typeof v === 'string' && v !== '') return Number(v);
+    return undefined;
+  });
+
+  const totalText = computed(() => {
+    const v = totalCount.value;
+    return typeof v === 'number' && !Number.isNaN(v) ? v : '--';
+  });
+
+  const noticeLines = computed(() => {
+    const d = state.detail;
+    const raw = d?.notice;
+    if (Array.isArray(raw)) {
+      const list = raw.map((v) => String(v || '').trim()).filter(Boolean);
+      if (list.length) return list;
+    }
+    if (typeof raw === 'string' && raw.trim()) {
+      let str = raw.trim();
+      try {
+        if (str.startsWith('[') || str.startsWith('{')) {
+          const parsed = JSON.parse(str);
+          if (Array.isArray(parsed)) {
+            const list = parsed.map((v) => String(v || '').trim()).filter(Boolean);
+            if (list.length) return list;
+          }
+        }
+      } catch (e) {}
+
+      str = str.replace(/<br\s*\/?>/gi, '\n').replace(/\\n/g, '\n');
+      if (!str.includes('\n') && /[0-9]+[、.]/.test(str) && str.includes('；')) {
+        const parts = str
+          .split('；')
+          .map((v) => v.trim())
+          .filter(Boolean)
+          .map((v, i, arr) => (i < arr.length - 1 ? `${v}；` : v));
+        if (parts.length) return parts;
+      }
+      const lines = str
+        .split(/\r?\n/)
+        .map((v) => v.trim())
+        .filter(Boolean);
+      if (lines.length) return lines;
+    }
+    return [
+      `1、领券当日起始${validDays.value}天内有效；`,
+      `2、本优惠券限量${totalText.value}份/期，兑完即止；`,
+      '3、部分新品、特价商品、拼团特惠、限时特惠和会员特价商品不可使用；',
+      '4、优惠券兑换后，不可取消兑换并返还积分；',
+      '5、兑换成功后，可以从我的-优惠券中查看；',
+      '6、每人限兑1次。',
+    ];
   });
 
   function formatCouponAmount(item) {
@@ -117,45 +218,55 @@
   }
 
   .content {
-    padding: 30rpx 24rpx;
+    padding: 30rpx 24rpx calc(140rpx + env(safe-area-inset-bottom));
   }
 
-  .card {
+  .exchange-card {
     background: #ffffff;
-    border-radius: 18rpx;
-    padding: 30rpx;
+    border-radius: 24rpx;
+    overflow: hidden;
+    box-shadow: 0 10rpx 20rpx rgba(0, 0, 0, 0.04);
   }
 
-  .amount {
-    font-size: 72rpx;
-    font-weight: 700;
-    color: #1e3f1c;
-    line-height: 84rpx;
+  .exchange-main {
+    padding: 52rpx 24rpx 40rpx 24rpx;
   }
 
-  .name {
-    font-size: 34rpx;
+  .coupon-icon {
+    width: 56rpx;
+    height: 56rpx;
+  }
+
+  .exchange-name {
+    margin-top: 28rpx;
+    font-size: 32rpx;
     font-weight: 700;
     color: #000;
-    margin-top: 10rpx;
+    text-align: center;
   }
 
-  .desc {
-    font-size: 26rpx;
-    color: #666;
-    line-height: 36rpx;
+  .exchange-valid {
+    margin-top: 16rpx;
+    font-size: 24rpx;
+    color: #999;
+    text-align: center;
   }
 
-  .point-row {
+  .exchange-meta {
+    background: #eef0e6;
+    padding: 22rpx 24rpx;
+  }
+
+  .exchange-point {
     display: flex;
     align-items: baseline;
   }
 
   .point-num {
-    font-size: 56rpx;
+    font-size: 44rpx;
     font-weight: 700;
     color: #ff6a00;
-    line-height: 56rpx;
+    line-height: 44rpx;
   }
 
   .point-unit {
@@ -164,8 +275,45 @@
     margin-left: 8rpx;
   }
 
+  .exchange-stock {
+    font-size: 26rpx;
+    color: #999;
+  }
+
+  .notice-card {
+    margin-top: 24rpx;
+    background: #ffffff;
+    border-radius: 24rpx;
+    padding: 30rpx 24rpx;
+  }
+
+  .notice-title {
+    font-size: 32rpx;
+    font-weight: 700;
+    color: #000;
+  }
+
+  .notice-list {
+    margin-top: 18rpx;
+  }
+
+  .notice-item {
+    font-size: 26rpx;
+    color: #666;
+    line-height: 44rpx;
+  }
+
+  .footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    padding: 24rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+    background: #f8f9f3;
+    z-index: 10;
+  }
+
   .exchange-btn {
-    margin-top: 30rpx;
     width: 100%;
     height: 88rpx;
     border-radius: 44rpx;
@@ -178,4 +326,3 @@
     justify-content: center;
   }
 </style>
-
