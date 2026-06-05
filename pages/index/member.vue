@@ -662,6 +662,10 @@
       sheep.$router.go('/pages/user/info', { from: 'birthday' });
       return;
     }
+    if (item.title === '会员专享折扣特权') {
+      sheep.$router.go('/pages/activity/point/list');
+      return;
+    }
     if (item.title === '线上健康咨询服务') {
       openWeWorkQr();
     }

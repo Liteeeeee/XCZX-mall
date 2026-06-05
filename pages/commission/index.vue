@@ -54,12 +54,12 @@
             open-type="share"
             @tap="onInviteMemberShare"
           >
-            <text class="text_4">邀请会员</text>
+            <text class="text_4">邀请粉丝</text>
           </button>
           <!-- #endif -->
           <!-- #ifndef MP-WEIXIN -->
           <view class="text-wrapper_1 flex-col" @tap="onInviteMember">
-            <text class="text_4">邀请会员</text>
+            <text class="text_4">邀请粉丝</text>
           </view>
           <!-- #endif -->
         </view>

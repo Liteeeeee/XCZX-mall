@@ -362,7 +362,7 @@
   }
 
   .home-sticky-bottom-title {
-    font-size: 28rpx;
+    font-size: 32rpx;
     color: #ffffff;
     line-height: 1.2;
   }

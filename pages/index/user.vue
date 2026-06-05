@@ -74,6 +74,13 @@
       </view>
     </view>
 
+    <view class="partner-box" @tap="onPartnerTap">
+      <view class="partner-item ss-flex ss-row-between ss-col-center">
+        <text class="partner-title">平台合伙人</text>
+        <text class="cicon-forward partner-icon"></text>
+      </view>
+    </view>
+
     <!-- 渲染其他未被包裹的组件 -->
     <view v-for="(item, index) in otherList" :key="'other-' + index">
       <s-block :styles="item.property.style || {}">
@@ -149,6 +156,10 @@
   });
 
   onPageScroll(() => {});
+
+  function onPartnerTap() {
+    sheep.$router.go('/pages/commission/apply');
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -170,6 +181,28 @@
       rgba(248, 249, 243, 0.5) 4486rpx,
       /* 增加 1rpx 的半透明过渡缓冲区 */ rgba(248, 249, 243, 1) 4487rpx /* 平滑过渡到实色 */
     );
+  }
+
+  .partner-box {
+    margin: 0 30rpx 20rpx;
+    background: #fff;
+    border-radius: 20rpx;
+    overflow: hidden;
+  }
+
+  .partner-item {
+    padding: 30rpx;
+  }
+
+  .partner-title {
+    font-size: 30rpx;
+    color: #333;
+    font-weight: 600;
+  }
+
+  .partner-icon {
+    font-size: 24rpx;
+    color: #999;
   }
 
   .point-mall-btn {
