@@ -55,13 +55,33 @@
           </view>
         </view>
       </view>
+      <view
+        class="home-draggable-icon"
+        :class="{ 'is-dragging': homeIconDrag.dragging }"
+        :style="homeIconWrapperStyle"
+        @touchstart="onHomeIconTouchStart"
+        @touchmove.stop.prevent="onHomeIconTouchMove"
+        @touchend="onHomeIconTouchEnd"
+        @touchcancel="onHomeIconTouchEnd"
+      >
+        <view class="home-draggable-icon__inner" :style="homeIconInnerStyle">
+          <image
+            class="home-draggable-icon__img"
+            :class="{ 'is-intro': homeIconIntroRunning }"
+            :src="homeIconUrl"
+            mode="aspectFit"
+            @animationend="onHomeIconIntroEnd"
+          />
+          <text class="home-draggable-icon__text">进入商城</text>
+        </view>
+      </view>
     </s-layout>
   </view>
 </template>
 
 <script setup>
-  import { computed } from 'vue';
-  import { onLoad, onShow } from '@dcloudio/uni-app';
+  import { computed, nextTick, reactive, ref } from 'vue';
+  import { onLoad, onReady, onShow } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import $share from '@/sheep/platform/share';
   // 隐藏原生tabBar
@@ -145,6 +165,113 @@
     sheep.$url.cdn('/mp/static/version2Index/品牌图标@2x.webp'),
   );
   const stickyIconUrl = computed(() => sheep.$url.cdn('/mp/static/version2Index/产品图标@2x.webp'));
+
+  const homeIconUrl = computed(() => sheep.$url.cdn('/mp/static/indexIcon.png'));
+
+  const homeIconSizePx = 56;
+  const homeIconWrapperHeightPx = 76;
+  const homeIconMarginPx = 12;
+  const homeIconIntroOffsetPx = 60;
+  const homeIconInitYOffsetPx = 100;
+
+  const homeIconSide = ref('right');
+  const homeIconPos = reactive({ x: 0, y: 0 });
+  const homeIconDrag = reactive({
+    dragging: false,
+    startX: 0,
+    startY: 0,
+    originX: 0,
+    originY: 0,
+    moved: false,
+  });
+
+  const homeIconIntroRunning = ref(false);
+  const homeIconIntroDone = ref(false);
+
+  const homeIconWrapperStyle = computed(() => ({
+    transform: `translate3d(${homeIconPos.x}px, ${homeIconPos.y}px, 0)`,
+    width: `${homeIconSizePx}px`,
+    height: `${homeIconWrapperHeightPx}px`,
+  }));
+
+  const homeIconInnerStyle = computed(() => {
+    if (homeIconIntroRunning.value) return {};
+    return {};
+  });
+
+  function clamp(n, min, max) {
+    return Math.min(max, Math.max(min, n));
+  }
+
+  function getWindowInfo() {
+    const info = uni.getSystemInfoSync();
+    const width = Number(info.windowWidth) || 375;
+    const height = Number(info.windowHeight) || 667;
+    return { width, height };
+  }
+
+  function getEdgeX(side, width) {
+    if (side === 'left') return 0;
+    return width - homeIconSizePx;
+  }
+
+  function initHomeIconPos() {
+    const { width, height } = getWindowInfo();
+    const edgeX = getEdgeX(homeIconSide.value, width);
+    const x = edgeX - homeIconIntroOffsetPx;
+    const y = Math.round(height * 0.6) + homeIconInitYOffsetPx;
+    homeIconPos.x = clamp(x, 0, width - homeIconSizePx);
+    homeIconPos.y = clamp(y, homeIconMarginPx, height - homeIconWrapperHeightPx - homeIconMarginPx);
+  }
+
+  initHomeIconPos();
+
+  function onHomeIconTouchStart(e) {
+    const t = e?.touches?.[0];
+    if (!t) return;
+    homeIconDrag.dragging = true;
+    homeIconDrag.moved = false;
+    homeIconDrag.startX = t.clientX;
+    homeIconDrag.startY = t.clientY;
+    homeIconDrag.originX = homeIconPos.x;
+    homeIconDrag.originY = homeIconPos.y;
+  }
+
+  function onHomeIconTouchMove(e) {
+    if (!homeIconDrag.dragging) return;
+    const t = e?.touches?.[0];
+    if (!t) return;
+    const { width, height } = getWindowInfo();
+    const dx = t.clientX - homeIconDrag.startX;
+    const dy = t.clientY - homeIconDrag.startY;
+    if (Math.abs(dx) > 6 || Math.abs(dy) > 6) homeIconDrag.moved = true;
+    homeIconPos.x = clamp(homeIconDrag.originX + dx, 0, width - homeIconSizePx);
+    homeIconPos.y = clamp(
+      homeIconDrag.originY + dy,
+      homeIconMarginPx,
+      height - homeIconWrapperHeightPx - homeIconMarginPx,
+    );
+  }
+
+  function onHomeIconTouchEnd() {
+    if (homeIconDrag.dragging && !homeIconDrag.moved) {
+      onTapHomeCategory();
+    }
+    homeIconDrag.dragging = false;
+    const { width } = getWindowInfo();
+    const centerX = homeIconPos.x + homeIconSizePx / 2;
+    homeIconSide.value = centerX <= width / 2 ? 'left' : 'right';
+    homeIconPos.x = getEdgeX(homeIconSide.value, width);
+  }
+
+  function onHomeIconIntroEnd() {
+    if (!homeIconIntroRunning.value) return;
+    const { width } = getWindowInfo();
+    homeIconSide.value = 'right';
+    homeIconPos.x = getEdgeX(homeIconSide.value, width);
+    homeIconIntroRunning.value = false;
+    homeIconIntroDone.value = true;
+  }
 
   function onTapHomeBrandStory() {
     sheep.$router.go('/pages/index/story');
@@ -246,6 +373,12 @@
     }
   });
 
+  onReady(async () => {
+    initHomeIconPos();
+    await nextTick();
+    homeIconIntroRunning.value = true;
+  });
+
   onShow(async () => {
     // #ifdef APP-PLUS
     // ios首次授权网络，需要重新加载一次应用初始化
@@ -265,6 +398,79 @@
   .home-content {
     position: relative;
     overflow: hidden;
+  }
+
+  .home-draggable-icon {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 30;
+    border-radius: 999rpx;
+    overflow: visible;
+    transition: transform 260ms ease;
+    will-change: transform;
+  }
+
+  .home-draggable-icon.is-dragging {
+    transition: none;
+  }
+
+  .home-draggable-icon__inner {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    transform-origin: 50% 20%;
+    will-change: transform;
+    transition: transform 220ms ease;
+  }
+
+  .home-draggable-icon__img {
+    width: 100%;
+    height: 56px;
+    transform-origin: 50% 50%;
+    filter: drop-shadow(-2px 0 4px rgba(43, 10, 10, 0.6));
+  }
+
+  .home-draggable-icon__text {
+    margin-top: 6rpx;
+    font-size: 22rpx;
+    font-weight: 900;
+    line-height: 30rpx;
+    padding: 4rpx 14rpx;
+    border-radius: 999rpx;
+    color: #e0be8b;
+    font-family: SimSun, 'Songti SC', STSong, '宋体', serif;
+    text-shadow: 2px 0 4px rgba(43, 10, 10, 0.85);
+    white-space: nowrap;
+  }
+
+  .home-draggable-icon__img.is-intro {
+    animation: homeIconIntro 900ms ease-in-out forwards;
+    transform-origin: 50% 50%;
+  }
+
+  @keyframes homeIconIntro {
+    0% {
+      transform: scale(1) rotate(0deg);
+    }
+    20% {
+      transform: scale(1.18) rotate(30deg);
+    }
+    40% {
+      transform: scale(1.18) rotate(-30deg);
+    }
+    60% {
+      transform: scale(1.12) rotate(30deg);
+    }
+    80% {
+      transform: scale(1.02) rotate(0deg);
+    }
+    100% {
+      transform: scale(1) rotate(0deg);
+    }
   }
 
   .navbar-left-box {
