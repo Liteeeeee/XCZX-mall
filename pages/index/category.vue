@@ -144,7 +144,7 @@
   import CategoryApi from '@/sheep/api/product/category';
   import BannerApi from '@/sheep/api/promotion/banner';
   import SpuApi from '@/sheep/api/product/spu';
-  import { onReachBottom, onShow } from '@dcloudio/uni-app';
+  import { onLoad, onReachBottom, onShow } from '@dcloudio/uni-app';
   import { computed, reactive } from 'vue';
   import { concat } from 'lodash-es';
   import { handleTree } from '@/sheep/helper/utils';
@@ -153,6 +153,7 @@
     style: 'first_two', // first_one（一级 - 样式一）, first_two（二级 - 样式二）, second_one（二级）
     categoryList: [], // 商品分类树
     activeMenu: 0, // 选中的一级菜单，在 categoryList 的下标
+    pendingCategoryId: null,
 
     pagination: {
       // 商品分页
@@ -238,16 +239,41 @@
       loadMore();
     }
   });
+
+  function pickRouteCategoryId(options = {}) {
+    const raw =
+      options.categoryId ??
+      options.category_id ??
+      options.cid ??
+      options.id ??
+      options.menuId ??
+      options.menu_id ??
+      '';
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : null;
+  }
+
+  onLoad((options) => {
+    const id = pickRouteCategoryId(options || {});
+    if (id) {
+      state.pendingCategoryId = id;
+    }
+  });
+
   function initMenuIndex() {
     const appStore = sheep.$store('app');
     // 处理 tabbar 传参的情况
     const tabbarParams = appStore.paramsForTabbar || {};
-    const id = tabbarParams.id;
+    const tabbarId = tabbarParams.id;
     appStore.clearParamsForTabbar(); // 使用完后清理，避免影响下次跳转
+    const id = state.pendingCategoryId || (tabbarId ? Number(tabbarId) : null);
+    state.pendingCategoryId = null;
 
     if (id) {
       // 如果有传参 id（比如从首页分类入口跳过来），则去匹配对应的分类
-      const foundCategory = state.categoryList.find((category) => category.id === Number(id));
+      const foundCategory = state.categoryList.find(
+        (category) => Number(category.id) === Number(id),
+      );
       if (foundCategory) {
         onMenu(state.categoryList.indexOf(foundCategory));
       } else {

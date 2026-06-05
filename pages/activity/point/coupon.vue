@@ -38,7 +38,9 @@
             <text class="point-num">{{ state.detail.point }}</text>
             <text class="point-unit">积分</text>
           </view>
-          <view v-if="!isUnlimited" class="exchange-stock">剩余{{ remainText }}份</view>
+          <view v-if="!isUnlimited" class="exchange-stock"
+            >剩余{{ state.detail.totalCount }}份</view
+          >
         </view>
       </view>
 
