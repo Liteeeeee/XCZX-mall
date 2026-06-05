@@ -93,14 +93,19 @@
       <detail-content-card class="detail-content-selector" :content="state.goodsInfo.description" />
 
       <view class="point-sticky">
-        <button
-          class="ss-reset-button exchange-btn"
-          @tap="state.showSelectSku = true"
-          :disabled="state.goodsInfo.stock === 0"
-        >
-          <text v-if="state.goodsInfo.stock === 0">已售罄</text>
-          <text v-else>立即兑换</text>
-        </button>
+        <view class="point-sticky-inner">
+          <view v-if="needOpenMember" class="exchange-mask" @tap="onNeedMemberTap"></view>
+          <button
+            class="ss-reset-button exchange-btn"
+            @tap="onExchangeTap"
+            :disabled="state.goodsInfo.stock === 0 || needOpenMember || pointNotEnough"
+          >
+            <text v-if="state.goodsInfo.stock === 0">已售罄</text>
+            <text v-else-if="needOpenMember">开通会员享受专属兑换</text>
+            <text v-else-if="pointNotEnough">积分不足</text>
+            <text v-else>立即兑换</text>
+          </button>
+        </view>
       </view>
     </block>
   </s-layout>
@@ -111,6 +116,7 @@
   import { onLoad, onPageScroll } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import { isEmpty } from 'lodash-es';
+  import { showAuthModal } from '@/sheep/hooks/useModal';
   import { fen2yuan, formatGoodsSwiper } from '@/sheep/hooks/useGoods';
   import detailNavbar from './components/detail/detail-navbar.vue';
   import detailCellSku from './components/detail/detail-cell-sku.vue';
@@ -120,6 +126,9 @@
   import SpuApi from '@/sheep/api/product/spu';
   import { PromotionActivityTypeEnum, SharePageEnum } from '@/sheep/helper/const';
   import PointApi from '@/sheep/api/promotion/point';
+
+  const userInfo = computed(() => sheep.$store('user').userInfo);
+  const isLogin = computed(() => sheep.$store('user').isLogin);
 
   const seckillBg = sheep.$url.css('/static/img/shop/goods/seckill-tip-bg.webp');
   const grouponBg = sheep.$url.css('/static/img/shop/goods/groupon-tip-bg.webp');
@@ -194,6 +203,82 @@
       a?.memberExclusive;
     return v === true || v === 1 || v === '1';
   });
+
+  const isVipMember = computed(() => {
+    if (!isLogin.value) return false;
+
+    const rawLevel = userInfo.value?.level;
+    const levelValue =
+      typeof rawLevel === 'object' && rawLevel ? rawLevel.level ?? rawLevel.id ?? null : rawLevel;
+    const normalizedLevel =
+      levelValue === null || levelValue === undefined || levelValue === ''
+        ? null
+        : Number(levelValue);
+    if (normalizedLevel === 1 || normalizedLevel === 2 || normalizedLevel === 3) return true;
+
+    const rawLevelName = userInfo.value?.levelName;
+    const levelName = typeof rawLevelName === 'string' ? rawLevelName.replace(/\s/g, '') : '';
+    if (
+      levelName &&
+      !levelName.includes('无会员') &&
+      (levelName.includes('黄金') || levelName.includes('铂金') || levelName.includes('钻石'))
+    ) {
+      return true;
+    }
+    return false;
+  });
+
+  const needOpenMember = computed(() => isMemberOnly.value && !isVipMember.value);
+
+  const userPoint = computed(() => {
+    const p = userInfo.value?.point;
+    const n = typeof p === 'string' ? Number(p) : typeof p === 'number' ? p : 0;
+    return Number.isFinite(n) ? n : 0;
+  });
+
+  const needPoint = computed(() => {
+    const n = Number(getShowPrice.value?.point || 0);
+    return Number.isFinite(n) ? n : 0;
+  });
+
+  const pointNotEnough = computed(() => {
+    if (!isLogin.value) return false;
+    return needPoint.value > userPoint.value;
+  });
+
+  function onNeedMemberTap() {
+    uni.showToast({ title: '开通会员享受专属兑换', icon: 'none' });
+  }
+
+  function onPointNotEnoughTap() {
+    uni.showModal({
+      title: '积分不足',
+      content: '当前积分不足，需要原价购买',
+      confirmText: '原价购买',
+      cancelText: '取消',
+      success: (res) => {
+        if (!res.confirm) return;
+        if (!state.goodsInfo?.id) return;
+        sheep.$router.go('/pages/goods/index', { id: state.goodsInfo.id });
+      },
+    });
+  }
+
+  function onExchangeTap() {
+    if (!isLogin.value) {
+      showAuthModal();
+      return;
+    }
+    if (needOpenMember.value) {
+      onNeedMemberTap();
+      return;
+    }
+    if (pointNotEnough.value) {
+      onPointNotEnoughTap();
+      return;
+    }
+    state.showSelectSku = true;
+  }
 
   const getShowPrice = computed(() => {
     if (!isEmpty(state.selectedSku)) {
@@ -456,12 +541,28 @@
   }
 
   .point-sticky {
+    position: -webkit-sticky;
     position: sticky;
     bottom: 0;
     z-index: 10;
+    width: 100%;
     padding: 24rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
     background: #fff;
     box-shadow: 0px -6px 10px 0px rgba(51, 51, 51, 0.08);
+    box-sizing: border-box;
+  }
+
+  .point-sticky-inner {
+    position: relative;
+  }
+
+  .exchange-mask {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 88rpx;
+    z-index: 2;
   }
 
   .exchange-btn {

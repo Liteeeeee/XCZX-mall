@@ -306,6 +306,7 @@
   }
 
   function onPreviewBanner() {
+    return;
     const url = bannerPicUrl.value;
     if (!url) return;
     if (isVideoUrl(url)) {

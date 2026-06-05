@@ -48,8 +48,8 @@
             @tap="onTapHomeCategory"
           >
             <view class="home-sticky-bottom-left">
-              <text class="home-sticky-bottom-title">仙草甄品</text>
-              <text class="home-sticky-bottom-subtitle">仙草甄选产品</text>
+              <text class="home-sticky-bottom-title">更多产品</text>
+              <text class="home-sticky-bottom-subtitle">点击查看更多甄品</text>
             </view>
             <image class="home-sticky-bottom-right-icon" :src="stickyIconUrl" mode="aspectFit" />
           </view>
@@ -326,6 +326,7 @@
     font-size: 28rpx;
     color: #ffffff;
     margin-left: 12rpx;
+    font-weight: 300;
   }
 
   .home-sticky-top-right-icon {

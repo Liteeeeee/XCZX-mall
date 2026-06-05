@@ -38,14 +38,17 @@
             <text class="point-num">{{ state.detail.point }}</text>
             <text class="point-unit">积分</text>
           </view>
-          <view class="exchange-stock">剩余{{ remainText }}份</view>
+          <view v-if="!isUnlimited" class="exchange-stock">剩余{{ remainText }}份</view>
         </view>
       </view>
 
       <view class="notice-card">
         <view class="notice-title">兑换须知</view>
         <view class="notice-list">
-          <view v-for="(line, idx) in noticeLines" :key="idx" class="notice-item">{{ line }}</view>
+          <view v-for="(line, idx) in noticeLines" :key="idx" class="notice-item">
+            <text class="notice-no">{{ idx + 1 }}、</text>
+            <text class="notice-text">{{ line }}</text>
+          </view>
         </view>
       </view>
     </view>
@@ -106,11 +109,23 @@
     return typeof v === 'number' && !Number.isNaN(v) ? v : '--';
   });
 
+  const isUnlimited = computed(() => {
+    const v = totalCount.value;
+    return v === -1;
+  });
+
+  function stripLeadingNo(str) {
+    return String(str || '')
+      .trim()
+      .replace(/^\d+\s*[、.]\s*/, '');
+  }
+
   const noticeLines = computed(() => {
     const d = state.detail;
     const raw = d?.notice;
     if (Array.isArray(raw)) {
-      const list = raw.map((v) => String(v || '').trim()).filter(Boolean);
+      let list = raw.map((v) => stripLeadingNo(v)).filter(Boolean);
+      if (isUnlimited.value) list = list.filter((v) => !/限量.*份/.test(v));
       if (list.length) return list;
     }
     if (typeof raw === 'string' && raw.trim()) {
@@ -119,7 +134,8 @@
         if (str.startsWith('[') || str.startsWith('{')) {
           const parsed = JSON.parse(str);
           if (Array.isArray(parsed)) {
-            const list = parsed.map((v) => String(v || '').trim()).filter(Boolean);
+            let list = parsed.map((v) => stripLeadingNo(v)).filter(Boolean);
+            if (isUnlimited.value) list = list.filter((v) => !/限量.*份/.test(v));
             if (list.length) return list;
           }
         }
@@ -127,27 +143,30 @@
 
       str = str.replace(/<br\s*\/?>/gi, '\n').replace(/\\n/g, '\n');
       if (!str.includes('\n') && /[0-9]+[、.]/.test(str) && str.includes('；')) {
-        const parts = str
+        let parts = str
           .split('；')
-          .map((v) => v.trim())
+          .map((v) => stripLeadingNo(v))
           .filter(Boolean)
           .map((v, i, arr) => (i < arr.length - 1 ? `${v}；` : v));
+        if (isUnlimited.value) parts = parts.filter((v) => !/限量.*份/.test(v));
         if (parts.length) return parts;
       }
-      const lines = str
+      let lines = str
         .split(/\r?\n/)
-        .map((v) => v.trim())
+        .map((v) => stripLeadingNo(v))
         .filter(Boolean);
+      if (isUnlimited.value) lines = lines.filter((v) => !/限量.*份/.test(v));
       if (lines.length) return lines;
     }
-    return [
-      `1、领券当日起始${validDays.value}天内有效；`,
-      `2、本优惠券限量${totalText.value}份/期，兑完即止；`,
-      '3、部分新品、特价商品、拼团特惠、限时特惠和会员特价商品不可使用；',
-      '4、优惠券兑换后，不可取消兑换并返还积分；',
-      '5、兑换成功后，可以从我的-优惠券中查看；',
-      '6、每人限兑1次。',
-    ];
+    const base = [`领券当日起始${validDays.value}天内有效；`];
+    if (!isUnlimited.value) base.push(`本优惠券限量${totalText.value}份/期，兑完即止；`);
+    base.push(
+      '部分新品、特价商品、拼团特惠、限时特惠和会员特价商品不可使用；',
+      '优惠券兑换后，不可取消兑换并返还积分；',
+      '兑换成功后，可以从我的-优惠券中查看；',
+      '每人限兑1次。',
+    );
+    return base;
   });
 
   function formatCouponAmount(item) {
@@ -307,7 +326,7 @@
     position: fixed;
     left: 0;
     bottom: 0;
-    width: 100%;
+    width: calc(100% - 48rpx);
     padding: 24rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
     background: #f8f9f3;
     z-index: 10;

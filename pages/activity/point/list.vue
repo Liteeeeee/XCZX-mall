@@ -154,11 +154,16 @@
               <view class="goods-point">
                 <text class="goods-point-num">{{ item.point }}</text>
                 <text class="goods-point-unit">积分</text>
-                <text v-if="item.marketPrice" class="goods-origin"
-                  >￥{{ fen2yuan(item.marketPrice) }}</text
+                <text v-if="item.price && item.price > 0" class="goods-plus"
+                  >+¥{{ fen2yuan(item.price) }}</text
                 >
               </view>
             </view>
+            <view
+              ><text v-if="item.marketPrice" class="goods-origin"
+                >¥{{ fen2yuan(item.marketPrice) }}</text
+              ></view
+            >
           </view>
         </view>
         <s-empty
@@ -373,7 +378,7 @@
 
       .left-box {
         .sicon-back {
-          font-size: 32rpx;
+          font-size: 48rpx;
           color: #1e3f1c;
         }
       }
@@ -567,8 +572,15 @@
 
   .goods-point-unit {
     font-size: 26rpx;
-    color: #999;
+    color: #ff6a00;
     margin-left: 6rpx;
+  }
+
+  .goods-plus {
+    font-size: 28rpx;
+    color: #ff6a00;
+    margin-left: 6rpx;
+    font-weight: 600;
   }
 
   .goods-btn {
