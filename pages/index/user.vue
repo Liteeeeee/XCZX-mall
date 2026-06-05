@@ -72,12 +72,19 @@
       <view v-for="(item, index) in userInfoList" :key="'info-' + index">
         <s-block-item :type="item.id" :data="item.property" :styles="item.property.style || {}" />
       </view>
-    </view>
-
-    <view class="partner-box" @tap="onPartnerTap">
-      <view class="partner-item ss-flex ss-row-between ss-col-center">
-        <text class="partner-title">平台合伙人</text>
-        <text class="cicon-forward partner-icon"></text>
+      <view class="partner-service" @tap="onPartnerTap">
+        <view class="partner-service-grid">
+          <view class="partner-service-item">
+            <view class="partner-icon-box ss-flex ss-row-center ss-col-center">
+              <image
+                class="partner-icon"
+                :src="sheep.$url.cdn('/mp/static/myPageIcon/平台合伙人@2x.png')"
+                mode="aspectFit"
+              />
+            </view>
+            <view class="partner-title">平台合伙人</view>
+          </view>
+        </view>
       </view>
     </view>
 
@@ -107,13 +114,12 @@
   });
   // 获取个人中心模板
   const template = computed(() => {
-    return sheep.$store('app').template.user;
+    return sheep.$store('app').template.user || {};
   });
 
   // 渲染列表：兼容 components 和 data 字段
   const renderList = computed(() => {
     const list = template.value?.components || template.value?.data || [];
-    console.log('User page renderList:', list);
     return list;
   });
 
@@ -122,7 +128,23 @@
 
   // 订单和信息组件 (下半部分包裹内容)
   const orderCardList = computed(() => renderList.value.filter((item) => item.id === 'UserOrder'));
-  const userInfoList = computed(() => renderList.value.filter((item) => item.id === 'UserInfo'));
+  const userInfoList = computed(() => {
+    const list = renderList.value.filter((item) => item.id === 'UserInfo');
+    return list.map((item) => {
+      const prop = item?.property || {};
+      if (prop?.title !== '我的服务') return item;
+      const items = Array.isArray(prop.items)
+        ? prop.items.filter((v) => v?.name !== '平台合伙人')
+        : [];
+      return {
+        ...item,
+        property: {
+          ...prop,
+          items,
+        },
+      };
+    });
+  });
 
   // 其他组件
   const otherList = computed(() =>
@@ -139,8 +161,6 @@
 
     // 根据你的需求，默认是 -139rpx，VIP 是 -169rpx (即 -139 - 30)
     const value = isVip ? '-100rpx' : '-139rpx';
-    console.log('当前是否为VIP:', !!isVip, ' | 期望的 rpx 值为:', value);
-
     return value;
   });
 
@@ -183,26 +203,44 @@
     );
   }
 
-  .partner-box {
-    margin: 0 30rpx 20rpx;
-    background: #fff;
-    border-radius: 20rpx;
+  .partner-service {
+    margin-top: 40rpx;
+    background: #fffffa;
+    border-radius: 22rpx;
     overflow: hidden;
   }
 
-  .partner-item {
-    padding: 30rpx;
+  .partner-service-grid {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 10rpx 6rpx 0;
   }
 
-  .partner-title {
-    font-size: 30rpx;
-    color: #333;
-    font-weight: 600;
+  .partner-service-item {
+    width: 25%;
+    padding: 20rpx 0 24rpx;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .partner-icon-box {
+    width: 56rpx;
+    height: 56rpx;
   }
 
   .partner-icon {
+    width: 56rpx;
+    height: 56rpx;
+  }
+
+  .partner-title {
     font-size: 24rpx;
-    color: #999;
+    color: #333333;
+    line-height: 34rpx;
+    margin-top: 20rpx;
+    text-align: center;
   }
 
   .point-mall-btn {
