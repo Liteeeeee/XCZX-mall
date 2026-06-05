@@ -38,9 +38,7 @@
             <text class="point-num">{{ state.detail.point }}</text>
             <text class="point-unit">积分</text>
           </view>
-          <view v-if="!isUnlimited" class="exchange-stock"
-            >剩余{{ state.detail.totalCount }}份</view
-          >
+          <view v-if="!isUnlimited" class="exchange-stock">剩余{{ remainText }}份</view>
         </view>
       </view>
 
@@ -88,7 +86,7 @@
     if (typeof direct === 'number') return direct;
     if (typeof direct === 'string' && direct !== '') return Number(direct);
     const total = d?.totalCount ?? d?.total ?? d?.count;
-    const used = d?.usedCount ?? d?.exchangeCount ?? d?.redeemCount;
+    const used = d?.exchangedCount ?? d?.usedCount ?? d?.exchangeCount ?? d?.redeemCount;
     if (typeof total === 'number' && typeof used === 'number') return total - used;
     return undefined;
   });

@@ -140,11 +140,11 @@
             v-if="state.orderInfo.price.discountPrice > 0"
           >
             <view class="item-title">活动优惠</view>
-            <view class="ss-flex ss-col-center" @tap="state.showDiscount = true">
+            <view class="ss-flex ss-col-center ss-m-r-24">
               <text class="item-value text-red"
                 >-￥{{ fen2yuan(state.orderInfo.price.discountPrice) }}</text
               >
-              <text class="_icon-forward item-icon" />
+              <!-- <text class="_icon-forward item-icon" /> -->
             </view>
           </view>
         </view>

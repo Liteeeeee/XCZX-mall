@@ -36,12 +36,12 @@
               ￥{{ fen2yuan(state.selectedSku.price || state.goodsInfo.price) }}
             </view>
             <!-- 秒杀价格标签 -->
-            <view class="tig ss-flex ss-col-center">
+            <!-- <view class="tig ss-flex ss-col-center">
               <view class="tig-icon ss-flex ss-col-center ss-row-center">
                 <text class="cicon-alarm"></text>
               </view>
               <view class="tig-title">秒杀价</view>
-            </view>
+            </view> -->
             <!-- 库存 -->
             <view class="stock-text ss-m-l-20">
               库存{{ state.selectedSku.stock || state.goodsInfo.stock }}件
@@ -323,7 +323,7 @@
       width: 100%;
       height: 80rpx;
       border-radius: 40rpx;
-      background: linear-gradient(90deg, #ff5854, #ff2621);
+      background: #1e3f1c;
       color: #fff;
     }
   }
@@ -407,7 +407,7 @@
         }
 
         .checked-btn {
-          background: linear-gradient(90deg, #ff5854, #ff2621);
+          background: #1e3f1c;
           font-weight: 500;
           color: #ffffff;
         }

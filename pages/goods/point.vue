@@ -87,8 +87,15 @@
         />
       </view>
 
-      <!-- 评价 -->
-      <detail-comment-card class="detail-comment-selector" :goodsId="state.goodsInfo.id" />
+      <view v-if="noticeLines.length" class="detail-card notice-card">
+        <view class="notice-title">兑换须知</view>
+        <view class="notice-list">
+          <view v-for="(line, idx) in noticeLines" :key="idx" class="notice-item">
+            <text class="notice-no">{{ idx + 1 }}、</text>
+            <text class="notice-text">{{ line }}</text>
+          </view>
+        </view>
+      </view>
       <!-- 详情 -->
       <detail-content-card class="detail-content-selector" :content="state.goodsInfo.description" />
 
@@ -121,7 +128,6 @@
   import detailNavbar from './components/detail/detail-navbar.vue';
   import detailCellSku from './components/detail/detail-cell-sku.vue';
   import detailSkeleton from './components/detail/detail-skeleton.vue';
-  import detailCommentCard from './components/detail/detail-comment-card.vue';
   import detailContentCard from './components/detail/detail-content-card.vue';
   import SpuApi from '@/sheep/api/product/spu';
   import { PromotionActivityTypeEnum, SharePageEnum } from '@/sheep/helper/const';
@@ -229,6 +235,58 @@
   });
 
   const needOpenMember = computed(() => isMemberOnly.value && !isVipMember.value);
+
+  function stripLeadingNo(str) {
+    return String(str || '')
+      .trim()
+      .replace(/^\d+\s*[、.]\s*/, '');
+  }
+
+  const noticeLines = computed(() => {
+    const a = unref(activity);
+    const raw =
+      a?.notice ??
+      a?.exchangeNotice ??
+      a?.rule ??
+      a?.rules ??
+      a?.remark ??
+      a?.description ??
+      state.goodsInfo?.notice ??
+      '';
+    if (Array.isArray(raw)) {
+      const list = raw.map((v) => stripLeadingNo(v)).filter(Boolean);
+      if (list.length) return list;
+    }
+    if (typeof raw === 'string' && raw.trim()) {
+      let str = raw.trim();
+      try {
+        if (str.startsWith('[') || str.startsWith('{')) {
+          const parsed = JSON.parse(str);
+          if (Array.isArray(parsed)) {
+            const list = parsed.map((v) => stripLeadingNo(v)).filter(Boolean);
+            if (list.length) return list;
+          }
+        }
+      } catch (e) {}
+      str = str.replace(/<br\s*\/?>/gi, '\n').replace(/\\n/g, '\n');
+      const lines = str
+        .split(/\r?\n/)
+        .map((v) => stripLeadingNo(v))
+        .filter(Boolean);
+      if (lines.length) return lines;
+    }
+
+    const list = [];
+    if (isMemberOnly.value) list.push('会员专属商品，需开通会员后可兑换；');
+    const singleLimit = Number(a?.singleLimitCount ?? a?.single_limit_count ?? 0);
+    if (Number.isFinite(singleLimit) && singleLimit > 0) list.push(`每人限兑${singleLimit}件；`);
+    list.push(
+      '兑换成功后不可取消兑换并返还积分；',
+      '库存有限，兑完即止；',
+      '请以实际商品页面展示与平台规则为准。',
+    );
+    return list;
+  });
 
   const userPoint = computed(() => {
     const p = userInfo.value?.point;
@@ -581,6 +639,40 @@
   .exchange-btn[disabled] {
     background: #cfd7cf;
     color: #ffffff;
+  }
+
+  .notice-card {
+    padding: 30rpx 20rpx;
+  }
+
+  .notice-title {
+    font-size: 30rpx;
+    font-weight: 600;
+    color: #000;
+    margin-bottom: 20rpx;
+  }
+
+  .notice-item {
+    display: flex;
+    align-items: flex-start;
+    margin-top: 14rpx;
+  }
+
+  .notice-no {
+    flex-shrink: 0;
+    font-size: 26rpx;
+    font-weight: 600;
+    color: rgba(61, 61, 60, 1);
+    line-height: 40rpx;
+  }
+
+  .notice-text {
+    flex: 1;
+    min-width: 0;
+    font-size: 26rpx;
+    color: rgba(61, 61, 60, 1);
+    line-height: 40rpx;
+    word-break: break-all;
   }
 
   //秒杀卡片

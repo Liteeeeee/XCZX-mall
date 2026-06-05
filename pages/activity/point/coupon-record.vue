@@ -7,7 +7,10 @@
         :style="{ height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px' }"
       >
         <view class="nav-inner ss-flex ss-col-center">
-          <view class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20" @tap="sheep.$router.back()">
+          <view
+            class="left-box ss-flex ss-col-center ss-p-l-30 ss-p-r-20"
+            @tap="sheep.$router.back()"
+          >
             <text class="sicon-back"></text>
           </view>
           <view class="title">兑换记录</view>
@@ -24,8 +27,12 @@
     <view v-else class="list-box">
       <view v-for="item in state.pagination.list" :key="item.id" class="list-item">
         <view class="row-1 ss-flex ss-row-between ss-col-center">
-          <view class="name ss-line-1">{{ item.name || item.exchangeName || item.couponTemplateName }}</view>
-          <view class="status" :class="statusClass(item.status)">{{ statusText(item.status) }}</view>
+          <view class="name ss-line-1">{{
+            item.name || item.couponName || item.couponTemplateName
+          }}</view>
+          <view class="status" :class="statusClass(item.status)">{{
+            statusText(item.status)
+          }}</view>
         </view>
         <view class="row-2 ss-flex ss-row-between ss-col-center">
           <view class="time">{{ formatTime(item.createTime) }}</view>
@@ -103,8 +110,7 @@
     const total = Number(data?.total ?? data?.totalCount ?? data?.count ?? 0);
     state.pagination.list = concat(state.pagination.list, list);
     state.pagination.total = total || state.pagination.list.length;
-    state.loadStatus =
-      state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
+    state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
 
   function loadMore() {
@@ -210,4 +216,3 @@
     margin-left: 6rpx;
   }
 </style>
-
