@@ -283,8 +283,10 @@
   function onInviteMemberShare() {
     state.shareInfo = sheep.$platform.share.getShareInfo(
       {
-        title: `${sheep.$store('app').info.name || '仙草甄选'}邀请你成为会员`,
-        image: 'http://xiancao.oss-cn-beijing.aliyuncs.com/20260407/编组@2x_1775541461773.png',
+        title: `${
+          sheep.$store('app').info.name || '仙草甄选'
+        }以食疗之本，养当代之身。您的好友邀您体验道地好物。`,
+        image: 'http://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/首页分享.jpg',
         desc: '注册即可享受会员权益与优惠活动',
         params: {
           page: SharePageEnum.HOME.value,
