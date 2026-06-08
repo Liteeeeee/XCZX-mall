@@ -18,5 +18,19 @@ const CommentApi = {
       },
     });
   },
+  // 获得商品评价数量统计
+  getCommentCount: (spuId) => {
+    return request({
+      url: '/product/comment/count',
+      method: 'GET',
+      params: {
+        spuId,
+      },
+      custom: {
+        showLoading: false,
+        showError: false,
+      },
+    });
+  },
 };
 export default CommentApi;

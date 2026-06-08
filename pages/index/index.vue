@@ -281,7 +281,11 @@
     sheep.$router.go('/pages/index/member');
   }
 
-  function onTapHomeCategory() {
+  function onTapHomeCategory(categoryId) {
+    if (categoryId) {
+      sheep.$router.go('/pages/index/category', { categoryId });
+      return;
+    }
     sheep.$router.go('/pages/index/category');
   }
 

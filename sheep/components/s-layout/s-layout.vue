@@ -47,7 +47,11 @@
           </template>
         </s-custom-navbar>
 
-        <s-watermark v-if="commissionWatermarkText" :text="commissionWatermarkText" />
+        <s-watermark
+          v-if="commissionWatermarkText"
+          :text="commissionWatermarkText"
+          :fontWeight="700"
+        />
 
         <!-- 页面内容插槽 -->
         <slot />
@@ -72,7 +76,7 @@
   /**
    * 模板组件 - 提供页面公共组件，属性，方法
    */
-  import { computed, onMounted, ref } from 'vue';
+  import { computed, onMounted, ref, watch } from 'vue';
   import sheep from '@/sheep';
   import { isEmpty } from 'lodash-es';
   // #ifdef MP-WEIXIN
@@ -254,13 +258,26 @@
 
   const isCommissionPage = computed(() => {
     const r = pageRoute.value || '';
-    return r.includes('pages/commission');
+    return r.includes('pages/commission/index');
   });
+
+  const commissionWatermarkTs = ref(Date.now());
+
+  watch(
+    () => isCommissionPage.value,
+    (v) => {
+      if (!v) return;
+      commissionWatermarkTs.value = Date.now();
+    },
+    { immediate: true },
+  );
 
   const commissionWatermarkText = computed(() => {
     if (!isCommissionPage.value) return '';
     const u = userStore?.userInfo || {};
-    return u.mobile || u.phone || '';
+    const mobile = u.mobile || u.phone || '';
+    if (!mobile) return '';
+    return `${mobile}-${commissionWatermarkTs.value}`;
   });
 </script>
 

@@ -66,10 +66,10 @@
   const state = reactive({
     id: 0, // 商品 SPU 编号
     type: [
-      { type: 0, name: '全部' },
-      { type: 1, name: '好评' },
-      { type: 2, name: '中评' },
-      { type: 3, name: '差评' },
+      { type: 0, baseName: '全部', name: '全部' },
+      { type: 1, baseName: '好评', name: '好评' },
+      { type: 2, baseName: '中评', name: '中评' },
+      { type: 3, baseName: '差评', name: '差评' },
     ],
     currentTab: 0, // 选中的 TAB
     loadStatus: '',
@@ -80,6 +80,109 @@
       pageSize: 8,
     },
   });
+
+  function normalizeCountPayload(payload) {
+    const data = payload || {};
+
+    if (
+      data &&
+      typeof data === 'object' &&
+      (data.type0 !== undefined ||
+        data.type1 !== undefined ||
+        data.type2 !== undefined ||
+        data.type3 !== undefined)
+    ) {
+      const all = Number(data.type0);
+      const good = Number(data.type1);
+      const medium = Number(data.type2);
+      const bad = Number(data.type3);
+      return {
+        all: Number.isFinite(all) ? all : undefined,
+        good: Number.isFinite(good) ? good : undefined,
+        medium: Number.isFinite(medium) ? medium : undefined,
+        bad: Number.isFinite(bad) ? bad : undefined,
+      };
+    }
+
+    if (Array.isArray(data.list) || Array.isArray(data.countList) || Array.isArray(data.counts)) {
+      const arr = data.list || data.countList || data.counts;
+      const map = {};
+      arr.forEach((it) => {
+        const t = Number(it?.type ?? it?.commentType ?? it?.comment_type ?? it?.comment_type);
+        const c = Number(it?.count ?? it?.total ?? 0);
+        if (!Number.isFinite(t)) return;
+        map[t] = Number.isFinite(c) ? c : 0;
+      });
+      return {
+        all: map[0] ?? map[-1] ?? map[null],
+        good: map[1],
+        medium: map[2],
+        bad: map[3],
+      };
+    }
+
+    const all = Number(
+      data.allCount ?? data.totalCount ?? data.count ?? data.total ?? data.all ?? NaN,
+    );
+    const good = Number(
+      data.goodCount ??
+        data.favorableCount ??
+        data.praiseCount ??
+        data.goodCommentCount ??
+        data.good ??
+        NaN,
+    );
+    const medium = Number(
+      data.mediumCount ??
+        data.moderateCount ??
+        data.midCount ??
+        data.middleCount ??
+        data.mediumCommentCount ??
+        data.medium ??
+        NaN,
+    );
+    const bad = Number(
+      data.badCount ?? data.negativeCount ?? data.badCommentCount ?? data.bad ?? NaN,
+    );
+
+    return {
+      all: Number.isFinite(all) ? all : undefined,
+      good: Number.isFinite(good) ? good : undefined,
+      medium: Number.isFinite(medium) ? medium : undefined,
+      bad: Number.isFinite(bad) ? bad : undefined,
+    };
+  }
+
+  function setTabCountByType(type, count) {
+    const t = Number(type);
+    const c = Number(count);
+    if (!Number.isFinite(t) || !Number.isFinite(c)) return;
+    state.type = state.type.map((it) => {
+      if (Number(it.type) !== t) return it;
+      return { ...it, name: `${it.baseName}(${c})` };
+    });
+  }
+
+  function applyTabCounts(counts) {
+    const map = {
+      0: counts?.all,
+      1: counts?.good,
+      2: counts?.medium,
+      3: counts?.bad,
+    };
+    state.type = state.type.map((it) => {
+      const c = map[it.type];
+      const suffix = Number.isFinite(Number(c)) ? `(${c})` : '';
+      return { ...it, name: `${it.baseName}${suffix}` };
+    });
+  }
+
+  async function getCount() {
+    const res = await CommentApi.getCommentCount(state.id);
+    if (res?.code !== 0) return;
+    const counts = normalizeCountPayload(res?.data ?? res);
+    applyTabCounts(counts);
+  }
 
   // 切换选项卡
   function onTabsChange(e) {
@@ -107,6 +210,7 @@
     state.pagination.list = concat(state.pagination.list, res.data.list);
     state.pagination.total = res.data.total;
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
+    setTabCountByType(state.type[state.currentTab]?.type, res.data.total);
   }
 
   // 加载更多
@@ -119,7 +223,8 @@
   }
 
   onLoad((options) => {
-    state.id = options.id;
+    state.id = Number(options?.id || 0);
+    getCount();
     getList();
   });
 

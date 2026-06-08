@@ -57,7 +57,7 @@
                 <view class="coupon-tag">优惠券</view>
               </view>
             </view>
-            <view class="coupon-name ss-line-1">{{ item.couponTemplateName || item.name }}</view>
+            <view class="coupon-name ss-line-1">{{ formatCouponName(item) }}</view>
             <view class="coupon-point">
               <text class="coupon-point-num">{{ item.point }}</text>
               <text class="coupon-point-unit">积分</text>
@@ -322,6 +322,13 @@
       return percent ? `${percent / 10}折` : '折扣券';
     }
     return '优惠券';
+  }
+
+  function formatCouponName(item) {
+    const raw = item?.couponTemplateName || item?.name || '';
+    const s = String(raw);
+    if (s.length <= 10) return s;
+    return s.slice(0, 10) + '...';
   }
 
   onLoad((options) => {

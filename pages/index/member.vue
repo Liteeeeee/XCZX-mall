@@ -663,7 +663,7 @@
       return;
     }
     if (item.title === '会员专享折扣特权') {
-      sheep.$router.go('/pages/activity/point/list');
+      sheep.$router.go('/pages/index/category');
       return;
     }
     if (item.title === '线上健康咨询服务') {

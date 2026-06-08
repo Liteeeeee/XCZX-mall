@@ -8,6 +8,7 @@
         :style="{
           color,
           fontSize: fontSize + 'rpx',
+          fontWeight,
           width: tileWidth + 'rpx',
           margin: gapY / 2 + 'rpx ' + gapX / 2 + 'rpx',
         }"
@@ -37,6 +38,10 @@
     fontSize: {
       type: Number,
       default: 24,
+    },
+    fontWeight: {
+      type: [Number, String],
+      default: 400,
     },
     zIndex: {
       type: Number,

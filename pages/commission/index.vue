@@ -123,14 +123,20 @@
               <text class="text_14">{{ item.spuName }}</text>
               <view class="text-wrapper_7 justify-between">
                 <text class="text_15">{{ item.name }}</text>
-                <view :style="{ marginRight: '40rpx' }"
-                  ><text class="text_16">¥</text>
-                  <text class="text_17 count-font">{{ fen2yuan(item.price) }}</text>
+                <view :style="{ marginRight: '40rpx' }">
+                  <text class="text_17 count-font">
+                    <text
+                      v-for="(seg, segIndex) in formatBrokerageSegments(item)"
+                      :key="segIndex"
+                      :class="seg.className"
+                      >{{ seg.text }}</text
+                    >
+                  </text>
                 </view>
               </view>
               <view class="group_6 flex-row justify-between">
                 <view class="profit-tag flex-row align-center">
-                  <text class="text_18">{{ formatBrokerage(item) }}</text>
+                  ¥<text class="text_18">{{ fen2yuan(item.price) }}</text>
                 </view>
                 <button
                   class="ss-reset-button block_5 flex-row justify-between"
@@ -299,7 +305,7 @@
     sheep.$router.go('/pages/goods/index', { id: item.spuId });
   }
 
-  function formatBrokerage(item) {
+  function formatBrokerageSegments(item) {
     const toYuanInt = (fen) => {
       const n = Number(fen || 0);
       if (!Number.isFinite(n)) {
@@ -310,17 +316,31 @@
 
     if (item.brokeragePercent !== undefined && item.brokeragePercent > 0) {
       const commissionPrice = (item.price * item.brokeragePercent) / 100;
-      return `预估可赚${toYuanInt(commissionPrice)}元`;
+      return [
+        { text: '预估可赚', className: 'brokerage_small' },
+        { text: toYuanInt(commissionPrice), className: 'brokerage_big' },
+        { text: '元', className: 'brokerage_small' },
+      ];
     }
 
     if (item?.brokerageMinPrice === undefined) {
-      return '可赚计算中';
+      return [{ text: '可赚计算中', className: '' }];
     }
 
     if (item.brokerageMinPrice === item.brokerageMaxPrice) {
-      return `预估可赚${toYuanInt(item.brokerageMinPrice)}元`;
+      return [
+        { text: '预估可赚', className: 'brokerage_small' },
+        { text: toYuanInt(item.brokerageMinPrice), className: 'brokerage_big' },
+        { text: '元', className: 'brokerage_small' },
+      ];
     }
-    return `预估可赚${toYuanInt(item.brokerageMinPrice)}~${toYuanInt(item.brokerageMaxPrice)}元`;
+    return [
+      { text: '预估可赚', className: 'brokerage_small' },
+      { text: toYuanInt(item.brokerageMinPrice), className: 'brokerage_big' },
+      { text: '~', className: 'brokerage_small' },
+      { text: toYuanInt(item.brokerageMaxPrice), className: 'brokerage_big' },
+      { text: '元', className: 'brokerage_small' },
+    ];
   }
 
   function onShareGoods(goodsInfo) {
@@ -781,12 +801,22 @@
 
   .text_17 {
     overflow-wrap: break-word;
-    color: rgba(245, 63, 63, 1);
-    font-size: 38rpx;
+    color: #f53f3f;
+    font-size: 32rpx;
     font-family: DINAlternate-Bold;
     font-weight: 700;
     text-align: left;
     white-space: nowrap;
+    line-height: 48rpx;
+  }
+
+  .brokerage_small {
+    font-size: 24rpx;
+    line-height: 48rpx;
+  }
+
+  .brokerage_big {
+    font-size: 32rpx;
     line-height: 48rpx;
   }
 
@@ -795,12 +825,13 @@
   }
 
   .profit-tag {
+    font-size: 24rpx;
   }
 
   .text_18 {
     overflow-wrap: break-word;
-    color: rgba(248, 99, 6, 1);
-    font-size: 24rpx;
+    color: #3d3d3c;
+    font-size: 32rpx;
     font-family: PingFangSC-Medium;
     font-weight: 500;
     text-align: left;

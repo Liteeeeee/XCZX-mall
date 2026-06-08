@@ -27,12 +27,8 @@
     <view v-else class="list-box">
       <view v-for="item in state.pagination.list" :key="item.id" class="list-item">
         <view class="row-1 ss-flex ss-row-between ss-col-center">
-          <view class="name ss-line-1">{{
-            item.name || item.couponName || item.couponTemplateName
-          }}</view>
-          <view class="status" :class="statusClass(item.status)">{{
-            statusText(item.status)
-          }}</view>
+          <view class="name ss-line-1">{{ formatCouponName(item) }}</view>
+          <view class="status" :class="statusClass(item.status)"></view>
         </view>
         <view class="row-2 ss-flex ss-row-between ss-col-center">
           <view class="time">{{ formatTime(item.createTime) }}</view>
@@ -90,6 +86,13 @@
   function formatTime(time) {
     if (!time) return '';
     return sheep.$helper.timeFormat(time, 'yyyy.mm.dd hh:MM');
+  }
+
+  function formatCouponName(item) {
+    const raw = item?.name || item?.couponName || item?.couponTemplateName || '';
+    const s = String(raw);
+    if (s.length <= 12) return s;
+    return s.slice(0, 12) + '...';
   }
 
   async function getRecordPage() {
