@@ -85,7 +85,7 @@
 
   const validDays = computed(() => {
     const d = state.detail;
-    return Number(d?.validDays ?? d?.validityDays ?? d?.expireDays ?? 90) || 90;
+    return Number(d?.fixedEndTerm ?? d?.validityDays ?? d?.expireDays ?? 90) || 90;
   });
 
   const exchangeValidText = computed(() => {
@@ -96,7 +96,7 @@
         'yyyy-mm-dd',
       )} 至 ${sheep.$helper.timeFormat(tpl.validEndTime, 'yyyy-mm-dd')}`;
     }
-    return `领券当日起始${validDays.value}天内有效`;
+    return `领券当日起始${tpl?.fixedEndTerm || 90}天内有效`;
   });
 
   function normalizeTimeMs(v) {

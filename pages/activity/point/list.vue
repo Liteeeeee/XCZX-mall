@@ -106,8 +106,8 @@
                     <text v-if="item.price && item.price > 0" class="vip-plus"
                       >+￥{{ fen2yuan(item.price) }}</text
                     >
-                    <text v-if="item.marketPrice" class="vip-origin"
-                      >￥{{ fen2yuan(item.marketPrice) }}</text
+                    <text v-if="item.skuPrice" class="vip-origin"
+                      >￥{{ fen2yuan(item.skuPrice) }}</text
                     >
                   </view>
                 </view>
@@ -160,8 +160,8 @@
               </view>
             </view>
             <view
-              ><text v-if="item.marketPrice" class="goods-origin"
-                >¥{{ fen2yuan(item.marketPrice) }}</text
+              ><text v-if="item.skuPrice" class="goods-origin"
+                >¥{{ fen2yuan(item.skuPrice) }}</text
               ></view
             >
           </view>

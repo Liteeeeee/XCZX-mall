@@ -75,6 +75,19 @@
         >
       </view>
 
+      <view class="rules-card flex-col">
+        <view class="rules-header flex-row align-center justify-between">
+          <text class="rules-title">提现规则</text>
+          <text class="rules-subtitle"></text>
+        </view>
+        <view class="rules-list flex-col">
+          <view v-for="(item, idx) in withdrawRuleItems" :key="idx" class="rules-row flex-row">
+            <text class="rules-label">{{ item.label }}</text>
+            <text class="rules-value">{{ item.value }}</text>
+          </view>
+        </view>
+      </view>
+
       <su-fixed bottom placeholder :bgStyles="{ backgroundColor: 'rgba(255, 255, 250, 1.0)' }">
         <view class="bottom-bar flex-col">
           <view class="agreement-box flex-row align-center justify-center">
@@ -126,11 +139,9 @@
               3.今日预估订单收益:今日所有已付款订单的预估收益;<br />
               4.今日推广商品:今日推广商品次数;<br />
               <view class="statement-subtitle">提现说明</view>
-              1.账户余额为可提现的金额，单笔提现至少200元;<br />
-              2.同一时间只能申请一笔提现，在审核结束前不能再次申请;<br />
-              3.申请提交成功后，平台会在三个工作日内完成审核，请耐心等待;<br />
-              4.已申请提现的金额会从账户余额中扣除，并被冻结;<br />
-              5.提现失败后，冻结金额会再次计入账户余额中，您可以随时申请提现;
+              <view v-for="(line, idx) in withdrawStatementLines" :key="idx">
+                {{ idx + 1 }}.{{ line }};<br />
+              </view>
             </view>
           </scroll-view>
           <view class="statement-footer flex-col">
@@ -184,7 +195,42 @@
     frozenDays: 0, // 冻结天数
     minPrice: 0, // 最低提现金额
     maxPrice: 0, // 最高提现金额(单笔)
+    withdrawDailyTimes: 1, // 每日提现次数
+    withdrawTimeRange: '全天可申请', // 提现时间
+    withdrawArrivalTime: '审核通过后1-3个工作日到账', // 到账时间
+    withdrawAuditTime: '提交后1-3个工作日完成审核', // 审核时间
     withdrawTypes: [], // 提现方式
+  });
+
+  const withdrawRuleItems = computed(() => {
+    const balanceYuan = fen2yuan(state.brokerageInfo?.brokeragePrice || 0);
+    const minLimit = Number(state.minPrice || 0) || 0;
+    const maxLimit = Number(state.maxPrice || 0) || 0;
+    const actualMin = minLimit > 0 ? minLimit : 200;
+    const daily = Number(state.withdrawDailyTimes || 0) || 1;
+    const timeRange = state.withdrawTimeRange || '全天可申请';
+    const auditTime = state.withdrawAuditTime || '提交后1-3个工作日完成审核';
+    const arrivalTime = state.withdrawArrivalTime || '审核通过后1-3个工作日到账';
+
+    return [
+      {
+        label: '单笔额度',
+        value: `最低${actualMin}元${maxLimit > 0 ? `，最高${maxLimit}元` : ''}`,
+      },
+      { label: '每日次数', value: `${daily}次` },
+      { label: '提现时间', value: timeRange },
+      { label: '审核时间', value: auditTime },
+      { label: '到账时间', value: arrivalTime },
+    ];
+  });
+
+  const withdrawStatementLines = computed(() => {
+    const base = withdrawRuleItems.value.map((it) => `${it.label}：${it.value}`);
+    return base.concat([
+      '同一时间只能申请一笔提现，在审核结束前不能再次申请',
+      '已申请提现的金额会从账户余额中扣除，并被冻结',
+      '提现失败后，冻结金额会再次计入账户余额中，可重新申请提现',
+    ]);
   });
 
   const withdrawAccountText = computed(() => {
@@ -233,6 +279,24 @@
     return 0;
   }
 
+  function pickString(obj, keys = []) {
+    if (!obj) return '';
+    for (const k of keys) {
+      const v = obj[k];
+      if (typeof v === 'string' && v.trim()) return v.trim();
+    }
+    return '';
+  }
+
+  function pickTimeRange(obj) {
+    if (!obj) return '';
+    const start =
+      pickString(obj, ['withdrawStartTime', 'startTime', 'timeStart', 'withdrawTimeStart']) || '';
+    const end = pickString(obj, ['withdrawEndTime', 'endTime', 'timeEnd', 'withdrawTimeEnd']) || '';
+    if (start && end) return `${start}-${end}`;
+    return '';
+  }
+
   async function getWithdrawConfig() {
     const code = 'default';
     if (!code) {
@@ -260,6 +324,46 @@
     ]);
     state.minPrice = normalizeWithdrawPrice(minRaw);
     state.maxPrice = normalizeWithdrawPrice(maxRaw);
+
+    const dailyTimes = pickNumber(data, [
+      'withdrawDailyTimes',
+      'dailyTimes',
+      'dayTimes',
+      'maxTimesPerDay',
+      'dayWithdrawLimit',
+      'dayWithdrawTimes',
+    ]);
+    if (dailyTimes > 0) {
+      state.withdrawDailyTimes = dailyTimes;
+    }
+
+    const timeRange =
+      pickString(data, ['withdrawTimeRange', 'withdrawTime', 'timeRange', 'availableTime']) ||
+      pickTimeRange(data);
+    if (timeRange) {
+      state.withdrawTimeRange = timeRange;
+    }
+
+    const auditTime = pickString(data, [
+      'withdrawAuditTime',
+      'auditTime',
+      'reviewTime',
+      'auditDesc',
+    ]);
+    if (auditTime) {
+      state.withdrawAuditTime = auditTime;
+    }
+
+    const arrivalTime = pickString(data, [
+      'withdrawArrivalTime',
+      'arrivalTime',
+      'transferTime',
+      '到账时间',
+      'arrivalDesc',
+    ]);
+    if (arrivalTime) {
+      state.withdrawArrivalTime = arrivalTime;
+    }
   }
 
   function onWithdrawAll() {
@@ -645,6 +749,68 @@
     white-space: nowrap;
     line-height: 33rpx;
     margin-top: 21rpx;
+  }
+
+  .rules-card {
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 30rpx;
+    margin: 24rpx 38rpx 0 32rpx;
+    padding: 28rpx 24rpx;
+    box-sizing: border-box;
+    border: 2rpx solid rgba(151, 151, 151, 0.12);
+    box-shadow: 0 10rpx 24rpx rgba(0, 0, 0, 0.04);
+  }
+
+  .rules-header {
+    padding-bottom: 18rpx;
+    border-bottom: 2rpx solid rgba(151, 151, 151, 0.12);
+  }
+
+  .rules-title {
+    color: rgba(61, 61, 60, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    line-height: 40rpx;
+  }
+
+  .rules-subtitle {
+    color: rgba(157, 156, 150, 1);
+    font-size: 24rpx;
+    line-height: 34rpx;
+  }
+
+  .rules-list {
+    padding-top: 14rpx;
+  }
+
+  .rules-row {
+    padding: 16rpx 0;
+    border-bottom: 2rpx solid rgba(151, 151, 151, 0.1);
+  }
+
+  .rules-row:last-child {
+    border-bottom: none;
+  }
+
+  .rules-label {
+    width: 160rpx;
+    color: rgba(61, 61, 60, 1);
+    font-size: 26rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    line-height: 40rpx;
+    flex-shrink: 0;
+  }
+
+  .rules-value {
+    flex: 1;
+    color: rgba(102, 102, 102, 1);
+    font-size: 26rpx;
+    font-family: PingFangSC-Regular;
+    line-height: 40rpx;
+    overflow-wrap: break-word;
+    text-align: right;
   }
 
   .bottom-bar {

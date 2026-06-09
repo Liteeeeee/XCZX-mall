@@ -123,7 +123,7 @@
               <text class="text_14">{{ item.spuName }}</text>
               <view class="text-wrapper_7 justify-between">
                 <text class="text_15">{{ item.name }}</text>
-                <view :style="{ marginRight: '40rpx' }">
+                <view>
                   <text class="text_17 count-font">
                     <text
                       v-for="(seg, segIndex) in formatBrokerageSegments(item)"
