@@ -31,7 +31,7 @@
           <view class="exchange-name ss-line-1">
             {{ state.detail.couponTemplateName || state.detail.name }}
           </view>
-          <view class="exchange-valid">领券当日起始{{ validDays }}天内有效</view>
+          <view class="exchange-valid">{{ exchangeValidText }}</view>
         </view>
         <view class="exchange-meta ss-flex ss-row-between ss-col-center">
           <view class="exchange-point">
@@ -54,7 +54,14 @@
     </view>
 
     <view v-if="state.detail" class="footer">
-      <button class="ss-reset-button exchange-btn" @tap="onExchange">立即兑换</button>
+      <button
+        class="ss-reset-button exchange-btn"
+        :class="{ 'is-disabled': isFixedDateExpired }"
+        :disabled="isFixedDateExpired"
+        @tap="onExchange"
+      >
+        {{ exchangeBtnText }}
+      </button>
     </view>
   </s-layout>
 </template>
@@ -64,12 +71,14 @@
   import { onLoad } from '@dcloudio/uni-app';
   import { computed, reactive } from 'vue';
   import PointCouponExchangeApi from '@/sheep/api/promotion/pointCouponExchange';
+  import CouponApi from '@/sheep/api/promotion/coupon';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
 
   const state = reactive({
     id: undefined,
     loading: true,
     detail: null,
+    couponTemplate: null,
   });
 
   const couponIcon = sheep.$url.cdn('/mp/static/优惠图标@2x.png');
@@ -77,6 +86,37 @@
   const validDays = computed(() => {
     const d = state.detail;
     return Number(d?.validDays ?? d?.validityDays ?? d?.expireDays ?? 90) || 90;
+  });
+
+  const exchangeValidText = computed(() => {
+    const tpl = state.couponTemplate;
+    if (tpl && Number(tpl.validityType) !== 2 && tpl.validStartTime && tpl.validEndTime) {
+      return `有效期：${sheep.$helper.timeFormat(
+        tpl.validStartTime,
+        'yyyy-mm-dd',
+      )} 至 ${sheep.$helper.timeFormat(tpl.validEndTime, 'yyyy-mm-dd')}`;
+    }
+    return `领券当日起始${validDays.value}天内有效`;
+  });
+
+  function normalizeTimeMs(v) {
+    const n = Number(v);
+    if (!Number.isFinite(n) || n <= 0) return null;
+    return n < 1e12 ? n * 1000 : n;
+  }
+
+  const isFixedDateExpired = computed(() => {
+    const tpl = state.couponTemplate;
+    if (!tpl || Number(tpl.validityType) === 2) return false;
+    const endMs = normalizeTimeMs(tpl.validEndTime);
+    if (!endMs) return false;
+    const d = new Date(endMs);
+    d.setHours(23, 59, 59, 999);
+    return d.getTime() < Date.now();
+  });
+
+  const exchangeBtnText = computed(() => {
+    return isFixedDateExpired.value ? '优惠券已过期' : '立即兑换';
   });
 
   const remainCount = computed(() => {
@@ -180,6 +220,20 @@
     return '优惠券';
   }
 
+  async function getCouponTemplateDetail(templateId) {
+    const id = Number(templateId || 0);
+    if (!id) {
+      state.couponTemplate = null;
+      return;
+    }
+    const res = await CouponApi.getCouponTemplate(id);
+    if (typeof res?.code === 'number' && res.code !== 0) {
+      state.couponTemplate = null;
+      return;
+    }
+    state.couponTemplate = res?.data ?? res ?? null;
+  }
+
   async function getDetail() {
     state.loading = true;
     const res = await PointCouponExchangeApi.getPointCouponExchange(state.id);
@@ -189,9 +243,11 @@
     }
     const data = res?.data ?? res;
     state.detail = data || null;
+    await getCouponTemplateDetail(state.detail?.couponTemplateId);
   }
 
   async function onExchange() {
+    if (isFixedDateExpired.value) return;
     if (!state.id) return;
     const res = await PointCouponExchangeApi.exchangeCoupon(state.id);
     if (typeof res?.code === 'number' && res.code !== 0) return;
@@ -343,5 +399,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .exchange-btn.is-disabled {
+    background: #c8c9cc;
+    color: rgba(255, 255, 255, 0.92);
   }
 </style>

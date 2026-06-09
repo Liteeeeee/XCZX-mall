@@ -47,13 +47,11 @@
               >
             </view>
             <view class="sales-row ss-flex ss-col-center">
-              <text v-if="state.goodsInfo.marketPrice" class="origin-price-text"
-                >原价￥{{
-                  fen2yuan(state.selectedSku.marketPrice || state.goodsInfo.marketPrice)
-                }}</text
+              <text v-if="state.goodsInfo.price" class="origin-price-text"
+                >原价￥{{ fen2yuan(state.selectedSku.price || state.goodsInfo.price) }}</text
               >
               <view class="sales-text">
-                <text v-if="state.goodsInfo.marketPrice">｜ </text>剩余{{ state.goodsInfo.stock }}
+                <text v-if="state.goodsInfo.price">｜ </text>剩余{{ state.goodsInfo.stock }}
               </view>
             </view>
           </view>
