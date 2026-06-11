@@ -122,7 +122,7 @@
             <view class="section_13 flex-col">
               <text class="text_14">{{ item.spuName }}</text>
               <view class="text-wrapper_7 justify-between">
-                <text class="text_15">{{ item.name }}</text>
+                <text class="text_15">{{ formatItemName(item) }}</text>
                 <view>
                   <text class="text_17 count-font">
                     <text
@@ -305,6 +305,27 @@
 
   function onGoGoods(item) {
     sheep.$router.go('/pages/goods/index', { id: item.spuId });
+  }
+
+  function formatItemName(item) {
+    const raw = item?.properties;
+    let list = raw;
+    if (typeof raw === 'string') {
+      try {
+        list = JSON.parse(raw);
+      } catch (e) {
+        list = raw;
+      }
+    }
+    if (Array.isArray(list) && list.length) {
+      const first = list[0] || {};
+      const propertyName = String(first.propertyName ?? first.name ?? '').trim();
+      const valueName = String(first.valueName ?? first.value ?? '').trim();
+      if (propertyName === '默认' && valueName === '默认') return '默认';
+      const text = `${propertyName}${valueName}`.trim();
+      if (text) return text;
+    }
+    return item?.name || '';
   }
 
   function formatBrokerageSegments(item) {

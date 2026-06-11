@@ -72,7 +72,7 @@
 
         <!-- 功能卡片 -->
         <view class="detail-cell-card detail-card ss-flex-col">
-          <detail-cell-sku :sku="state.selectedSku" @tap="state.showSelectSku = true" />
+          <detail-cell-sku :sku="state.selectedSku" @tap="onExchangeTap" />
         </view>
         <!-- 规格与数量弹框 -->
         <s-select-seckill-sku
@@ -156,6 +156,26 @@
 
   // 立即购买
   function onBuy(sku) {
+    if (state.goodsInfo?.stock === 0) {
+      state.showSelectSku = false;
+      uni.showToast({ title: '已售罄', icon: 'none' });
+      return;
+    }
+    if (!isLogin.value) {
+      state.showSelectSku = false;
+      showAuthModal();
+      return;
+    }
+    if (needOpenMember.value) {
+      state.showSelectSku = false;
+      onNeedMemberTap();
+      return;
+    }
+    if (pointNotEnough.value) {
+      state.showSelectSku = false;
+      onPointNotEnoughTap();
+      return;
+    }
     sheep.$router.go('/pages/order/confirm', {
       data: JSON.stringify({
         order_type: 'goods',
@@ -321,6 +341,10 @@
   }
 
   function onExchangeTap() {
+    if (state.goodsInfo?.stock === 0) {
+      uni.showToast({ title: '已售罄', icon: 'none' });
+      return;
+    }
     if (!isLogin.value) {
       showAuthModal();
       return;

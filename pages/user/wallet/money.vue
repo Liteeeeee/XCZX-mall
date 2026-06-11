@@ -1,75 +1,72 @@
 <!-- 我的钱包 -->
 <template>
-  <s-layout
-    class="wallet-wrap"
-    navbar="clear"
-    :bgStyle="{ color: 'rgba(248, 250, 251, 1)' }"
-    @scrolltolower="loadMore"
-  >
-    <view class="wallet-page-bg">
-      <su-status-bar />
-      <view
-        class="nav-bar-container"
-        :style="{
-          position: 'relative',
-          height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px',
-        }"
-      >
+  <s-layout class="wallet-wrap" navbar="clear" :bgStyle="{ color: 'rgba(248, 250, 251, 1)' }">
+    <scroll-view class="wallet-scroll" scroll-y :lower-threshold="80" @scrolltolower="loadMore">
+      <view class="wallet-page-bg">
+        <su-status-bar />
         <view
-          class="nav-bar-inner ss-flex ss-col-center"
+          class="nav-bar-container"
           :style="{
-            position: 'absolute',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            height: '100%',
-            left: '0',
-            width: '100%',
+            position: 'relative',
+            height: sheep.$platform.navbar - sheep.$platform.device.statusBarHeight + 'px',
           }"
         >
-          <uni-icons
-            type="left"
-            size="22"
-            color="#000"
-            @tap="sheep.$router.back()"
-            class="ss-m-l-20"
-          ></uni-icons>
-          <text class="nav-title ss-m-l-10">消费明细</text>
+          <view
+            class="nav-bar-inner ss-flex ss-col-center"
+            :style="{
+              position: 'absolute',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              height: '100%',
+              left: '0',
+              width: '100%',
+            }"
+          >
+            <uni-icons
+              type="left"
+              size="22"
+              color="#000"
+              @tap="sheep.$router.back()"
+              class="ss-m-l-20"
+            ></uni-icons>
+            <text class="nav-title ss-m-l-10">消费明细</text>
+          </view>
         </view>
-      </view>
-      <view v-if="state.pagination.total === 0" style="padding-top: 100rpx">
-        <s-empty text="暂无数据" :icon="sheep.$url.static('/static/data-empty.webp')" />
-      </view>
+        <view v-if="state.pagination.total === 0" style="padding-top: 100rpx">
+          <s-empty text="暂无数据" :icon="sheep.$url.static('/static/data-empty.webp')" />
+        </view>
 
-      <view v-if="state.pagination.total > 0" class="list-container">
-        <view
-          class="wallet-list flex-row justify-between"
-          v-for="item in state.pagination.list"
-          :key="item.id"
-        >
-          <view class="list-content flex-col">
-            <text class="title ss-line-1">
-              {{ item.title }}
-            </text>
-            <text class="time">
-              {{ sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd   hh:MM') }}
-            </text>
-          </view>
-          <view class="money-box flex-col justify-center">
-            <text v-if="item.price >= 0" class="add">+{{ fen2yuan(item.price) }}</text>
-            <text v-else class="minus">{{ fen2yuan(item.price) }}</text>
+        <view v-if="state.pagination.total > 0" class="list-container">
+          <view
+            class="wallet-list flex-row justify-between"
+            v-for="item in state.pagination.list"
+            :key="item.id"
+          >
+            <view class="list-content flex-col">
+              <text class="title ss-line-1">
+                {{ item.title }}
+              </text>
+              <text class="time">
+                {{ sheep.$helper.timeFormat(item.createTime, 'yyyy.mm.dd   hh:MM') }}
+              </text>
+            </view>
+            <view class="money-box flex-col justify-center">
+              <text v-if="item.price >= 0" class="add">+{{ fen2yuan(item.price) }}</text>
+              <text v-else class="minus">{{ fen2yuan(item.price) }}</text>
+            </view>
           </view>
         </view>
+        <uni-load-more
+          v-if="state.pagination.total > 0"
+          :auto="true"
+          :status="state.loadStatus"
+          :content-text="{
+            contentdown: '上拉加载更多',
+          }"
+          @clickLoadMore="loadMore"
+        />
       </view>
-      <uni-load-more
-        v-if="state.pagination.total > 0"
-        :auto="true"
-        :status="state.loadStatus"
-        :content-text="{
-          contentdown: '上拉加载更多',
-        }"
-        @clickLoadMore="loadMore"
-      />
-    </view>
+    </scroll-view>
   </s-layout>
 </template>
 
@@ -101,7 +98,7 @@
       totalIncome: 0,
       totalExpense: 0,
     },
-    loadStatus: '',
+    loadStatus: 'more',
     today: '',
   });
 
@@ -171,6 +168,7 @@
     state.currentTab = e.index;
     // 重新加载列表
     resetPagination(state.pagination);
+    state.loadStatus = 'more';
     getLogList();
     getSummary();
   }
@@ -181,13 +179,14 @@
     state.date[1] = e[e.length - 1];
     // 重新加载列表
     resetPagination(state.pagination);
+    state.loadStatus = 'more';
     getLogList();
     getSummary();
   }
 
   // 加载更多
   function loadMore() {
-    if (state.loadStatus === 'noMore') {
+    if (state.loadStatus === 'loading' || state.loadStatus === 'noMore') {
       return;
     }
     state.pagination.pageNo++;
@@ -201,6 +200,11 @@
 </script>
 
 <style lang="scss" scoped>
+  .wallet-scroll {
+    flex: 1;
+    height: 100%;
+  }
+
   // 钱包
   .wallet-page-bg {
     background-color: rgba(248, 250, 251, 1);
