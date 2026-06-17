@@ -213,14 +213,30 @@
     return (Array.isArray(list) ? list : [])
       .map((item, index) => ({
         ...item,
+        nickname: item?.nickname || item?.customerNickname || item?.userNickname || '',
+        mobile: item?.mobile || item?.memberMobile || item?.phone || '',
+        bindUserTime: item?.bindUserTime || item?.registerTime || item?.createTime || 0,
+        lastOnlineTime: item?.lastOnlineTime || item?.lastLoginTime || 0,
+        memberLevelName:
+          item?.memberLevelName || (Number(item?.memberLevel || 0) > 0 ? '会员客户' : ''),
         _key: `${prefix}-${item.id || item.userId || item.bindUserId || index}`,
       }))
       .sort((a, b) => {
         const aTime = Number(
-          a?.bindUserTime || a?.brokerageTime || a?.createTime || a?.createTimeMillis || 0,
+          a?.bindUserTime ||
+            a?.registerTime ||
+            a?.brokerageTime ||
+            a?.createTime ||
+            a?.createTimeMillis ||
+            0,
         );
         const bTime = Number(
-          b?.bindUserTime || b?.brokerageTime || b?.createTime || b?.createTimeMillis || 0,
+          b?.bindUserTime ||
+            b?.registerTime ||
+            b?.brokerageTime ||
+            b?.createTime ||
+            b?.createTimeMillis ||
+            0,
         );
         return bTime - aTime;
       });
@@ -274,10 +290,22 @@
     });
   }
 
-  function handleArchiveTap() {
-    uni.showToast({
-      title: '客户档案功能开发中',
-      icon: 'none',
+  function handleArchiveTap(item = {}) {
+    const memberId = Number(item?.memberId || item?.id || 0);
+    if (!memberId) {
+      uni.showToast({
+        title: '客户信息缺失',
+        icon: 'none',
+      });
+      return;
+    }
+    sheep.$router.go('/pages/commission/customer-archive', {
+      memberId,
+      avatar: item?.avatar || item?.userAvatar || item?.memberAvatar || '',
+      memberLevel: item?.memberLevel || 0,
+      userNickname: item?.userNickname || item?.nickname || '',
+      customerNickname: item?.customerNickname || '',
+      memberMobile: item?.memberMobile || item?.mobile || '',
     });
   }
 

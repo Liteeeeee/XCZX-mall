@@ -144,6 +144,28 @@ const BrokerageApi = {
       custom,
     });
   },
+  // 获取客户档案详情（初次查询时自动创建，后续直接返回）
+  getBrokerageCustomer: (memberId, custom = {}) => {
+    return request({
+      url: '/member/brokerage-customer/get',
+      method: 'GET',
+      params: { memberId },
+      custom,
+    });
+  },
+  // 编辑客户档案（分销员可编辑部分：客户昵称、生日、状态、偏好、兴趣、备注）
+  updateBrokerageCustomer: (data, custom = {}) => {
+    return request({
+      url: '/member/brokerage-customer/update',
+      method: 'PUT',
+      data,
+      custom: {
+        showSuccess: true,
+        successMsg: '更新成功',
+        ...custom,
+      },
+    });
+  },
   // 获得粉丝分页
   getBrokerageUserFansPage: (params, custom = {}) => {
     return request({

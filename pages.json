@@ -513,6 +513,19 @@
 					}
 				},
 				{
+					"path": "customer-archive",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "客户档案"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "客户档案",
+						"group": "分销中心"
+					}
+				},
+				{
 					"path": "apply",
 					"style": {
 						"navigationBarTitleText": "分销"

@@ -1,20 +1,27 @@
 <template>
   <view class="customer-row" :class="{ 'with-divider': showDivider }">
-    <image class="avatar" :src="sheep.$url.avatar(item?.avatar)" mode="aspectFill" />
-    <view class="customer-main">
-      <view class="customer-head">
-        <text class="customer-name">{{ formatNickname(item?.nickname) }}</text>
-        <view v-if="memberLabel" class="member-tag">
-          <text class="member-tag-text">{{ memberLabel }}</text>
+    <image class="avatar" :src="resolveAvatar(item)" mode="aspectFill" />
+    <view class="customer-body">
+      <view class="customer-main">
+        <text class="customer-name">{{
+          formatNickname(item?.nickname || item?.customerNickname || item?.userNickname)
+        }}</text>
+        <text class="meta-text">手机号：{{ formatMobile(item) }}</text>
+        <text class="meta-text">加入时间：{{ formatDate(getJoinTime(item)) }}</text>
+        <text class="meta-text">最后上线：{{ formatDate(getLastOnlineTime(item)) }}</text>
+      </view>
+      <view class="customer-side">
+        <image
+          v-if="memberTagImage"
+          class="member-tag-image"
+          :src="memberTagImage"
+          mode="aspectFit"
+        />
+        <view v-if="showArchive" class="archive-btn" @tap.stop="emit('archive', item)">
+          <text class="archive-text">客户档案</text>
+          <uni-icons type="right" size="14" color="#5D7757" />
         </view>
       </view>
-      <text class="meta-text">手机号：{{ formatMobile(item) }}</text>
-      <text class="meta-text">加入时间：{{ formatDate(getJoinTime(item)) }}</text>
-      <text class="meta-text">最后上线：{{ formatDate(getLastOnlineTime(item)) }}</text>
-    </view>
-    <view v-if="showArchive" class="archive-btn" @tap.stop="emit('archive', item)">
-      <text class="archive-text">客户档案</text>
-      <uni-icons type="right" size="14" color="#5D7757" />
     </view>
   </view>
 </template>
@@ -44,16 +51,17 @@
 
   const emit = defineEmits(['archive']);
 
-  const memberLabel = computed(() => {
+  const memberTagImage = computed(() => {
     if (!props.showMemberTag) return '';
-    const levelText =
-      props.item?.levelName ||
-      props.item?.memberLevelName ||
-      props.item?.userLevelName ||
-      props.item?.vipLevelName ||
-      '';
-    if (!levelText) return '会员客户';
-    return String(levelText).includes('会员') ? levelText : `${levelText}会员`;
+    const level = Number(props.item?.memberLevel || 0);
+    const levelMap = {
+      1: '/mp/static/智能客户管家/member1.webp',
+      2: '/mp/static/智能客户管家/member2.webp',
+      3: '/mp/static/智能客户管家/member3.webp',
+    };
+    if (levelMap[level]) return sheep.$url.cdn(levelMap[level]);
+    if (level > 3) return sheep.$url.cdn(levelMap[3]);
+    return '';
   });
 
   function formatNickname(name) {
@@ -65,11 +73,23 @@
 
   function formatMobile(item) {
     const mobile = String(
-      item?.mobile || item?.phone || item?.bindMobile || item?.userMobile || item?.maskedMobile || '',
+      item?.mobile ||
+        item?.phone ||
+        item?.bindMobile ||
+        item?.userMobile ||
+        item?.maskedMobile ||
+        item?.memberMobile ||
+        '',
     ).trim();
     if (!mobile) return '--';
     if (mobile.includes('*')) return mobile;
     return mobile.replace(/^(\d{3})\d{4}(\d{4})$/, '$1****$2');
+  }
+
+  function resolveAvatar(item) {
+    return sheep.$url.avatar(
+      item?.avatar || item?.userAvatar || item?.memberAvatar || item?.headImg || item?.headUrl || '',
+    );
   }
 
   function getJoinTime(item) {
@@ -77,6 +97,7 @@
       item?.bindUserTime ||
       item?.brokerageTime ||
       item?.joinTime ||
+      item?.registerTime ||
       item?.createTime ||
       item?.createTimeMillis ||
       0
@@ -103,7 +124,7 @@
 <style lang="scss" scoped>
   .customer-row {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     padding: 28rpx 0;
   }
 
@@ -118,39 +139,44 @@
     flex-shrink: 0;
   }
 
-  .customer-main {
+  .customer-body {
     flex: 1;
     min-width: 0;
     margin-left: 24rpx;
+    display: flex;
+    align-items: stretch;
+    justify-content: space-between;
+    gap: 20rpx;
   }
 
-  .customer-head {
-    display: flex;
-    align-items: center;
-    gap: 12rpx;
-    margin-bottom: 12rpx;
+  .customer-main {
+    flex: 1;
+    min-width: 0;
   }
 
   .customer-name {
-    flex: 1;
-    min-width: 0;
+    display: block;
     color: #2d2d2d;
     font-size: 32rpx;
     font-weight: 600;
     line-height: 44rpx;
+    margin-bottom: 10rpx;
   }
 
-  .member-tag {
+  .customer-side {
+    width: 140rpx;
+    min-height: 152rpx;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
     flex-shrink: 0;
-    padding: 6rpx 14rpx;
-    border-radius: 999rpx;
-    background: linear-gradient(90deg, #2d3258 0%, #47518d 100%);
   }
 
-  .member-tag-text {
-    color: #ffe7a6;
-    font-size: 20rpx;
-    line-height: 28rpx;
+  .member-tag-image {
+    flex-shrink: 0;
+    width: 120rpx;
+    height: 36rpx;
   }
 
   .meta-text {
@@ -166,10 +192,9 @@
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    min-width: 164rpx;
+    min-width: 156rpx;
     height: 66rpx;
     padding: 0 18rpx;
-    margin-left: 20rpx;
     border-radius: 999rpx;
     border: 2rpx solid rgba(109, 140, 102, 0.7);
     background: #f8fbf5;
