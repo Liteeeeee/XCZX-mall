@@ -108,7 +108,7 @@
             <image class="section-badge-img" :src="hobbyIcon" mode="aspectFit" />
             <text class="section-title">消费喜好</text>
           </view>
-          <view class="preference-card">
+          <view class="preference-card" @tap="goPreferencePage">
             <image class="preference-icon-img" :src="consumeIcon" mode="aspectFit" />
             <view class="preference-main">
               <text class="preference-title">消费喜好</text>
@@ -124,27 +124,7 @@
               :class="{ 'no-border': index === preferenceRows.length - 1 }"
             >
               <text class="info-label">{{ item.label }}</text>
-              <picker
-                v-if="item.type === 'select'"
-                class="picker"
-                mode="selector"
-                :range="item.range"
-                :value="item.index"
-                :disabled="!item.range.length"
-                @change="(e) => handleSelectChange(item.key, e)"
-              >
-                <view class="picker-trigger">
-                  <text class="info-value" :class="{ placeholder: item.isPlaceholder }">{{
-                    item.value
-                  }}</text>
-                  <uni-icons type="right" size="14" color="#C7C7C7" />
-                </view>
-              </picker>
-              <view
-                v-else-if="item.type === 'remark'"
-                class="picker-trigger"
-                @tap="openRemarkEditor"
-              >
+              <view v-if="item.type === 'remark'" class="picker-trigger" @tap="openRemarkEditor">
                 <text class="info-value multiline" :class="{ placeholder: item.isPlaceholder }">{{
                   item.value
                 }}</text>
@@ -215,7 +195,7 @@
   import { computed, reactive } from 'vue';
   import { onLoad, onShow } from '@dcloudio/uni-app';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
-  import FansTagApi from '@/sheep/api/member/fansTag';
+  import { formatSelectedTagNames, getCustomerPreferenceOptions } from '@/sheep/api/member/fansTag';
 
   const state = reactive({
     memberId: 0,
@@ -277,21 +257,18 @@
   ]);
 
   const preferenceRows = computed(() => [
-    buildSelectRow(
+    buildTagRow(
       '客户状态',
-      'clientStatus',
       state.tagOptions.clientStatus,
       String(detail.value?.clientStatus || '').trim(),
     ),
-    buildSelectRow(
+    buildTagRow(
       '客户偏好',
-      'customerPreference',
       state.tagOptions.customerPreference,
       String(detail.value?.customerPreference || '').trim(),
     ),
-    buildSelectRow(
+    buildTagRow(
       '客户感兴趣',
-      'customerInterest',
       state.tagOptions.customerInterest,
       String(detail.value?.customerInterest || '').trim(),
     ),
@@ -309,20 +286,13 @@
     };
   }
 
-  function buildSelectRow(label, key, options, currentValue) {
-    const names = (Array.isArray(options) ? options : [])
-      .map((o) => String(o?.name || '').trim())
-      .filter(Boolean);
-    const text = currentValue || '请选择';
-    const index = currentValue ? Math.max(0, names.indexOf(currentValue)) : 0;
+  function buildTagRow(label, options, currentValue) {
+    const text = formatSelectedTagNames(options, currentValue);
     return {
       label,
-      key,
-      type: 'select',
-      range: names,
-      index,
-      value: names.length ? text : '--',
-      isPlaceholder: !currentValue,
+      type: 'static',
+      value: text || '',
+      isPlaceholder: false,
     };
   }
 
@@ -403,25 +373,6 @@
     return formatConsumeText(item);
   }
 
-  function pickGroup(groups, matchers) {
-    const list = Array.isArray(groups) ? groups : [];
-    return list.find((g) => {
-      const groupCode = String(g?.groupCode || g?.code || '').trim();
-      const groupName = String(g?.groupName || g?.name || '').trim();
-      return matchers.some((m) => m === groupCode || m === groupName);
-    });
-  }
-
-  function normalizeTagList(group) {
-    const raw =
-      group?.tags || group?.children || group?.tagList || group?.fansTagList || group?.list || [];
-    return (Array.isArray(raw) ? raw : []).map((t) => ({
-      id: t?.id,
-      code: t?.code,
-      name: String(t?.name || t?.tagName || t?.title || '').trim(),
-    }));
-  }
-
   async function loadTagOptions() {
     if (state.tagsLoading) return;
     if (
@@ -432,74 +383,13 @@
       return;
     }
     state.tagsLoading = true;
-    const [statusRes, preferenceRes, interestRes] = await Promise.all([
-      FansTagApi.list({ groupName: '客户状态' }, { showLoading: false, showError: false }),
-      FansTagApi.list({ groupName: '客户偏好' }, { showLoading: false, showError: false }),
-      FansTagApi.list({ groupName: '客户感兴趣' }, { showLoading: false, showError: false }),
-    ]);
-
-    const statusList = Array.isArray(statusRes?.data) ? statusRes.data : [];
-    const preferenceList = Array.isArray(preferenceRes?.data) ? preferenceRes.data : [];
-    const interestList = Array.isArray(interestRes?.data) ? interestRes.data : [];
-
-    state.tagOptions.clientStatus = statusList
-      .map((t) => ({ id: t?.id, code: t?.code, name: String(t?.name || t?.tagName || '').trim() }))
-      .filter((t) => t.name);
-    state.tagOptions.customerPreference = preferenceList
-      .map((t) => ({ id: t?.id, code: t?.code, name: String(t?.name || t?.tagName || '').trim() }))
-      .filter((t) => t.name);
-    state.tagOptions.customerInterest = interestList
-      .map((t) => ({ id: t?.id, code: t?.code, name: String(t?.name || t?.tagName || '').trim() }))
-      .filter((t) => t.name);
-
-    if (
-      state.tagOptions.clientStatus.length &&
-      state.tagOptions.customerPreference.length &&
-      state.tagOptions.customerInterest.length
-    ) {
-      state.tagsLoading = false;
-      return;
-    }
-
-    const res = await FansTagApi.listWithGroups({ showLoading: false, showError: false });
+    const options = await getCustomerPreferenceOptions();
     state.tagsLoading = false;
-    if (res?.code !== 0) return;
-    const groups = Array.isArray(res?.data)
-      ? res.data
-      : Array.isArray(res?.data?.list)
-      ? res.data.list
-      : Array.isArray(res?.data?.records)
-      ? res.data.records
-      : [];
-
-    const statusGroup = pickGroup(groups, [
-      '客户状态',
-      'clientStatus',
-      'CLIENT_STATUS',
-      'client_status',
-    ]);
-    const preferenceGroup = pickGroup(groups, [
-      '客户偏好',
-      'customerPreference',
-      'CUSTOMER_PREFERENCE',
-      'customer_preference',
-    ]);
-    const interestGroup = pickGroup(groups, [
-      '客户感兴趣',
-      'customerInterest',
-      'CUSTOMER_INTEREST',
-      'customer_interest',
-    ]);
-
-    if (!state.tagOptions.clientStatus.length) {
-      state.tagOptions.clientStatus = normalizeTagList(statusGroup).filter((t) => t.name);
-    }
-    if (!state.tagOptions.customerPreference.length) {
-      state.tagOptions.customerPreference = normalizeTagList(preferenceGroup).filter((t) => t.name);
-    }
-    if (!state.tagOptions.customerInterest.length) {
-      state.tagOptions.customerInterest = normalizeTagList(interestGroup).filter((t) => t.name);
-    }
+    state.tagOptions = {
+      clientStatus: options.clientStatus || [],
+      customerPreference: options.customerPreference || [],
+      customerInterest: options.customerInterest || [],
+    };
   }
 
   async function updateArchive(data) {
@@ -517,15 +407,6 @@
       ...data,
     };
     return true;
-  }
-
-  async function handleSelectChange(key, e) {
-    const index = Number(e?.detail?.value || 0);
-    const options = state.tagOptions[key] || [];
-    const next = String(options[index]?.name || '').trim();
-    if (!next) return;
-    if (String(detail.value?.[key] || '').trim() === next) return;
-    await updateArchive({ [key]: next });
   }
 
   function openRemarkEditor() {
@@ -563,6 +444,16 @@
     const text = String(state.nicknameDraft || '').trim();
     const ok = await updateArchive({ customerNickname: text });
     if (ok) closeNicknameEditor();
+  }
+
+  function goPreferencePage() {
+    if (!state.memberId) return;
+    sheep.$router.go('/pages/commission/customer-preference', {
+      memberId: state.memberId,
+      clientStatus: detail.value?.clientStatus || '',
+      customerPreference: detail.value?.customerPreference || '',
+      customerInterest: detail.value?.customerInterest || '',
+    });
   }
 
   async function loadDetail() {
@@ -738,14 +629,14 @@
   .info-label {
     flex-shrink: 0;
     color: #2d2d2d;
-    font-size: 30rpx;
+    font-size: 28rpx;
     line-height: 42rpx;
   }
 
   .info-value {
     flex: 1;
     color: #2d2d2d;
-    font-size: 30rpx;
+    font-size: 28rpx;
     line-height: 42rpx;
     text-align: right;
   }
@@ -830,7 +721,7 @@
   }
 
   .remark-save {
-    color: #5d7757;
+    color: #1e3f1c;
     font-size: 28rpx;
     font-weight: 600;
     line-height: 40rpx;

@@ -391,14 +391,6 @@
     background: #ffffff;
   }
 
-  .stat-card-green {
-    background: #f5fffb;
-  }
-
-  .stat-card-orange {
-    background: #fff8f1;
-  }
-
   .stat-top {
     display: flex;
     align-items: center;

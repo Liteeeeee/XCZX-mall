@@ -526,6 +526,19 @@
 					}
 				},
 				{
+					"path": "customer-preference",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "消费喜好"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "消费喜好",
+						"group": "分销中心"
+					}
+				},
+				{
 					"path": "apply",
 					"style": {
 						"navigationBarTitleText": "分销"

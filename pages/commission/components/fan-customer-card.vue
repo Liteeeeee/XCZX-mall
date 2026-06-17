@@ -19,7 +19,7 @@
         />
         <view v-if="showArchive" class="archive-btn" @tap.stop="emit('archive', item)">
           <text class="archive-text">客户档案</text>
-          <uni-icons type="right" size="14" color="#5D7757" />
+          <uni-icons type="right" size="14" color="#1E3F1C" />
         </view>
       </view>
     </view>
@@ -88,7 +88,12 @@
 
   function resolveAvatar(item) {
     return sheep.$url.avatar(
-      item?.avatar || item?.userAvatar || item?.memberAvatar || item?.headImg || item?.headUrl || '',
+      item?.avatar ||
+        item?.userAvatar ||
+        item?.memberAvatar ||
+        item?.headImg ||
+        item?.headUrl ||
+        '',
     );
   }
 
@@ -201,7 +206,7 @@
   }
 
   .archive-text {
-    color: #5d7757;
+    color: #1e3f1c;
     font-size: 26rpx;
     font-weight: 500;
     line-height: 36rpx;
