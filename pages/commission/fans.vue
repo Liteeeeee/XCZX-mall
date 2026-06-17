@@ -1,6 +1,6 @@
 <template>
-  <s-layout navbar="clear" :bgStyle="{ color: 'rgba(248, 249, 243, 1.0)' }">
-    <view class="page flex-col">
+  <s-layout navbar="clear" :bgStyle="{ color: '#F6F7F2' }">
+    <view class="page">
       <view class="fixed-header">
         <su-status-bar />
         <view
@@ -11,7 +11,7 @@
           }"
         >
           <view
-            class="nav-bar-inner flex-row align-center"
+            class="nav-bar-inner"
             :style="{
               position: 'absolute',
               top: '50%',
@@ -28,7 +28,7 @@
               @tap="sheep.$router.back()"
               class="nav-back"
             />
-            <text class="nav-title">粉丝</text>
+            <text class="nav-title">智能管家助手</text>
           </view>
         </view>
       </view>
@@ -38,36 +38,110 @@
       ></view>
 
       <view class="page-body">
-        <view class="section_7 flex-row justify-between">
-          <view class="text-group_3 flex-col">
-            <text class="text_2 count-font">{{ totalFans }}</text>
-            <text class="text_3">粉丝</text>
+        <view class="stats-grid">
+          <view class="stat-card stat-card-muted">
+            <view class="stat-top">
+              <view class="stat-icon stat-icon-gray">
+                <image class="stat-image" :src="countIcon" mode="aspectFit" />
+              </view>
+              <text class="stat-label">粉丝总数</text>
+            </view>
+            <text class="stat-value count-font">{{ totalFans }}</text>
           </view>
-          <view class="text-group_4 flex-col">
-            <text class="text_4 count-font">{{ todayNewFans }}</text>
-            <text class="text_5">今日新增粉丝</text>
+          <view class="stat-card stat-card-green">
+            <view class="stat-top">
+              <view class="stat-icon stat-icon-green">
+                <image class="stat-image" :src="neoIcon" mode="aspectFit" />
+              </view>
+              <text class="stat-label">今日新增</text>
+            </view>
+            <text class="stat-value count-font">{{ todayNewFans }}</text>
+          </view>
+          <view class="stat-card stat-card-orange">
+            <view class="stat-top">
+              <view class="stat-icon stat-icon-orange">
+                <image class="stat-image" :src="lostIcon" mode="aspectFit" />
+              </view>
+              <text class="stat-label">流失提醒</text>
+            </view>
+            <text class="stat-value count-font">{{ lossReminderCount }}</text>
           </view>
         </view>
 
-        <view class="list">
-          <view class="fan-row flex-row" v-for="item in state.pagination.list" :key="item._key">
-            <image class="avatar" :src="sheep.$url.avatar(item.avatar)" mode="aspectFill" />
-            <view class="fan-text flex-col">
-              <text class="text_6">{{ formatNickname(item.nickname) }}</text>
-              <text class="text_7">{{ formatDateTime(item.bindUserTime) }}</text>
+        <view class="action-grid">
+          <view class="action-card action-card-blue" @tap="handleActionTap('话术资源')">
+            <view class="action-icon-box">
+              <image class="action-image" :src="tempIcon" mode="aspectFit" />
+            </view>
+            <text class="action-title">话术资源</text>
+          </view>
+          <view class="action-card action-card-cyan" @tap="handleActionTap('一键触达')">
+            <view class="action-icon-box">
+              <image class="action-image" :src="touchIcon" mode="aspectFit" />
+            </view>
+            <text class="action-title">一键触达</text>
+          </view>
+          <view class="action-card action-card-warm" @tap="handleActionTap('关怀提醒')">
+            <view class="action-icon-box">
+              <image class="action-image" :src="careIcon" mode="aspectFit" />
+            </view>
+            <text class="action-title">关怀提醒</text>
+          </view>
+        </view>
+
+        <view class="customer-section">
+          <view class="section-head">
+            <view class="section-title-wrap">
+              <text class="section-title">优质粉丝客户</text>
+              <text class="section-count">（{{ goodFans.total }}）</text>
+            </view>
+            <view class="section-more" @tap="goFanList(true)">
+              <text class="section-more-text">查看更多</text>
+              <uni-icons type="right" size="12" color="#999999" />
             </view>
           </view>
+          <view class="section-card">
+            <template v-if="goodFans.list.length">
+              <fan-customer-card
+                v-for="(item, index) in goodFans.list"
+                :key="item._key"
+                :item="item"
+                :show-member-tag="true"
+                :show-divider="index !== goodFans.list.length - 1"
+                @archive="handleArchiveTap"
+              />
+            </template>
+            <view v-else class="empty-state">
+              <image class="empty-image" :src="emptyIcon" mode="aspectFit" />
+            </view>
+          </view>
+        </view>
 
-          <view v-if="state.pagination.total === 0 && !state.loading" class="empty-text"
-            >暂无数据</view
-          >
-          <uni-load-more
-            v-if="state.pagination.total > 0"
-            :auto="true"
-            :status="state.loadStatus"
-            :content-text="{ contentdown: '上拉加载更多' }"
-            @clickLoadMore="loadMore"
-          />
+        <view class="customer-section">
+          <view class="section-head">
+            <view class="section-title-wrap">
+              <text class="section-title">普通粉丝客户</text>
+              <text class="section-count">（{{ normalFans.total }}）</text>
+            </view>
+            <view class="section-more" @tap="goFanList(false)">
+              <text class="section-more-text">查看更多</text>
+              <uni-icons type="right" size="12" color="#999999" />
+            </view>
+          </view>
+          <view class="section-card">
+            <template v-if="normalFans.list.length">
+              <fan-customer-card
+                v-for="(item, index) in normalFans.list"
+                :key="item._key"
+                :item="item"
+                :show-divider="index !== normalFans.list.length - 1"
+                @archive="handleArchiveTap"
+              />
+            </template>
+            <view v-else class="empty-state">
+              <image class="empty-image" :src="emptyIcon" mode="aspectFit" />
+            </view>
+          </view>
         </view>
       </view>
     </view>
@@ -77,108 +151,152 @@
 <script setup>
   import sheep from '@/sheep';
   import { computed, reactive } from 'vue';
-  import { onLoad, onReachBottom } from '@dcloudio/uni-app';
-  import { concat } from 'lodash-es';
+  import { onLoad, onShow } from '@dcloudio/uni-app';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
+  import fanCustomerCard from './components/fan-customer-card.vue';
 
+  const touchIcon = sheep.$url.cdn('/mp/static/智能客户管家/触达@2x.webp');
+  const tempIcon = sheep.$url.cdn('/mp/static/智能客户管家/话术@2x.webp');
+  const careIcon = sheep.$url.cdn('/mp/static/智能客户管家/异常@2x.webp');
+  const countIcon = sheep.$url.cdn('/mp/static/智能客户管家/总数@2x.webp');
+  const neoIcon = sheep.$url.cdn('/mp/static/智能客户管家/新增@2x.webp');
+  const lostIcon = sheep.$url.cdn('/mp/static/智能客户管家/流失@2x.webp');
+  const emptyIcon = sheep.$url.cdn('/mp/static/智能客户管家/empty.webp');
   const state = reactive({
-    loading: false,
-    todayNewFansCount: 0,
-    pagination: {
-      list: [],
-      total: 0,
-      pageNo: 1,
-      pageSize: 10,
+    summary: {},
+    fallbackTodayNewFans: 0,
+    previewMap: {
+      good: {
+        list: [],
+        total: 0,
+      },
+      normal: {
+        list: [],
+        total: 0,
+      },
     },
-    loadStatus: '',
   });
 
   const totalFans = computed(() => {
-    return Number(state.pagination.total || 0);
+    return Number(
+      state.summary?.totalFirstFansCount ||
+        state.summary?.fansCount ||
+        state.summary?.totalFansCount ||
+        goodFans.value.total + normalFans.value.total ||
+        0,
+    );
   });
 
   const todayNewFans = computed(() => {
-    return Number(state.todayNewFansCount || 0);
+    return Number(
+      state.summary?.todayFirstFansCount ||
+        state.summary?.todayNewFansCount ||
+        state.fallbackTodayNewFans ||
+        0,
+    );
   });
 
-  function formatDateTime(t) {
-    if (!t) return '';
-    const d = sheep.$helper.timeFormat(t, 'yyyy.mm.dd');
-    const h = sheep.$helper.timeFormat(t, 'hh:MM');
-    return `${d}   ${h}`;
+  const lossReminderCount = computed(() => {
+    return Number(
+      state.summary?.lossReminderCount ||
+        state.summary?.lostFanCount ||
+        state.summary?.warnFanCount ||
+        state.summary?.lossFansCount ||
+        0,
+    );
+  });
+
+  const goodFans = computed(() => state.previewMap.good);
+  const normalFans = computed(() => state.previewMap.normal);
+
+  function normalizeList(list, prefix) {
+    return (Array.isArray(list) ? list : [])
+      .map((item, index) => ({
+        ...item,
+        _key: `${prefix}-${item.id || item.userId || item.bindUserId || index}`,
+      }))
+      .sort((a, b) => {
+        const aTime = Number(
+          a?.bindUserTime || a?.brokerageTime || a?.createTime || a?.createTimeMillis || 0,
+        );
+        const bTime = Number(
+          b?.bindUserTime || b?.brokerageTime || b?.createTime || b?.createTimeMillis || 0,
+        );
+        return bTime - aTime;
+      });
   }
 
-  function formatNickname(name) {
-    const n = String(name || '').trim();
-    if (n.length <= 12) return n;
-    return `${n.slice(0, 12)}...`;
+  async function loadSummary() {
+    const res = await BrokerageApi.getBrokerageUserSummary({ showLoading: false });
+    if (res?.code !== 0 || typeof res?.data !== 'object') return;
+    state.summary = res.data || {};
   }
 
-  function resetPagination() {
-    state.pagination.list = [];
-    state.pagination.total = 0;
-    state.pagination.pageNo = 1;
-    state.loadStatus = '';
-  }
-
-  async function loadList() {
-    if (state.loading) return;
-    state.loading = true;
-    state.loadStatus = 'loading';
-    const params = {
-      pageNo: state.pagination.pageNo,
-      pageSize: state.pagination.pageSize,
-    };
-    const res = await BrokerageApi.getBrokerageUserFansPage(params);
-    state.loading = false;
-    if (!res || typeof res !== 'object' || res?.code !== 0) {
-      state.loadStatus = 'more';
+  async function loadPreviewList(goodFan) {
+    const res = await BrokerageApi.getBrokerageCustomerPage(
+      {
+        pageNo: 1,
+        pageSize: 4,
+        goodFan,
+      },
+      { showLoading: false },
+    );
+    const target = goodFan ? state.previewMap.good : state.previewMap.normal;
+    if (res?.code !== 0) {
+      target.list = [];
+      target.total = 0;
       return;
     }
-
-    const list1 = Array.isArray(res?.data?.list)
+    const rawList = Array.isArray(res?.data?.list)
       ? res.data.list
       : Array.isArray(res?.data?.records)
       ? res.data.records
       : [];
-    const merged = list1
-      .map((it, index) => ({
-        ...it,
-        brokerageTime: it.brokerageTime || it.createTime || it.createTimeMillis || 0,
-        _key: `fan-${it.id || it.userId || state.pagination.pageNo + '-' + index}`,
-      }))
-      .sort((a, b) => Number(b.brokerageTime || 0) - Number(a.brokerageTime || 0));
+    target.list = normalizeList(rawList, goodFan ? 'good-fan' : 'normal-fan');
+    target.total = Number(res?.data?.total || res?.data?.totalCount || target.list.length || 0);
+  }
 
-    state.pagination.list = concat(state.pagination.list, merged);
-    state.pagination.total = Number(res?.data?.total || res?.data?.totalCount || 0);
-    state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
+  async function loadPageData() {
+    await Promise.all([loadSummary(), loadPreviewList(true), loadPreviewList(false)]);
+  }
+
+  function goFanList(goodFan) {
+    sheep.$router.go('/pages/commission/fans-list', {
+      goodFan,
+      title: goodFan ? '优质粉丝客户' : '普通粉丝客户',
+    });
+  }
+
+  function handleActionTap(name) {
+    uni.showToast({
+      title: `${name}功能开发中`,
+      icon: 'none',
+    });
+  }
+
+  function handleArchiveTap() {
+    uni.showToast({
+      title: '客户档案功能开发中',
+      icon: 'none',
+    });
   }
 
   onLoad((options) => {
-    state.todayNewFansCount = Number(
+    state.fallbackTodayNewFans = Number(
       options?.todayFirstFansCount || options?.todayNewFansCount || 0,
     );
-    resetPagination();
-    loadList();
   });
 
-  function loadMore() {
-    if (state.loadStatus === 'noMore') return;
-    if (state.loading) return;
-    state.pagination.pageNo += 1;
-    loadList();
-  }
-
-  onReachBottom(() => {
-    loadMore();
+  onShow(() => {
+    loadPageData();
   });
 </script>
 
 <style lang="scss" scoped>
   .page {
-    background-color: rgba(248, 249, 243, 1);
     width: 750rpx;
     min-height: 100vh;
+    background: #f6f7f2;
   }
 
   .fixed-header {
@@ -187,11 +305,12 @@
     top: 0;
     width: 100%;
     z-index: 10;
-    background-color: rgba(248, 249, 243, 1);
+    background: #f6f7f2;
   }
 
-  .header-placeholder {
-    width: 100%;
+  .nav-bar-inner {
+    display: flex;
+    align-items: center;
   }
 
   .nav-back {
@@ -199,134 +318,207 @@
   }
 
   .nav-title {
-    overflow-wrap: break-word;
-    color: #000000;
-    font-size: 36rpx;
-    font-family: PingFangSC-Medium;
-    font-weight: 500;
-    text-align: left;
-    white-space: nowrap;
-    line-height: 50rpx;
     margin-left: 14rpx;
+    color: #111111;
+    font-size: 36rpx;
+    font-weight: 500;
+    line-height: 50rpx;
   }
 
   .page-body {
-    padding-bottom: 40rpx;
-    background-color: rgba(248, 249, 243, 1);
+    padding: 20rpx 24rpx 44rpx;
   }
 
-  .section_7 {
-    box-shadow: 0rpx 6rpx 10rpx 0rpx rgba(0, 0, 0, 0.05);
-    background-color: rgba(248, 249, 243, 1);
-    border-radius: 0rpx 0rpx 20rpx 20rpx;
-    padding: 17rpx 108rpx 23rpx 108rpx;
-  }
-
-  .text_2,
-  .text_4 {
-    overflow-wrap: break-word;
-    color: rgba(30, 63, 28, 1);
-    font-size: 46rpx;
-    font-family: DINAlternate-Bold;
-    font-weight: 700;
-    text-align: center;
-    white-space: nowrap;
-    line-height: 53rpx;
-  }
-
-  .text_3,
-  .text_5 {
-    overflow-wrap: break-word;
-    color: rgba(51, 51, 51, 1);
-    font-size: 26rpx;
-    font-family: PingFangSC-Regular;
-    font-weight: normal;
-    text-align: center;
-    white-space: nowrap;
-    line-height: 37rpx;
-    margin-top: 10rpx;
-  }
-
-  .list {
-    padding: 0 32rpx;
-  }
-
-  .fan-row {
+  .stats-grid {
     display: flex;
     flex-direction: row;
+    gap: 16rpx;
+  }
+
+  .action-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 16rpx;
+  }
+
+  .stat-card,
+  .action-card {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 120rpx;
+    padding: 22rpx 20rpx;
+    border-radius: 24rpx;
+    box-sizing: border-box;
+  }
+
+  .stat-card {
+    background: #ffffff;
+    border: 2rpx solid rgba(17, 17, 17, 0.04);
+  }
+
+  .stat-card-muted {
+    background: #ffffff;
+  }
+
+  .stat-card-green {
+    background: #f5fffb;
+  }
+
+  .stat-card-orange {
+    background: #fff8f1;
+  }
+
+  .stat-top {
+    display: flex;
     align-items: center;
-    min-height: 180rpx;
-    border-bottom: 2rpx solid rgba(157, 156, 150, 0.3);
+    gap: 10rpx;
   }
 
-  .fan-row:last-child {
-    border-bottom: none;
+  .stat-icon {
+    width: 34rpx;
+    height: 34rpx;
+    border-radius: 10rpx;
+    flex-shrink: 0;
   }
 
-  .avatar {
-    border-radius: 50%;
-    width: 120rpx;
-    height: 120rpx;
-    margin: 30rpx 0 30rpx 0;
+  .stat-icon-gray {
+    background: linear-gradient(135deg, #91b6ff 0%, #4d82ff 100%);
   }
 
-  .fan-text {
-    margin-left: 31rpx;
+  .stat-icon-green {
+    background: linear-gradient(135deg, #6ce2cc 0%, #3ec0a5 100%);
   }
 
-  .text_6 {
-    overflow-wrap: break-word;
-    color: rgba(0, 0, 0, 1);
-    font-size: 32rpx;
-    font-family: PingFangSC-Medium;
-    font-weight: 500;
-    text-align: left;
-    white-space: nowrap;
-    line-height: 28rpx;
-    margin-right: 33rpx;
+  .stat-icon-orange {
+    background: linear-gradient(135deg, #ffbf7a 0%, #ff8b5e 100%);
   }
 
-  .text_7 {
-    overflow-wrap: break-word;
-    color: rgba(157, 156, 150, 1);
+  .stat-image {
+    width: 32rpx;
+    height: 32rpx;
+  }
+
+  .stat-label {
+    color: #8a8a8a;
     font-size: 28rpx;
-    font-family: PingFangSC-Regular;
-    font-weight: normal;
-    text-align: left;
-    white-space: nowrap;
-    line-height: 28rpx;
+    line-height: 40rpx;
+  }
+
+  .stat-value {
+    margin-top: 8rpx;
+    color: #2a2a2a;
+    font-size: 58rpx;
+    font-weight: 700;
+    line-height: 64rpx;
+  }
+
+  .action-grid {
+    margin-top: 20rpx;
+  }
+
+  .action-card {
+    align-items: center;
+    background: #ffffff;
+    border: 2rpx solid rgba(17, 17, 17, 0.05);
+    padding: 24rpx 14rpx;
+  }
+
+  .action-card-blue {
+    background: #f2f6ff;
+  }
+
+  .action-card-cyan {
+    background: #eefaf8;
+  }
+
+  .action-card-warm {
+    background: #fff7ef;
+  }
+
+  .action-icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 68rpx;
+    height: 68rpx;
+    border-radius: 10rpx;
+    box-sizing: border-box;
+  }
+
+  .action-image {
+    width: 68rpx;
+    height: 68rpx;
+  }
+
+  .action-title {
+    margin-top: 18rpx;
+    color: #4b4b4b;
+    font-size: 28rpx;
+    line-height: 48rpx;
+  }
+
+  .customer-section {
     margin-top: 28rpx;
   }
 
-  .empty-text {
-    text-align: center;
-    font-size: 28rpx;
-    color: rgba(157, 156, 150, 1);
-    padding: 60rpx 0;
-  }
-
-  .flex-col {
+  .section-head {
     display: flex;
-    flex-direction: column;
-  }
-
-  .flex-row {
-    display: flex;
-    flex-direction: row;
-  }
-
-  .justify-between {
-    display: flex;
+    align-items: center;
     justify-content: space-between;
+    margin-bottom: 16rpx;
   }
 
-  .justify-center {
+  .section-title-wrap {
     display: flex;
+    align-items: center;
+  }
+
+  .section-title {
+    color: #222222;
+    font-size: 40rpx;
+    font-weight: 600;
+    line-height: 56rpx;
+  }
+
+  .section-count {
+    color: #222222;
+    font-size: 32rpx;
+    font-weight: 600;
+    line-height: 44rpx;
+    margin-left: 8rpx;
+  }
+
+  .section-more {
+    display: flex;
+    align-items: center;
+  }
+
+  .section-more-text {
+    color: #999999;
+    font-size: 28rpx;
+    line-height: 40rpx;
+    margin-right: 4rpx;
+  }
+
+  .section-card {
+    padding: 0 24rpx;
+    border-radius: 24rpx;
+    background: #ffffff;
+    box-shadow: 0 10rpx 30rpx rgba(34, 41, 26, 0.05);
+  }
+
+  .empty-state {
+    height: 429rpx;
+    display: flex;
+    align-items: center;
     justify-content: center;
   }
 
-  .align-center {
-    display: flex;
-    align-items: center;
+  .empty-image {
+    width: 100%;
+    height: 222rpx;
   }
 </style>

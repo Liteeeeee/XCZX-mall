@@ -25,10 +25,11 @@ const BrokerageApi = {
     });
   },
   // 获得个人分销统计
-  getBrokerageUserSummary: () => {
+  getBrokerageUserSummary: (custom = {}) => {
     return request({
       url: '/trade/brokerage-user/get-summary',
       method: 'GET',
+      custom,
     });
   },
   // 获取分销员今日统计（订单数、佣金）
@@ -134,12 +135,22 @@ const BrokerageApi = {
       params,
     });
   },
+  // 获取我的客户档案分页（分销员查看自己的粉丝客户列表）
+  getBrokerageCustomerPage: (params, custom = {}) => {
+    return request({
+      url: '/member/brokerage-customer/page',
+      method: 'GET',
+      params,
+      custom,
+    });
+  },
   // 获得粉丝分页
-  getBrokerageUserFansPage: (params) => {
+  getBrokerageUserFansPage: (params, custom = {}) => {
     return request({
       url: '/trade/brokerage-user/fans-page',
       method: 'GET',
       params,
+      custom,
     });
   },
 };

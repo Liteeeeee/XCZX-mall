@@ -491,12 +491,24 @@
 				{
 					"path": "fans",
 					"style": {
-						"navigationBarTitleText": "粉丝"
+						"navigationBarTitleText": "智能管家助手"
 					},
 					"meta": {
 						"auth": true,
 						"sync": true,
-						"title": "粉丝",
+						"title": "智能管家助手",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "fans-list",
+					"style": {
+						"navigationBarTitleText": "粉丝客户"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "粉丝客户",
 						"group": "分销中心"
 					}
 				},
