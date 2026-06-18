@@ -513,6 +513,97 @@
 					}
 				},
 				{
+					"path": "touch-user-select",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "一键触达"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "一键触达",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "touch-type",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "触达类型"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "触达类型",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "touch-category-select",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "选择触达类型"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "选择触达类型",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "touch-wording-select",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "选择话术"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "选择话术",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "touch-coupon-select",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "选择优惠券"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "选择优惠券",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "touch-product-select",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "选择商品"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "选择商品",
+						"group": "分销中心"
+					}
+				},
+				{
+					"path": "wording-resource",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "话术资源"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "话术资源",
+						"group": "分销中心"
+					}
+				},
+				{
 					"path": "customer-archive",
 					"style": {
 						"navigationStyle": "custom",

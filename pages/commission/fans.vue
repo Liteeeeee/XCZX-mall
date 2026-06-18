@@ -284,6 +284,14 @@
   }
 
   function handleActionTap(name) {
+    if (name === '话术资源') {
+      sheep.$router.go('/pages/commission/wording-resource');
+      return;
+    }
+    if (name === '一键触达') {
+      sheep.$router.go('/pages/commission/touch-user-select');
+      return;
+    }
     uni.showToast({
       title: `${name}功能开发中`,
       icon: 'none',
@@ -498,7 +506,7 @@
 
   .section-title {
     color: #222222;
-    font-size: 40rpx;
+    font-size: 32rpx;
     font-weight: 600;
     line-height: 56rpx;
   }
