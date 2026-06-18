@@ -32,7 +32,10 @@
           </view>
         </view>
       </view>
-      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+      <view
+        class="header-placeholder"
+        :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
+      ></view>
 
       <view class="page-body">
         <view
@@ -44,20 +47,25 @@
           <view class="check-box" :class="{ checked: isSelected(item) }">
             <text v-if="isSelected(item)" class="check-mark">✓</text>
           </view>
-          <image class="goods-image" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
+          <image class="goods-image" :src="sheep.$url.cdn(item.spuPicUrl)" mode="aspectFill" />
           <view class="goods-main">
-            <text class="goods-title">{{ item.name }}</text>
-            <text class="goods-desc">{{ item.introduction || '优选好物' }}</text>
-            <view class="goods-price">
-              <text class="goods-price-unit">￥</text>
-              <text class="goods-price-value">{{ fen2yuan(item.price || 0) }}</text>
+            <text class="goods-title">{{ item.spuName }}</text>
+            <text class="goods-desc">{{ formatItemName(item) }}</text>
+            <view class="goods-bottom">
+              <view class="goods-price">
+                <text class="goods-price-unit">￥</text>
+                <text class="goods-price-value">{{ fen2yuan(item.price || 0) }}</text>
+              </view>
+              <view v-if="item.brokerageText" class="goods-brokerage-tag">
+                <text class="goods-brokerage-text">{{ item.brokerageText }}</text>
+              </view>
             </view>
           </view>
         </view>
 
         <s-empty
           v-if="state.initialized && !state.pagination.list.length"
-          text="暂无商品"
+          text="暂无推广商品"
           :icon="sheep.$url.static('/static/goods-empty.webp')"
         />
 
@@ -84,16 +92,16 @@
   import sheep from '@/sheep';
   import { reactive } from 'vue';
   import { onLoad, onReachBottom } from '@dcloudio/uni-app';
-  import { concat, cloneDeep } from 'lodash-es';
-  import { fen2yuan } from '@/sheep/hooks/useGoods';
+  import { concat } from 'lodash-es';
+  import { fen2yuan, fen2yuanSimple } from '@/sheep/hooks/useGoods';
   import SpuApi from '@/sheep/api/product/spu';
+  import BrokerageApi from '@/sheep/api/trade/brokerage';
 
   const STORAGE_PRODUCT = 'commission_touch_selected_product';
 
   const state = reactive({
     initialized: false,
-    selecting: false,
-    selectedSpuId: 0,
+    selectedSkuId: 0,
     selectedProduct: null,
     loadStatus: '',
     pagination: {
@@ -107,54 +115,75 @@
   function restoreSelected() {
     const current = uni.getStorageSync(STORAGE_PRODUCT);
     state.selectedProduct = current && typeof current === 'object' ? current : null;
-    state.selectedSpuId = Number(state.selectedProduct?.spuId || 0);
+    state.selectedSkuId = Number(state.selectedProduct?.skuId || 0);
   }
 
   function isSelected(item) {
-    return Number(item?.id || 0) === state.selectedSpuId;
+    return Number(item?.id || 0) === state.selectedSkuId;
   }
 
-  function buildSelectedProduct(spu, detail) {
-    const skuList = Array.isArray(detail?.skus) ? detail.skus : [];
-    const selectedSku =
-      skuList.find((sku) => Number(sku?.stock || 0) > 0) || skuList[0] || {};
-    const skuText = Array.isArray(selectedSku?.properties)
-      ? selectedSku.properties.map((property) => property.valueName).filter(Boolean).join('，')
-      : '';
+  function formatItemName(item) {
+    const raw = item?.properties;
+    let list = raw;
+    if (typeof raw === 'string') {
+      try {
+        list = JSON.parse(raw);
+      } catch (e) {
+        list = raw;
+      }
+    }
+    if (Array.isArray(list) && list.length) {
+      const first = list[0] || {};
+      const propertyName = String(first.propertyName ?? first.name ?? '').trim();
+      const valueName = String(first.valueName ?? first.value ?? '').trim();
+      if (propertyName === '默认' && valueName === '默认') return '默认';
+      const text = `${propertyName}${valueName}`.trim();
+      if (text) return text;
+    }
+    return item?.name || '';
+  }
+
+  function buildSelectedProduct(item) {
     return {
-      spuId: Number(spu?.id || detail?.id || 0),
-      skuId: Number(selectedSku?.id || 0),
-      picUrl: selectedSku?.picUrl || spu?.picUrl || detail?.picUrl || '',
-      name: spu?.name || detail?.name || '',
-      introduction: spu?.introduction || detail?.introduction || '',
-      price: selectedSku?.promotionPrice || selectedSku?.price || spu?.price || detail?.price || 0,
-      skuText,
+      spuId: Number(item?.spuId || 0),
+      skuId: Number(item?.id || 0),
+      picUrl: item?.spuPicUrl || '',
+      name: item?.spuName || '',
+      introduction: item?.spuName || '',
+      price: item?.price || 0,
+      skuText: formatItemName(item),
     };
   }
 
-  async function selectItem(item) {
-    if (state.selecting) return;
-    state.selecting = true;
-    const res = await SpuApi.getSpuDetail(item.id);
-    state.selecting = false;
-    if (res?.code !== 0 || !res?.data) return;
-    const selectedProduct = buildSelectedProduct(item, cloneDeep(res.data));
-    if (!selectedProduct.skuId) {
-      uni.showToast({
-        title: '商品规格缺失',
-        icon: 'none',
-      });
-      return;
+  function buildBrokerageText(item) {
+    if (item?.brokeragePercent !== undefined && Number(item.brokeragePercent) > 0) {
+      const commissionFen = (Number(item.price || 0) * Number(item.brokeragePercent || 0)) / 100;
+      return `推广可赚${fen2yuanSimple(commissionFen)}元`;
     }
-    state.selectedSpuId = Number(item.id);
+    if (item?.brokerageMinPrice === undefined) {
+      return '推广可赚计算中';
+    }
+    if (Number(item.brokerageMinPrice || 0) === Number(item.brokerageMaxPrice || 0)) {
+      return `推广可赚${fen2yuanSimple(item.brokerageMinPrice)}元`;
+    }
+    return `推广可赚${fen2yuanSimple(item.brokerageMinPrice)}~${fen2yuanSimple(
+      item.brokerageMaxPrice,
+    )}元`;
+  }
+
+  async function selectItem(item) {
+    const selectedProduct = buildSelectedProduct(item);
+    if (!selectedProduct.skuId) return;
+    state.selectedSkuId = Number(item.id);
     state.selectedProduct = selectedProduct;
   }
 
   async function loadList() {
     state.loadStatus = 'loading';
-    const res = await SpuApi.getSpuPage({
+    const res = await SpuApi.getSkuPage({
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
+      brokerageEnabled: true,
     });
     state.initialized = true;
     if (res?.code !== 0) {
@@ -162,6 +191,19 @@
       return;
     }
     const list = Array.isArray(res?.data?.list) ? res.data.list : [];
+    list.forEach((item) => {
+      item.brokerageText = buildBrokerageText(item);
+    });
+    await Promise.all(
+      list.map(async (item) => {
+        try {
+          const r = await BrokerageApi.getProductBrokeragePrice(item.spuId);
+          item.brokerageMinPrice = r?.data?.brokerageMinPrice;
+          item.brokerageMaxPrice = r?.data?.brokerageMaxPrice;
+          item.brokerageText = buildBrokerageText(item);
+        } catch (e) {}
+      }),
+    );
     state.pagination.list = concat(state.pagination.list, list);
     state.pagination.total = Number(res?.data?.total || 0);
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
@@ -296,8 +338,14 @@
     line-height: 34rpx;
   }
 
-  .goods-price {
+  .goods-bottom {
     margin-top: 18rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .goods-price {
     color: #2d2d2d;
     display: flex;
     align-items: baseline;
@@ -314,8 +362,23 @@
     line-height: 48rpx;
   }
 
+  .goods-brokerage-tag {
+    flex-shrink: 0;
+    padding: 10rpx 18rpx;
+    border-radius: 10rpx;
+    border: 1px solid #fce7e0;
+    background: #fff7f5;
+  }
+
+  .goods-brokerage-text {
+    color: #f86306;
+    font-size: 24rpx;
+    font-weight: 500;
+    line-height: 32rpx;
+  }
+
   .footer-placeholder {
-    height: 150rpx;
+    height: 170rpx;
   }
 
   .footer {
