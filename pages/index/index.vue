@@ -33,7 +33,7 @@
             @tap="onTapHomeBrandStory"
           >
             <view class="home-sticky-bottom-left">
-              <text class="home-sticky-bottom-title">仙草品牌</text>
+              <text class="home-sticky-bottom-title">品牌故事</text>
               <text class="home-sticky-bottom-subtitle">以本草匠心滋养</text>
             </view>
             <image
