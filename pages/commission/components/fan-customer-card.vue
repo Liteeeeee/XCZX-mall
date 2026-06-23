@@ -10,7 +10,7 @@
         <text class="meta-text">加入时间：{{ formatDate(getJoinTime(item)) }}</text>
         <text class="meta-text">最后上线：{{ formatDate(getLastOnlineTime(item)) }}</text>
       </view>
-      <view class="customer-side">
+      <view class="customer-side" :class="{ 'only-archive': showArchive && !memberTagImage }">
         <image
           v-if="memberTagImage"
           class="member-tag-image"
@@ -176,6 +176,10 @@
     justify-content: space-between;
     align-items: flex-end;
     flex-shrink: 0;
+  }
+
+  .customer-side.only-archive {
+    justify-content: flex-end;
   }
 
   .member-tag-image {

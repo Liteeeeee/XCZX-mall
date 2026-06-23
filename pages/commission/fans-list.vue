@@ -39,7 +39,7 @@
 
       <view class="page-body">
         <view class="list-head">
-          <text class="list-head-title">{{ state.title }}</text>
+          <text class="list-head-title"></text>
           <text class="list-head-count">共 {{ state.pagination.total }} 位</text>
         </view>
 
