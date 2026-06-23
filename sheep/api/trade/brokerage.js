@@ -166,6 +166,33 @@ const BrokerageApi = {
       },
     });
   },
+  // 获取我的三日内生日粉丝分页
+  getBrokerageCustomerBirthdayPage: (params, custom = {}) => {
+    return request({
+      url: '/member/brokerage-customer/birthday-page',
+      method: 'GET',
+      params,
+      custom,
+    });
+  },
+  // 获取我的流失预警分页（超过指定天数未登录的客户）
+  getBrokerageCustomerChurnWarningPage: (params, custom = {}) => {
+    return request({
+      url: '/member/brokerage-customer/churn-warning-page',
+      method: 'GET',
+      params,
+      custom,
+    });
+  },
+  // 获取我的潜在购买分页（有浏览记录但指定天数内未下单的客户）
+  getBrokerageCustomerPotentialPurchasePage: (params, custom = {}) => {
+    return request({
+      url: '/member/brokerage-customer/potential-purchase-page',
+      method: 'GET',
+      params,
+      custom,
+    });
+  },
   // 获得粉丝分页
   getBrokerageUserFansPage: (params, custom = {}) => {
     return request({

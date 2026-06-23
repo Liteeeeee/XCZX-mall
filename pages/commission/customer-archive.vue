@@ -72,22 +72,8 @@
               :class="{ 'no-border': index === basicRows.length - 1 }"
             >
               <text class="info-label">{{ item.label }}</text>
-              <picker
-                v-if="item.type === 'date'"
-                class="picker"
-                mode="date"
-                :value="item.dateValue"
-                @change="(e) => handleDateChange(item.key, e)"
-              >
-                <view class="picker-trigger">
-                  <text class="info-value" :class="{ placeholder: item.isPlaceholder }">{{
-                    item.value
-                  }}</text>
-                  <uni-icons type="right" size="14" color="#C7C7C7" />
-                </view>
-              </picker>
               <view
-                v-else-if="item.type === 'text-input'"
+                v-if="item.type === 'text-input'"
                 class="picker-trigger"
                 @tap="openNicknameEditor"
               >
@@ -245,7 +231,7 @@
   });
 
   const basicRows = computed(() => [
-    buildDateRow('生日', detail.value?.birthday),
+    buildStaticRow('生日', formatDateEmpty(detail.value?.birthday)),
     buildInputRow('客户称呼', String(detail.value?.customerNickname || '').trim()),
     buildRowEmpty('上次登陆日期', formatDateEmpty(detail.value?.lastLoginTime)),
     buildRowEmpty('上次购买日期', formatDateEmpty(detail.value?.lastPurchaseTime)),
@@ -286,6 +272,16 @@
     };
   }
 
+  function buildStaticRow(label, value) {
+    const text = value || '未填写';
+    return {
+      label,
+      value: text,
+      isPlaceholder: !value,
+      type: 'static',
+    };
+  }
+
   function buildTagRow(label, options, currentValue) {
     const text = formatSelectedTagNames(options, currentValue);
     return {
@@ -304,19 +300,6 @@
       type: 'remark',
       value: text,
       isPlaceholder: text === '未填写',
-    };
-  }
-
-  function buildDateRow(label, rawValue) {
-    const text = rawValue ? sheep.$helper.timeFormat(rawValue, 'yyyy-mm-dd') : '请选择';
-    const dateStr = rawValue ? sheep.$helper.timeFormat(rawValue, 'yyyy-mm-dd') : '';
-    return {
-      label,
-      key: 'birthday',
-      value: text,
-      dateValue: dateStr,
-      isPlaceholder: !rawValue,
-      type: 'date',
     };
   }
 
@@ -422,13 +405,6 @@
     const text = String(state.remarkDraft || '').trim();
     const ok = await updateArchive({ customerRemark: text });
     if (ok) closeRemarkEditor();
-  }
-
-  async function handleDateChange(key, e) {
-    const dateStr = String(e?.detail?.value || '').trim();
-    if (!dateStr) return;
-    if (String(detail.value?.[key] || '').indexOf(dateStr) === 0) return;
-    await updateArchive({ [key]: `${dateStr} 00:00:00` });
   }
 
   function openNicknameEditor() {

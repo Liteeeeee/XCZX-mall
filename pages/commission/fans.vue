@@ -41,25 +41,25 @@
         <view class="stats-grid">
           <view class="stat-card stat-card-muted">
             <view class="stat-top">
-              <view class="stat-icon stat-icon-gray">
+              <view class="stat-icon">
                 <image class="stat-image" :src="countIcon" mode="aspectFit" />
               </view>
               <text class="stat-label">粉丝总数</text>
             </view>
             <text class="stat-value count-font">{{ totalFans }}</text>
           </view>
-          <view class="stat-card stat-card-green">
+          <view class="stat-card">
             <view class="stat-top">
-              <view class="stat-icon stat-icon-green">
+              <view class="stat-icon">
                 <image class="stat-image" :src="neoIcon" mode="aspectFit" />
               </view>
               <text class="stat-label">今日新增</text>
             </view>
             <text class="stat-value count-font">{{ todayNewFans }}</text>
           </view>
-          <view class="stat-card stat-card-orange">
+          <view class="stat-card">
             <view class="stat-top">
-              <view class="stat-icon stat-icon-orange">
+              <view class="stat-icon">
                 <image class="stat-image" :src="lostIcon" mode="aspectFit" />
               </view>
               <text class="stat-label">流失提醒</text>
@@ -290,6 +290,10 @@
     }
     if (name === '一键触达') {
       sheep.$router.go('/pages/commission/touch-user-select');
+      return;
+    }
+    if (name === '关怀提醒') {
+      sheep.$router.go('/pages/commission/care-reminder');
       return;
     }
     uni.showToast({

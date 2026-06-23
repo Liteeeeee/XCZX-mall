@@ -591,6 +591,19 @@
 					}
 				},
 				{
+					"path": "care-reminder",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "关怀提醒"
+					},
+					"meta": {
+						"auth": true,
+						"sync": true,
+						"title": "关怀提醒",
+						"group": "分销中心"
+					}
+				},
+				{
 					"path": "wording-resource",
 					"style": {
 						"navigationStyle": "custom",
