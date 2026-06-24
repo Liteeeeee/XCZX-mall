@@ -32,7 +32,10 @@
           </view>
         </view>
       </view>
-      <view class="header-placeholder" :style="{ paddingTop: sheep.$platform.navbar + 'px' }"></view>
+      <view
+        class="header-placeholder"
+        :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
+      ></view>
 
       <view class="page-body">
         <view
@@ -129,6 +132,7 @@
     const res = await CouponApi.getCouponTemplatePage({
       pageNo: state.pagination.pageNo,
       pageSize: state.pagination.pageSize,
+      type: 2,
     });
     state.initialized = true;
     if (res?.code !== 0) {
@@ -239,6 +243,7 @@
 
   .footer {
     position: fixed;
+    z-index: 999999;
     left: 0;
     bottom: 0;
     width: 100%;

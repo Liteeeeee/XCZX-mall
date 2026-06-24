@@ -193,11 +193,25 @@ function queryToParams(query) {
 
 function back() {
   // #ifdef H5
-  history.back();
+  if (history.length > 1) {
+    history.back();
+    return;
+  }
+  window.location = '/';
   // #endif
 
   // #ifndef H5
-  uni.navigateBack();
+  if (hasHistory()) {
+    uni.navigateBack();
+    return;
+  }
+  const currentRoute = '/' + String(getCurrentRoute('route') || '').replace(/^\/+/, '');
+  const fallbackUrl = currentRoute.startsWith('/pages/commission/')
+    ? '/pages/index/user'
+    : '/pages/index/index';
+  uni.switchTab({
+    url: fallbackUrl,
+  });
   // #endif
 }
 

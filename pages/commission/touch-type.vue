@@ -354,7 +354,9 @@
     uni.removeStorageSync(STORAGE_COUPON);
     uni.removeStorageSync(STORAGE_PRODUCT);
     setTimeout(() => {
-      sheep.$router.go('/pages/commission/fans', {}, { redirect: true });
+      uni.reLaunch({
+        url: '/pages/commission/index',
+      });
     }, 300);
   }
 
