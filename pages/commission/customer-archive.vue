@@ -233,7 +233,7 @@
   const basicRows = computed(() => [
     buildStaticRow('生日', formatDateEmpty(detail.value?.birthday)),
     buildInputRow('客户称呼', String(detail.value?.customerNickname || '').trim()),
-    buildRowEmpty('上次登陆日期', formatDateEmpty(detail.value?.lastLoginTime)),
+    buildRowEmpty('上次登录日期', formatDateEmpty(detail.value?.lastLoginTime)),
     buildRowEmpty('上次购买日期', formatDateEmpty(detail.value?.lastPurchaseTime)),
     buildRowEmpty('历史消费', formatConsumeTextEmpty(detail.value)),
     buildRowEmpty(
