@@ -165,6 +165,7 @@
   const state = reactive({
     summary: {},
     fallbackTodayNewFans: 0,
+    archiveStatistics: {},
     previewMap: {
       good: {
         list: [],
@@ -198,7 +199,14 @@
 
   const lossReminderCount = computed(() => {
     return Number(
-      state.summary?.lossReminderCount ||
+      state.archiveStatistics?.churnWarningCount ||
+        state.archiveStatistics?.lossReminderCount ||
+        state.archiveStatistics?.warnFanCount ||
+        state.archiveStatistics?.warnCount ||
+        state.archiveStatistics?.lossCount ||
+        state.archiveStatistics?.churnCount ||
+        state.archiveStatistics?.churn ||
+        state.summary?.lossReminderCount ||
         state.summary?.lostFanCount ||
         state.summary?.warnFanCount ||
         state.summary?.lossFansCount ||
@@ -248,6 +256,15 @@
     state.summary = res.data || {};
   }
 
+  async function loadArchiveStatistics() {
+    const res = await BrokerageApi.getBrokerageCustomerStatistics({}, { showLoading: false });
+    if (res?.code !== 0) {
+      state.archiveStatistics = {};
+      return;
+    }
+    state.archiveStatistics = res?.data || {};
+  }
+
   async function loadPreviewList(goodFan) {
     const res = await BrokerageApi.getBrokerageCustomerPage(
       {
@@ -273,7 +290,12 @@
   }
 
   async function loadPageData() {
-    await Promise.all([loadSummary(), loadPreviewList(true), loadPreviewList(false)]);
+    await Promise.all([
+      loadSummary(),
+      loadArchiveStatistics(),
+      loadPreviewList(true),
+      loadPreviewList(false),
+    ]);
   }
 
   function goFanList(goodFan) {

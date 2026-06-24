@@ -1,4 +1,5 @@
 import request from '@/sheep/request';
+import { baseUrl } from '@/sheep/config';
 
 const BrokerageApi = {
   // 绑定推广员 (基于 promotionId 调用的管理员创建绑定关系接口)
@@ -188,6 +189,14 @@ const BrokerageApi = {
   getBrokerageCustomerPotentialPurchasePage: (params, custom = {}) => {
     return request({
       url: '/member/brokerage-customer/potential-purchase-page',
+      method: 'GET',
+      params,
+      custom,
+    });
+  },
+  getBrokerageCustomerStatistics: (params = {}, custom = {}) => {
+    return request({
+      url: `/member/brokerage-customer/statistics`,
       method: 'GET',
       params,
       custom,
