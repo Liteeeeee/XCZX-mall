@@ -73,6 +73,10 @@
         <text class="balance-tip"
           >可提现余额{{ fen2yuan(state.brokerageInfo.brokeragePrice) }}元</text
         >
+        <view class="withdraw-audit-tip">
+          <text class="withdraw-audit-tip-text">{{ withdrawThresholdTip }}</text>
+          <text class="withdraw-audit-tip-text">{{ withdrawArrivalTip }}</text>
+        </view>
       </view>
 
       <view class="rules-card flex-col">
@@ -204,6 +208,8 @@
 
   const withdrawRuleItems = computed(() => {
     const balanceYuan = fen2yuan(state.brokerageInfo?.brokeragePrice || 0);
+    const frozenYuan = fen2yuan(state.brokerageInfo?.frozenPrice || 0);
+    const frozenDays = Number(state.frozenDays || 0) || 0;
     const minLimit = Number(state.minPrice || 0) || 0;
     const maxLimit = Number(state.maxPrice || 0) || 0;
     const actualMin = minLimit > 0 ? minLimit : 200;
@@ -213,6 +219,13 @@
     const arrivalTime = state.withdrawArrivalTime || '审核通过后1-3个工作日到账';
 
     return [
+      { label: '可提现额度', value: `${balanceYuan}元` },
+      { label: '提现门槛', value: `账户可提现金额满${actualMin}元后方可申请提现` },
+      { label: '冻结收益', value: `${frozenYuan}元` },
+      {
+        label: '冻结期',
+        value: frozenDays > 0 ? `${frozenDays}天（冻结期内收益不可提现）` : '无',
+      },
       {
         label: '单笔额度',
         value: `最低${actualMin}元${maxLimit > 0 ? `，最高${maxLimit}元` : ''}`,
@@ -221,16 +234,38 @@
       { label: '提现时间', value: timeRange },
       { label: '审核时间', value: auditTime },
       { label: '到账时间', value: arrivalTime },
+      { label: '到账说明', value: '提现申请提交后进入审核流程，非即时到账' },
+      { label: '申请限制', value: '同一时间仅可提交1笔，审核结束后可再次申请' },
     ];
+  });
+
+  const withdrawThresholdTip = computed(() => {
+    const minLimit = Number(state.minPrice || 0) || 0;
+    const actualMin = minLimit > 0 ? minLimit : 200;
+    return `提现门槛：账户可提现金额满${actualMin}元后方可申请提现`;
+  });
+
+  const withdrawArrivalTip = computed(() => {
+    const arrivalTime = state.withdrawArrivalTime || '审核通过后1-3个工作日到账';
+    return `到账说明：提现申请提交后需平台审核，非即时到账，通常${arrivalTime}`;
   });
 
   const withdrawStatementLines = computed(() => {
     const base = withdrawRuleItems.value.map((it) => `${it.label}：${it.value}`);
-    return base.concat([
+    const frozenDays = Number(state.frozenDays || 0) || 0;
+    const extra = [
+      '可提现额度为已结算且非冻结的收益金额，具体以页面展示为准',
+      withdrawThresholdTip.value,
+      '提现申请提交后需先审核，平台不支持即时提现或即时到账',
+      frozenDays > 0
+        ? `佣金收益存在${frozenDays}天售后冻结期，冻结期结束后自动解冻`
+        : '佣金收益无售后冻结期',
       '同一时间只能申请一笔提现，在审核结束前不能再次申请',
       '已申请提现的金额会从账户余额中扣除，并被冻结',
       '提现失败后，冻结金额会再次计入账户余额中，可重新申请提现',
-    ]);
+      '实际审核与到账时间可能受节假日、渠道处理进度影响，请以最终到账为准',
+    ].filter(Boolean);
+    return base.concat(extra);
   });
 
   const withdrawAccountText = computed(() => {
@@ -749,6 +784,24 @@
     white-space: nowrap;
     line-height: 33rpx;
     margin-top: 21rpx;
+  }
+
+  .withdraw-audit-tip {
+    margin-top: 16rpx;
+    padding: 16rpx 18rpx;
+    background: rgba(248, 249, 243, 1);
+    border-radius: 20rpx;
+  }
+
+  .withdraw-audit-tip-text {
+    display: block;
+    color: rgba(102, 102, 102, 1);
+    font-size: 24rpx;
+    line-height: 36rpx;
+  }
+
+  .withdraw-audit-tip-text + .withdraw-audit-tip-text {
+    margin-top: 6rpx;
   }
 
   .rules-card {

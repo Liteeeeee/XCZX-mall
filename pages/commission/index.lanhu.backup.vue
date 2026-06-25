@@ -53,7 +53,7 @@
               <uni-icons type="info" size="16" color="rgba(102, 102, 102, 0.8)" />
             </view>
             <view v-if="state.showFrozenTip" class="frozen-tip">
-              <text class="frozen-tip-text">7天售后冻结期，确认收货无纠纷后自动解冻</text>
+              <text class="frozen-tip-text">{{ frozenTipText }}</text>
             </view>
           </view>
           <text class="text_4 count-font">{{ showMoney ? fen2yuan(withdrawingFen) : '***' }}</text>
@@ -84,6 +84,26 @@
         </view>
         <view class="text-wrapper_3 flex-col" @tap="onWithdrawNow">
           <text class="text_16">立即提现</text>
+        </view>
+        <view class="withdraw-notice-box flex-col">
+          <text class="withdraw-notice-text">{{ withdrawThresholdTip }}</text>
+          <text class="withdraw-notice-text">{{ withdrawArrivalTip }}</text>
+        </view>
+      </view>
+
+      <view class="withdraw-rule-card flex-col">
+        <view class="withdraw-rule-head flex-row align-center justify-between">
+          <text class="withdraw-rule-title">提现规则</text>
+        </view>
+        <view class="withdraw-rule-list flex-col">
+          <view
+            v-for="(item, idx) in withdrawRuleItems"
+            :key="idx"
+            class="withdraw-rule-row flex-row justify-between"
+          >
+            <text class="withdraw-rule-label">{{ item.label }}</text>
+            <text class="withdraw-rule-value">{{ item.value }}</text>
+          </view>
         </view>
       </view>
 
@@ -151,6 +171,8 @@
   import BrokerageApi from '@/sheep/api/trade/brokerage';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import { concat } from 'lodash-es';
+  import TradeConfigApi from '@/sheep/api/trade/config';
+  import BrokerageWithdrawConfigApi from '@/sheep/api/trade/brokerageWithdrawConfig';
 
   /** 分销邀请 */
   const shareInfo = computed(() => {
@@ -184,6 +206,13 @@
     summary: {},
     todayStatistics: {},
     brokerageUser: {},
+    frozenDays: 0,
+    minPrice: 0,
+    maxPrice: 0,
+    withdrawDailyTimes: 1,
+    withdrawTimeRange: '全天可申请',
+    withdrawArrivalTime: '审核通过后1-3个工作日到账',
+    withdrawAuditTime: '提交后1-3个工作日完成审核',
     currentTab: 0, // 0 明细 1 收入 2 支出
     showFrozenTip: false,
     pagination: {
@@ -199,6 +228,11 @@
   const balanceFen = computed(() => Number(state.summary?.brokeragePrice) || 0);
   const withdrawingFen = computed(() => Number(state.summary?.frozenPrice) || 0);
   const totalEarnedFen = computed(() => Number(state.brokerageUser?.historyBrokeragePrice) || 0);
+  const frozenTipText = computed(() => {
+    const days = Number(state.frozenDays || 0) || 0;
+    if (days <= 0) return '存在售后冻结期，确认收货无纠纷后自动解冻';
+    return `${days}天售后冻结期，确认收货无纠纷后自动解冻`;
+  });
 
   const todayExpectedIncome = computed(() => {
     return fen2yuan(Number(state.todayStatistics?.todayBrokeragePrice || 0));
@@ -211,6 +245,46 @@
   });
 
   const tabLineOffset = computed(() => 55 + 174 * state.currentTab);
+
+  const withdrawRuleItems = computed(() => {
+    const balanceYuan = fen2yuan(balanceFen.value || 0);
+    const frozenYuan = fen2yuan(withdrawingFen.value || 0);
+    const frozenDays = Number(state.frozenDays || 0) || 0;
+    const minLimit = Number(state.minPrice || 0) || 0;
+    const maxLimit = Number(state.maxPrice || 0) || 0;
+    const actualMin = minLimit > 0 ? minLimit : 200;
+    const daily = Number(state.withdrawDailyTimes || 0) || 1;
+    const timeRange = state.withdrawTimeRange || '全天可申请';
+    const auditTime = state.withdrawAuditTime || '提交后1-3个工作日完成审核';
+    const arrivalTime = state.withdrawArrivalTime || '审核通过后1-3个工作日到账';
+    return [
+      { label: '可提现额度', value: `${balanceYuan}元` },
+      { label: '提现门槛', value: `账户可提现金额满${actualMin}元后方可申请提现` },
+      { label: '每日次数', value: `${daily}次` },
+      {
+        label: '单笔额度',
+        value: `最低${actualMin}元${maxLimit > 0 ? `，最高${maxLimit}元` : ''}`,
+      },
+      { label: '提现时间', value: timeRange },
+      { label: '审核时间', value: auditTime },
+      { label: '到账时间', value: arrivalTime },
+      { label: '到账说明', value: '提现申请提交后进入审核流程，非即时到账' },
+      { label: '冻结期', value: frozenDays > 0 ? `${frozenDays}天（冻结期内收益不可提现）` : '无' },
+      { label: '冻结收益', value: `${frozenYuan}元` },
+      { label: '申请限制', value: '同一时间仅可提交1笔，审核结束后可再次申请' },
+    ];
+  });
+
+  const withdrawThresholdTip = computed(() => {
+    const minLimit = Number(state.minPrice || 0) || 0;
+    const actualMin = minLimit > 0 ? minLimit : 200;
+    return `提现门槛：账户可提现金额满${actualMin}元后方可申请提现`;
+  });
+
+  const withdrawArrivalTip = computed(() => {
+    const arrivalTime = state.withdrawArrivalTime || '审核通过后1-3个工作日到账';
+    return `到账说明：提现申请提交后需平台审核，非即时到账，通常${arrivalTime}`;
+  });
 
   function formatDate(t) {
     if (!t) return '';
@@ -252,6 +326,117 @@
     if (!res || typeof res !== 'object') return;
     if (res.code !== 0) return;
     state.todayStatistics = res.data || {};
+  }
+
+  async function loadTradeConfig() {
+    const { code, data } = await TradeConfigApi.getTradeConfig();
+    if (code !== 0) return;
+    state.frozenDays = Number(data?.brokerageFrozenDays || 0) || 0;
+  }
+
+  function normalizeWithdrawPrice(value) {
+    const n = Number(value);
+    if (!n || n <= 0) {
+      return 0;
+    }
+    return n / 100;
+  }
+
+  function pickNumber(obj, keys = []) {
+    if (!obj) {
+      return 0;
+    }
+    for (const k of keys) {
+      const v = obj[k];
+      const n = Number(v);
+      if (!Number.isNaN(n) && n > 0) {
+        return n;
+      }
+    }
+    return 0;
+  }
+
+  function pickString(obj, keys = []) {
+    if (!obj) return '';
+    for (const k of keys) {
+      const v = obj[k];
+      if (typeof v === 'string' && v.trim()) return v.trim();
+    }
+    return '';
+  }
+
+  function pickTimeRange(obj) {
+    if (!obj) return '';
+    const start =
+      pickString(obj, ['withdrawStartTime', 'startTime', 'timeStart', 'withdrawTimeStart']) || '';
+    const end = pickString(obj, ['withdrawEndTime', 'endTime', 'timeEnd', 'withdrawTimeEnd']) || '';
+    if (start && end) return `${start}-${end}`;
+    return '';
+  }
+
+  async function loadWithdrawConfig() {
+    const code = 'default';
+    const { code: resCode, data } = await BrokerageWithdrawConfigApi.getBrokerageWithdrawConfig(
+      code,
+    );
+    if (resCode !== 0 || !data) return;
+
+    const minRaw = pickNumber(data, [
+      'minPrice',
+      'withdrawMinPrice',
+      'minWithdrawPrice',
+      'minWithdrawAmount',
+      'minAmount',
+    ]);
+    const maxRaw = pickNumber(data, [
+      'maxPrice',
+      'withdrawMaxPrice',
+      'maxWithdrawPrice',
+      'maxWithdrawAmount',
+      'maxAmount',
+    ]);
+    state.minPrice = normalizeWithdrawPrice(minRaw);
+    state.maxPrice = normalizeWithdrawPrice(maxRaw);
+
+    const dailyTimes = pickNumber(data, [
+      'withdrawDailyTimes',
+      'dailyTimes',
+      'dayTimes',
+      'maxTimesPerDay',
+      'dayWithdrawLimit',
+      'dayWithdrawTimes',
+    ]);
+    if (dailyTimes > 0) {
+      state.withdrawDailyTimes = dailyTimes;
+    }
+
+    const timeRange =
+      pickString(data, ['withdrawTimeRange', 'withdrawTime', 'timeRange', 'availableTime']) ||
+      pickTimeRange(data);
+    if (timeRange) {
+      state.withdrawTimeRange = timeRange;
+    }
+
+    const auditTime = pickString(data, [
+      'withdrawAuditTime',
+      'auditTime',
+      'reviewTime',
+      'auditDesc',
+    ]);
+    if (auditTime) {
+      state.withdrawAuditTime = auditTime;
+    }
+
+    const arrivalTime = pickString(data, [
+      'withdrawArrivalTime',
+      'arrivalTime',
+      'transferTime',
+      '到账时间',
+      'arrivalDesc',
+    ]);
+    if (arrivalTime) {
+      state.withdrawArrivalTime = arrivalTime;
+    }
   }
 
   async function loadList() {
@@ -386,14 +571,26 @@
 
   onShow(async () => {
     resetPagination();
-    await Promise.all([loadSummary(), loadTodayStatistics(), loadBrokerageUser()]);
+    await Promise.all([
+      loadSummary(),
+      loadTodayStatistics(),
+      loadBrokerageUser(),
+      loadTradeConfig(),
+      loadWithdrawConfig(),
+    ]);
     await loadList();
   });
 
   onPullDownRefresh(async () => {
     try {
       resetPagination();
-      await Promise.all([loadSummary(), loadTodayStatistics(), loadBrokerageUser()]);
+      await Promise.all([
+        loadSummary(),
+        loadTodayStatistics(),
+        loadBrokerageUser(),
+        loadTradeConfig(),
+        loadWithdrawConfig(),
+      ]);
       await loadList();
     } finally {
       uni.stopPullDownRefresh();
@@ -570,6 +767,54 @@
     box-sizing: border-box;
   }
 
+  .withdraw-rule-card {
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 20rpx;
+    width: 686rpx;
+    align-self: center;
+    padding: 34rpx 32rpx 36rpx 32rpx;
+    margin: 20rpx auto 0 auto;
+    box-sizing: border-box;
+  }
+
+  .withdraw-rule-title {
+    color: rgba(0, 0, 0, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    line-height: 40rpx;
+  }
+
+  .withdraw-rule-row {
+    padding: 14rpx 0;
+    border-bottom: 2rpx solid rgba(157, 156, 150, 0.2);
+  }
+
+  .withdraw-rule-row:last-child {
+    border-bottom: none;
+  }
+
+  .withdraw-rule-label {
+    color: rgba(102, 102, 102, 0.8);
+    font-size: 26rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    line-height: 37rpx;
+    flex-shrink: 0;
+    width: 180rpx;
+  }
+
+  .withdraw-rule-value {
+    color: rgba(61, 61, 60, 1);
+    font-size: 26rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    line-height: 37rpx;
+    flex: 1;
+    text-align: right;
+    white-space: normal;
+  }
+
   .text_7 {
     overflow-wrap: break-word;
     color: rgba(102, 102, 102, 0.8);
@@ -654,6 +899,24 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  .withdraw-notice-box {
+    margin-top: 20rpx;
+    padding: 18rpx 20rpx;
+    background: rgba(248, 249, 243, 1);
+    border-radius: 18rpx;
+  }
+
+  .withdraw-notice-text {
+    color: rgba(102, 102, 102, 1);
+    font-size: 24rpx;
+    line-height: 36rpx;
+    white-space: normal;
+  }
+
+  .withdraw-notice-text + .withdraw-notice-text {
+    margin-top: 6rpx;
   }
 
   .text_16 {

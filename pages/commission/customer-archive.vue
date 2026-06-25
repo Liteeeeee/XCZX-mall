@@ -98,7 +98,7 @@
             <image class="preference-icon-img" :src="consumeIcon" mode="aspectFit" />
             <view class="preference-main">
               <text class="preference-title">消费喜好</text>
-              <text class="preference-desc">编辑客户的消费喜好，方便为您推荐适合的商品</text>
+              <text class="preference-desc">编辑客户的消费喜好，方便您为客户推荐适合的商品</text>
             </view>
             <uni-icons type="right" size="14" color="#4C92FF" />
           </view>
