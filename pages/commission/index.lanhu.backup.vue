@@ -259,7 +259,10 @@
     const arrivalTime = state.withdrawArrivalTime || '审核通过后1-3个工作日到账';
     return [
       { label: '可提现额度', value: `${balanceYuan}元` },
-      { label: '提现门槛', value: `账户可提现金额满${actualMin}元后方可申请提现` },
+      {
+        label: '提现门槛',
+        value: `账户可提现金额满${actualMin}元后方可申请提现，每人每日最多可提现1000元。`,
+      },
       { label: '每日次数', value: `${daily}次` },
       {
         label: '单笔额度',
@@ -278,7 +281,7 @@
   const withdrawThresholdTip = computed(() => {
     const minLimit = Number(state.minPrice || 0) || 0;
     const actualMin = minLimit > 0 ? minLimit : 200;
-    return `提现门槛：账户可提现金额满${actualMin}元后方可申请提现`;
+    return `提现门槛：账户可提现金额满${actualMin}元后方可申请提现，每人每日最多可提现1000元。`;
   });
 
   const withdrawArrivalTip = computed(() => {

@@ -147,9 +147,13 @@ http.interceptors.response.use(
       if (response.data.code === 401) {
         return refreshToken(response.config);
       }
-      // 特殊：处理推广员绑定失败的提示
-      if ((response.data.code + '').includes('1011007')) {
-        console.error(`推广员绑定失败，原因：${response.data.msg}`);
+      // 特殊：处理推广员绑定接口返回的 msg，通过 toast 提示用户
+      if ((response.data.code + '').includes('1011007')||(response.data.code + '').includes('1011011005')) {
+        uni.showToast({
+          title: response.data.msg || '推广员绑定失败',
+          icon: 'none',
+          mask: true,
+        });
       } else if (response.config.custom.showError) {
         // 错误提示
         uni.showToast({

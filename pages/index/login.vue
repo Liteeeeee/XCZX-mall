@@ -115,6 +115,7 @@
   import test from '@/sheep/helper/test.js';
   import AuthUtil from '@/sheep/api/member/auth';
   import { getSmsCode, getSmsTimer } from '@/sheep/hooks/useModal';
+  import $share from '@/sheep/platform/share';
 
   const state = reactive({
     mobile: '',
@@ -198,6 +199,12 @@
       uni.removeStorageSync('shareId');
     }
 
+    // 登录成功后触发推广员绑定，确保绑定完成后再跳转
+    await $share.bindBrokerageUser();
+
+    // 延迟片刻再跳转，确保 toast 提示有足够时间展示
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     const returnUrl = uni.getStorageSync('returnUrl');
     if (returnUrl) {
       uni.removeStorage({ key: 'returnUrl' });
@@ -224,6 +231,13 @@
     if (!result) {
       return;
     }
+
+    // 登录成功后触发推广员绑定，确保绑定完成后再跳转
+    await $share.bindBrokerageUser();
+
+    // 延迟片刻再跳转，确保 toast 提示有足够时间展示
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     const returnUrl = uni.getStorageSync('returnUrl');
     if (returnUrl) {
       uni.removeStorage({ key: 'returnUrl' });

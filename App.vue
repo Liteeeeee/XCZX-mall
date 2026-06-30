@@ -3,7 +3,7 @@
   import { ShoproInit } from './sheep';
   import $share from '@/sheep/platform/share';
 
-  onLaunch((options) => {
+  onLaunch(async (options) => {
     // 隐藏原生导航栏 使用自定义底部导航
     uni.hideTabBar({
       fail: () => {},
@@ -13,7 +13,7 @@
     ShoproInit();
 
     // 全局处理扫码/太阳码携带的 promotionId，避免仅首页生效
-    $share.handlePromotionEntry(options);
+    await $share.handlePromotionEntry(options);
 
     const currentPath = options?.path ? `/${options.path}` : '';
     const params = {

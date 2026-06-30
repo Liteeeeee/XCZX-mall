@@ -309,8 +309,9 @@ const bindBrokerageUser = async () => {
         cityId: userInfo.cityId || 0,
         remark: '通过推广链接/二维码绑定',
       });
-      if (res.code === 0 || res.code > 0) {
+      if (res.code === 0) {
         uni.removeStorageSync('promotionId');
+        uni.showToast({ title: res.msg || '推广员绑定成功', icon: 'success' });
       }
     }
     // 存在 shareId，走 app-api 分销用户绑定接口
@@ -318,8 +319,9 @@ const bindBrokerageUser = async () => {
       res = await BrokerageApi.bindBrokerageUserByShareId({
         bindUserId: shareId,
       });
-      if (res.code === 0 || res.code > 0) {
+      if (res.code === 0) {
         uni.removeStorageSync('shareId');
+        uni.showToast({ title: res.msg || '分销绑定成功', icon: 'success' });
       }
     }
   } catch (e) {
@@ -344,13 +346,6 @@ const parseSceneParams = (scene) => {
       params[key] = value;
     });
   return params;
-};
-
-const buildQueryString = (params = {}) => {
-  return Object.keys(params)
-    .filter((key) => typeof params[key] !== 'undefined' && params[key] !== '')
-    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key])}`)
-    .join('&');
 };
 
 function normalizePagePath(path = '') {
@@ -385,29 +380,12 @@ const extractEntryParams = (options = {}) => {
   return params;
 };
 
-const getPromotionReturnUrl = (promotionId, options = {}, params = {}) => {
-  if (promotionId === 2) {
+const getPromotionReturnUrl = (promotionId) => {
+  // promotionId 存在时，统一跳转到分销申请页，用户登录后/已登录时根据自身分销状态展示
+  if (promotionId) {
     return '/pages/commission/apply';
   }
-  return buildEntryReturnUrl(options, params);
-};
-
-const buildEntryReturnUrl = (options = {}, params = {}) => {
-  const page = normalizePagePath(options.path);
-  if (!page || page === '/pages/index/login') {
-    return '';
-  }
-  if (!isAllowedShareLanding(page)) {
-    return SharePageEnum.HOME.page;
-  }
-  const query = {
-    ...(options.query || {}),
-    ...params,
-  };
-  delete query.scene;
-  delete query.promotionId;
-  const queryString = buildQueryString(query);
-  return `${page}${queryString ? `?${queryString}` : ''}`;
+  return '';
 };
 
 const handlePromotionEntry = async (options = {}) => {
@@ -417,7 +395,7 @@ const handlePromotionEntry = async (options = {}) => {
     return false;
   }
   const currentPage = normalizePagePath(options.path);
-  const returnUrl = getPromotionReturnUrl(promotionId, options, params);
+  const returnUrl = getPromotionReturnUrl(promotionId);
   uni.setStorageSync('promotionId', String(promotionId));
   const userStore = $store('user');
   if (userStore.isLogin) {

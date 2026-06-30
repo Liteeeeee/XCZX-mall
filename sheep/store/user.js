@@ -143,8 +143,8 @@ const user = defineStore({
         showAuthModal('changeMobile');
       }
 
-      // 绑定推广员
-      $share.bindBrokerageUser();
+      // 绑定推广员（必须 await，确保绑定完成后再继续后续流程）
+      await $share.bindBrokerageUser();
     },
 
     // 登出系统
