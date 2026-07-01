@@ -222,7 +222,7 @@
       { label: '可提现额度', value: `${balanceYuan}元` },
       {
         label: '提现门槛',
-        value: `账户可提现金额满${actualMin}元后方可申请提现，每人每日提现上限为1000元。`,
+        value: `账户可提现金额满${actualMin}元后方可申请提现。`,
       },
       { label: '冻结收益', value: `${frozenYuan}元` },
       {
@@ -245,7 +245,7 @@
   const withdrawThresholdTip = computed(() => {
     const minLimit = Number(state.minPrice || 0) || 0;
     const actualMin = minLimit > 0 ? minLimit : 200;
-    return `提现门槛：账户可提现金额满${actualMin}元后方可申请提现，每人每日提现上限为1000元。`;
+    return `提现门槛：账户可提现金额满${actualMin}元后方可申请提现。`;
   });
 
   const withdrawArrivalTip = computed(() => {

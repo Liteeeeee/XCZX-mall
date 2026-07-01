@@ -309,8 +309,8 @@ const bindBrokerageUser = async () => {
         cityId: userInfo.cityId || 0,
         remark: '通过推广链接/二维码绑定',
       });
+      uni.removeStorageSync('promotionId');
       if (res.code === 0) {
-        uni.removeStorageSync('promotionId');
         uni.showToast({ title: res.msg || '推广员绑定成功', icon: 'success' });
       }
     }
@@ -319,8 +319,8 @@ const bindBrokerageUser = async () => {
       res = await BrokerageApi.bindBrokerageUserByShareId({
         bindUserId: shareId,
       });
+      uni.removeStorageSync('shareId');
       if (res.code === 0) {
-        uni.removeStorageSync('shareId');
         uni.showToast({ title: res.msg || '分销绑定成功', icon: 'success' });
       }
     }

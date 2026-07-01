@@ -82,12 +82,25 @@
             <text class="text_15 count-font">{{ todayPromoteCount }}</text>
           </view>
         </view>
-        <view class="text-wrapper_3 flex-col" @tap="onWithdrawNow">
-          <text class="text_16">立即提现</text>
+        <view
+          class="text-wrapper_3 flex-col"
+          :class="{ 'withdraw-btn-disabled': !canApplyWithdraw }"
+          @tap="onWithdrawNow"
+        >
+          <text class="text_16">申请提现</text>
         </view>
         <view class="withdraw-notice-box flex-col">
           <text class="withdraw-notice-text">{{ withdrawThresholdTip }}</text>
           <text class="withdraw-notice-text">{{ withdrawArrivalTip }}</text>
+          <text v-if="withdrawInsufficientTip" class="withdraw-notice-text">{{
+            withdrawInsufficientTip
+          }}</text>
+        </view>
+        <view class="withdraw-agreement-row flex-row align-center justify-center">
+          <text class="withdraw-agreement-text">提现申请需遵守</text>
+          <text class="withdraw-agreement-link" @tap.stop="state.showWithdrawStatement = true"
+            >《提现相关声明》</text
+          >
         </view>
       </view>
 
@@ -160,6 +173,40 @@
         />
       </view>
     </view>
+
+    <su-popup
+      :show="state.showWithdrawStatement"
+      type="bottom"
+      round="20"
+      @close="state.showWithdrawStatement = false"
+      showClose
+      backgroundColor="rgba(255, 255, 250, 1.0)"
+    >
+      <view class="statement-modal flex-col">
+        <text class="statement-title">提现相关声明</text>
+        <scroll-view class="statement-content" scroll-y>
+          <view class="statement-text">
+            <view class="statement-subtitle">收益说明</view>
+            (1)您的粉丝下单付款并完成收货后，您将获得佣金收益;<br />
+            (2)当出现取消订单、退货退款、或者因订单异常等情况时，将相应扣除收益，实际根据系统结算为准。<br />
+            <view class="statement-subtitle">名词解析</view>
+            1.累计推广收益:自您成为平台合伙人之日起至今已经结算的收益合计;<br />
+            2.今日付款订单:今天确认付款的订单;<br />
+            3.今日预估订单收益:今日所有已付款订单的预估收益;<br />
+            4.今日推广商品:今日推广商品次数;<br />
+            <view class="statement-subtitle">提现说明</view>
+            <view v-for="(line, idx) in withdrawStatementLines" :key="idx">
+              {{ idx + 1 }}.{{ line }};<br />
+            </view>
+          </view>
+        </scroll-view>
+        <view class="statement-footer flex-col">
+          <button class="ss-reset-button statement-btn" @tap="state.showWithdrawStatement = false">
+            <text class="statement-btn-text">我已知晓</text>
+          </button>
+        </view>
+      </view>
+    </su-popup>
   </s-layout>
 </template>
 
@@ -215,6 +262,7 @@
     withdrawAuditTime: '提交后1-3个工作日完成审核',
     currentTab: 0, // 0 明细 1 收入 2 支出
     showFrozenTip: false,
+    showWithdrawStatement: false,
     pagination: {
       list: [],
       total: 0,
@@ -261,7 +309,7 @@
       { label: '可提现额度', value: `${balanceYuan}元` },
       {
         label: '提现门槛',
-        value: `账户可提现金额满${actualMin}元后方可申请提现，每人每日最多可提现1000元。`,
+        value: `账户可提现金额满${actualMin}元后方可申请提现。`,
       },
       { label: '每日次数', value: `${daily}次` },
       {
@@ -281,12 +329,50 @@
   const withdrawThresholdTip = computed(() => {
     const minLimit = Number(state.minPrice || 0) || 0;
     const actualMin = minLimit > 0 ? minLimit : 200;
-    return `提现门槛：账户可提现金额满${actualMin}元后方可申请提现，每人每日最多可提现1000元。`;
+    return `提现门槛：账户可提现金额满${actualMin}元后方可申请提现。`;
+  });
+
+  const withdrawMinLimit = computed(() => {
+    const minLimit = Number(state.minPrice || 0) || 0;
+    return minLimit > 0 ? minLimit : 200;
+  });
+
+  const canApplyWithdraw = computed(() => {
+    const min = Number(withdrawMinLimit.value || 0) || 0;
+    const balance = Number(balanceFen.value || 0) / 100;
+    if (!min) return true;
+    return balance >= min;
+  });
+
+  const withdrawInsufficientTip = computed(() => {
+    if (canApplyWithdraw.value) return '';
+    const min = Number(withdrawMinLimit.value || 0) || 0;
+    const balance = Number(balanceFen.value || 0) / 100;
+    const gap = Math.max(0, min - balance);
+    return `当前可提现额度不足${min}元，距离可申请还差${gap.toFixed(2)}元`;
   });
 
   const withdrawArrivalTip = computed(() => {
     const arrivalTime = state.withdrawArrivalTime || '审核通过后1-3个工作日到账';
     return `到账说明：提现申请提交后需平台审核，非即时到账，通常${arrivalTime}`;
+  });
+
+  const withdrawStatementLines = computed(() => {
+    const frozenDays = Number(state.frozenDays || 0) || 0;
+    const base = withdrawRuleItems.value.map((it) => `${it.label}：${it.value}`);
+    const extra = [
+      '可提现额度为已结算且非冻结的收益金额，具体以页面展示为准',
+      withdrawThresholdTip.value,
+      '提现申请提交后需先审核，平台不支持即时提现或即时到账',
+      frozenDays > 0
+        ? `佣金收益存在${frozenDays}天售后冻结期，冻结期结束后自动解冻`
+        : '佣金收益无售后冻结期',
+      '同一时间只能申请一笔提现，在审核结束前不能再次申请',
+      '已申请提现的金额会从账户余额中扣除，并被冻结',
+      '提现失败后，冻结金额会再次计入账户余额中，可重新申请提现',
+      '实际审核与到账时间可能受节假日、渠道处理进度影响，请以最终到账为准',
+    ].filter(Boolean);
+    return base.concat(extra);
   });
 
   function formatDate(t) {
@@ -554,6 +640,11 @@
   }
 
   function onWithdrawNow() {
+    if (!canApplyWithdraw.value) {
+      sheep.$helper.toast(`当前可提现额度不足${withdrawMinLimit.value}元，暂不可申请提现`);
+      state.showWithdrawStatement = true;
+      return;
+    }
     sheep.$router.go('/pages/commission/withdraw');
   }
 
@@ -1138,5 +1229,96 @@
     font-size: 28rpx;
     color: rgba(157, 156, 150, 1);
     padding: 60rpx 0;
+  }
+
+  .withdraw-agreement-row {
+    margin-top: 18rpx;
+    font-size: 24rpx;
+    line-height: 34rpx;
+  }
+
+  .withdraw-agreement-text {
+    color: rgba(157, 156, 150, 1);
+  }
+
+  .withdraw-agreement-link {
+    margin-left: 8rpx;
+    color: rgba(30, 63, 28, 1);
+  }
+
+  .statement-modal {
+    width: 100%;
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 20rpx 20rpx 0 0;
+    overflow: hidden;
+  }
+
+  .statement-title {
+    color: rgba(0, 0, 0, 0.9);
+    font-size: 36rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: center;
+    margin: 40rpx 32rpx 32rpx;
+  }
+
+  .statement-content {
+    width: 100%;
+    max-height: 60vh;
+    padding: 0 40rpx;
+    box-sizing: border-box;
+  }
+
+  .statement-text {
+    color: rgba(102, 102, 102, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Regular;
+    line-height: 48rpx;
+    margin-bottom: 40rpx;
+  }
+
+  .statement-subtitle {
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.9);
+    margin-top: 24rpx;
+    margin-bottom: 8rpx;
+    font-size: 30rpx;
+  }
+
+  .statement-subtitle:first-child {
+    margin-top: 0;
+  }
+
+  .statement-footer {
+    width: 100%;
+    padding: 24rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+    box-sizing: border-box;
+    background-color: rgba(255, 255, 250, 1);
+    box-shadow: 0rpx -6rpx 10rpx 0rpx rgba(0, 0, 0, 0.02);
+  }
+
+  .statement-btn {
+    background-color: rgba(30, 63, 28, 1);
+    border-radius: 20rpx;
+    border: 2rpx solid rgba(157, 156, 150, 1);
+    height: 88rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .statement-btn-text {
+    overflow-wrap: break-word;
+    color: rgba(255, 254, 250, 1);
+    font-size: 32rpx;
+    font-family: PingFangSC-Regular;
+    font-weight: normal;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 45rpx;
+  }
+
+  .withdraw-btn-disabled {
+    opacity: 0.6;
   }
 </style>
