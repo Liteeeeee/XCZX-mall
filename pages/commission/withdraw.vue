@@ -76,6 +76,14 @@
         <view class="withdraw-audit-tip">
           <text class="withdraw-audit-tip-text">{{ withdrawThresholdTip }}</text>
           <text class="withdraw-audit-tip-text">{{ withdrawArrivalTip }}</text>
+          <view class="withdraw-service-row flex-row align-center justify-between">
+            <text class="withdraw-audit-tip-text withdraw-service-text"
+              >如用户无法成功即时提现，请联系客服协助处理</text
+            >
+            <button class="ss-reset-button withdraw-contact-btn" open-type="contact">
+              联系客服
+            </button>
+          </view>
         </view>
       </view>
 
@@ -238,6 +246,7 @@
       { label: '审核时间', value: auditTime },
       { label: '到账时间', value: arrivalTime },
       { label: '到账说明', value: '提现申请提交后进入审核流程，非即时到账' },
+      { label: '客服协助', value: '如用户无法成功即时提现，请联系在线客服处理' },
       { label: '申请限制', value: '同一时间仅可提交1笔，审核结束后可再次申请' },
     ];
   });
@@ -263,6 +272,7 @@
       frozenDays > 0
         ? `佣金收益存在${frozenDays}天售后冻结期，冻结期结束后自动解冻`
         : '佣金收益无售后冻结期',
+      '如用户无法成功即时提现，请联系在线客服协助处理',
       '同一时间只能申请一笔提现，在审核结束前不能再次申请',
       '已申请提现的金额会从账户余额中扣除，并被冻结',
       '提现失败后，冻结金额会再次计入账户余额中，可重新申请提现',
@@ -805,6 +815,30 @@
 
   .withdraw-audit-tip-text + .withdraw-audit-tip-text {
     margin-top: 6rpx;
+  }
+
+  .withdraw-service-row {
+    margin-top: 12rpx;
+    gap: 16rpx;
+  }
+
+  .withdraw-service-text {
+    flex: 1;
+    white-space: normal;
+  }
+
+  .withdraw-contact-btn {
+    flex-shrink: 0;
+    min-width: 144rpx;
+    height: 56rpx;
+    padding: 0 20rpx;
+    border-radius: 28rpx;
+    background: rgba(30, 63, 28, 0.08);
+    border: 2rpx solid rgba(30, 63, 28, 0.18);
+    color: rgba(30, 63, 28, 1);
+    font-size: 24rpx;
+    line-height: 56rpx;
+    text-align: center;
   }
 
   .rules-card {

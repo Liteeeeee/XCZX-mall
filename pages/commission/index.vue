@@ -321,8 +321,8 @@
       const first = list[0] || {};
       const propertyName = String(first.propertyName ?? first.name ?? '').trim();
       const valueName = String(first.valueName ?? first.value ?? '').trim();
-      if (propertyName === '默认' && valueName === '默认') return '默认';
-      const text = `${propertyName}${valueName}`.trim();
+      if (propertyName === '默认' && valueName === '默认') return '规格：默认';
+      const text = `规格：${valueName}`.trim();
       if (text) return text;
     }
     return item?.name || '';
