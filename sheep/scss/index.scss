@@ -26,6 +26,13 @@ page {
   background-color: $bg-page;
   color: $dark-3;
 }
+
+._root p {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box !important;
+  display: block !important;
+}
 ::-webkit-scrollbar {
   width: 0;
   height: 0;
