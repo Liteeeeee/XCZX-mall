@@ -10,6 +10,11 @@
     :interval="data.interval * 1000"
     :mode="data.type"
     :height="swiperHeight"
+    :showActionButton="showMoreButton"
+    actionButtonText="查看更多"
+    :actionButtonWidth="280"
+    :actionButtonHeight="82"
+    :actionButtonBottom="44"
   />
 </template>
 
@@ -58,6 +63,11 @@
   });
 
   const swiperImageMode = computed(() => (props.data?.fullScreen ? 'aspectFill' : 'scaleToFill'));
+
+  const showMoreButton = computed(() => {
+    if (!props.data?.fullScreen) return false;
+    return Array.isArray(props.data?.items) && props.data.items.length > 0;
+  });
 
   const imgList = computed(() =>
     props.data.items.map((item) => {

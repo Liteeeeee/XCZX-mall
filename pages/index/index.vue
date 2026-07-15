@@ -274,7 +274,7 @@
   }
 
   function onTapHomeBrandStory() {
-    sheep.$router.go('/pages/index/story');
+    sheep.$router.go('https://www.xiancaozhenxuan.cn/');
   }
 
   function onTapHomeMember() {
@@ -598,6 +598,28 @@
     justify-content: center;
     bottom: 470rpx;
     z-index: 20;
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot.progress .progress-track) {
+    width: 200rpx;
+    height: 4rpx;
+    border-radius: 80rpx;
+    background: rgba(255, 255, 255, 0.32);
+    overflow: hidden;
+  }
+
+  :deep(.ui-swiper .ui-swiper-dot.progress .progress-bar) {
+    height: 4rpx;
+    border-radius: 80rpx;
+    background: rgba(255, 255, 250, 1);
+  }
+
+  :deep(.ui-swiper .ui-swiper-action-btn) {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 494rpx !important;
+    z-index: 21;
   }
 
   :deep(.ui-swiper .ui-swiper-dot.default .line-box),

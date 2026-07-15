@@ -43,6 +43,14 @@
           </view>
         </swiper-item>
       </swiper>
+      <view
+        v-if="showActionButton"
+        class="ui-swiper-action-btn"
+        :style="actionButtonStyle"
+        @tap.stop="onSwiperItem(currentItem)"
+      >
+        {{ props.actionButtonText }}
+      </view>
       <template v-if="!state.videoPlaySataus">
         <view class="ui-swiper-dot" :class="props.dotStyle" v-if="props.dotStyle === 'progress'">
           <view class="progress-track">
@@ -52,7 +60,7 @@
         <view class="ui-swiper-dot" :class="props.dotStyle" v-else-if="props.dotStyle != 'tag'">
           <view
             class="line-box"
-            v-for="(item, index) in props.list"
+            v-for="(_, index) in props.list"
             :key="index"
             :class="[state.cur == index ? 'cur' : '', props.dotCur]"
           ></view>
@@ -177,6 +185,26 @@
       type: Number,
       default: 200,
     },
+    showActionButton: {
+      type: Boolean,
+      default: false,
+    },
+    actionButtonText: {
+      type: String,
+      default: '查看更多',
+    },
+    actionButtonWidth: {
+      type: Number,
+      default: 310,
+    },
+    actionButtonHeight: {
+      type: Number,
+      default: 96,
+    },
+    actionButtonBottom: {
+      type: Number,
+      default: 44,
+    },
   });
 
   // current 改变时会触发 change 事件
@@ -193,6 +221,10 @@
     if (item.type === 'video') {
       state.videoPlaySataus = true;
     } else {
+      if (!item?.url) {
+        sheep.$helper.toast('当前轮播图未配置跳转地址');
+        return;
+      }
       sheep.$router.go(item.url);
       onPreview();
     }
@@ -235,6 +267,19 @@
     return `${Math.max(0, Math.min(100, percent))}%`;
   });
 
+  const currentItem = computed(() => props.list?.[state.cur] || {});
+
+  const showActionButton = computed(() => {
+    return !!props.showActionButton;
+  });
+
+  const actionButtonStyle = computed(() => ({
+    width: `${props.actionButtonWidth}rpx`,
+    height: `${props.actionButtonHeight}rpx`,
+    lineHeight: `${props.actionButtonHeight}rpx`,
+    bottom: `${props.actionButtonBottom}rpx`,
+  }));
+
   // swiper-item 的位置发生改变时会触发 transition
   const transition = (e) => {
     // #ifdef APP-PLUS
@@ -243,7 +288,7 @@
   };
 
   // 动画结束时会触发 animationfinish
-  const animationfinish = (e) => {
+  const animationfinish = () => {
     state.moveX = 0;
   };
 
@@ -300,6 +345,30 @@
       height: 100%;
     }
 
+    .ui-swiper-action-btn {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      border-radius: 12rpx;
+      overflow: hidden;
+      background: linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.2) 0%,
+        rgba(255, 255, 255, 0.1) 100%
+      );
+      border: 2rpx solid rgba(255, 255, 255, 0.78);
+      box-shadow: inset 0 2rpx 12rpx rgba(255, 255, 255, 0.18), 0 12rpx 30rpx rgba(0, 0, 0, 0.12);
+      backdrop-filter: blur(18rpx);
+      -webkit-backdrop-filter: blur(18rpx);
+      color: rgba(255, 255, 255, 0.96);
+      font-size: 32rpx;
+      font-weight: 300;
+      text-align: center;
+      letter-spacing: 4rpx;
+      text-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.12);
+    }
+
     .ui-swiper-dot {
       position: absolute;
       bottom: 20rpx;
@@ -348,9 +417,6 @@
         &.cur {
           width: 24rpx;
           opacity: 1;
-        }
-
-        &.cur::after {
         }
       }
 
