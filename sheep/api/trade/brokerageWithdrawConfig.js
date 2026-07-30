@@ -1,7 +1,8 @@
 import request from '@/sheep/request';
 
+const NO_LOAD = { showLoading: false };
+
 const BrokerageWithdrawConfigApi = {
-  // 获得佣金提现配置
   getBrokerageWithdrawConfig: (code) => {
     return request({
       url: `/trade/brokerage-withdraw-config/get`,
@@ -9,6 +10,15 @@ const BrokerageWithdrawConfigApi = {
       params: {
         code,
       },
+    });
+  },
+
+  prerequisiteCheck: (code = 'default') => {
+    return request({
+      url: '/trade/brokerage-withdraw-config/prerequisite-check',
+      method: 'GET',
+      params: { code },
+      custom: NO_LOAD,
     });
   },
 };

@@ -105,6 +105,15 @@ const _go = (
       },
     };
   }
+  if (!nextRoute && page === '/pages/commission/linggong-sign-submit') {
+    nextRoute = {
+      path: '/pages/commission/linggong-sign-submit',
+      meta: {
+        auth: true,
+        title: '提交资料',
+      },
+    };
+  }
 
   // 未找到指定跳转页面
   // mark: 跳转404页

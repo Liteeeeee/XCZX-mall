@@ -38,92 +38,150 @@
         :style="{ paddingTop: sheep.$platform.navbar + 'px' }"
       ></view>
 
-      <view class="account-card flex-row justify-between" @tap="onAccountSelect(true)">
-        <text class="account-label">提现账号</text>
-        <text class="account-value">{{ withdrawAccountText }}</text>
-      </view>
-
-      <view
-        v-if="String(state.accountInfo.type) === '5'"
-        class="realname-card flex-row justify-between"
+      <su-popup
+        :show="state.showRealNameForm"
+        type="bottom"
+        round="20"
+        @close="state.showRealNameForm = false"
+        backgroundColor="rgba(255, 255, 250, 1.0)"
       >
-        <text class="account-label">微信提现姓名</text>
-        <input
-          class="realname-input"
-          v-model="state.accountInfo.userName"
-          placeholder="请输入真实姓名"
-          placeholder-class="amount-placeholder"
-        />
-      </view>
-
-      <view class="amount-card flex-col">
-        <text class="amount-label">提现金额</text>
-        <view class="amount-row flex-row align-end">
-          <text class="currency">¥</text>
-          <input
-            class="amount-input"
-            v-model="state.accountInfo.price"
-            type="digit"
-            placeholder="0.00"
-            placeholder-class="amount-placeholder"
-          />
-          <text class="withdraw-all" @tap="onWithdrawAll">全部提现</text>
-        </view>
-        <view class="divider-line"></view>
-        <text class="balance-tip"
-          >可提现余额{{ fen2yuan(state.brokerageInfo.brokeragePrice) }}元</text
-        >
-        <view class="withdraw-audit-tip">
-          <text class="withdraw-audit-tip-text">{{ withdrawThresholdTip }}</text>
-          <text class="withdraw-audit-tip-text">{{ withdrawArrivalTip }}</text>
-          <view class="withdraw-service-row flex-row align-center justify-between">
-            <text class="withdraw-audit-tip-text withdraw-service-text"
-              >如用户无法成功即时提现，请联系客服协助处理</text
+        <view class="realname-form flex-col">
+          <view class="realname-form-header flex-row align-center justify-between">
+            <text class="realname-form-title">请填写真实姓名</text>
+            <text class="realname-form-close" @tap="state.showRealNameForm = false">×</text>
+          </view>
+          <view class="realname-form-body flex-col">
+            <view class="realname-form-item">
+              <text class="realname-form-label">真实姓名</text>
+              <input
+                class="realname-form-input"
+                v-model="state.realNameInput"
+                placeholder="请输入您的真实姓名"
+                placeholder-class="realname-placeholder"
+              />
+            </view>
+            <text class="realname-form-tip"
+              >真实姓名将作为签约、认证及提现校验的身份依据，请确保与身份证上的姓名保持一致。</text
             >
-            <button class="ss-reset-button withdraw-contact-btn" open-type="contact">
-              联系客服
+          </view>
+          <view class="realname-form-footer">
+            <button class="ss-reset-button apply-btn" @tap="onConfirmRealName">
+              <text class="apply-btn-text">确认并继续</text>
             </button>
           </view>
         </view>
+      </su-popup>
+
+      <view class="realname-gate-card flex-col" v-if="!state.realNameConfirmed">
+        <view class="realname-gate-header flex-row align-center">
+          <view class="realname-gate-icon"></view>
+          <text class="realname-gate-title">身份信息核验</text>
+        </view>
+        <text class="realname-gate-subtitle"
+          >进入提现流程前，请先填写并校验您的真实姓名，用于签约状态查询与提现身份校验。</text
+        >
+        <view
+          class="realname-gate-display flex-row align-center justify-between"
+          v-if="state.realNameInput"
+        >
+          <text class="realname-gate-label">真实姓名</text>
+          <text class="realname-gate-value">{{ state.realNameInput }}</text>
+        </view>
+        <button class="ss-reset-button apply-btn realname-gate-btn" @tap="onConfirmRealName">
+          <text class="apply-btn-text">{{
+            state.realNameInput ? '确认并继续' : '填写真实姓名'
+          }}</text>
+        </button>
       </view>
 
-      <view class="rules-card flex-col">
-        <view class="rules-header flex-row align-center justify-between">
-          <text class="rules-title">提现规则</text>
-          <text class="rules-subtitle"></text>
+      <view class="main-content-wrap flex-col" v-if="state.realNameConfirmed">
+        <view class="account-card flex-row justify-between" @tap="onAccountSelect(true)">
+          <text class="account-label">提现账号</text>
+          <text class="account-value">{{ withdrawAccountText }}</text>
         </view>
-        <view class="rules-list flex-col">
-          <view v-for="(item, idx) in withdrawRuleItems" :key="idx" class="rules-row flex-row">
-            <text class="rules-label">{{ item.label }}</text>
-            <text class="rules-value">{{ item.value }}</text>
+
+        <view
+          v-if="String(state.accountInfo.type) === '5'"
+          class="realname-card flex-row justify-between"
+        >
+          <text class="account-label">微信提现姓名</text>
+          <input
+            class="realname-input"
+            v-model="state.accountInfo.userName"
+            placeholder="请输入真实姓名"
+            placeholder-class="amount-placeholder"
+          />
+        </view>
+
+        <view class="amount-card flex-col">
+          <text class="amount-label">提现金额</text>
+          <view class="amount-row flex-row align-end">
+            <text class="currency">¥</text>
+            <input
+              class="amount-input"
+              v-model="state.accountInfo.price"
+              type="digit"
+              placeholder="0.00"
+              placeholder-class="amount-placeholder"
+            />
+            <text class="withdraw-all" @tap="onWithdrawAll">全部提现</text>
           </view>
-        </view>
-      </view>
-
-      <su-fixed bottom placeholder :bgStyles="{ backgroundColor: 'rgba(255, 255, 250, 1.0)' }">
-        <view class="bottom-bar flex-col">
-          <view class="agreement-box flex-row align-center justify-center">
-            <view class="radio-box flex-row align-center" @tap="state.isAgree = !state.isAgree">
-              <view class="coupon-check flex-col" :class="state.isAgree ? 'coupon-check-on' : ''">
-                <image
-                  v-if="state.isAgree"
-                  class="check-icon"
-                  :src="sheep.$url.cdn('/mp/static/confirmSelected.png')"
-                  mode="aspectFit"
-                ></image>
-              </view>
-              <text class="agreement-text">我已阅读并同意</text>
+          <view class="divider-line"></view>
+          <text class="balance-tip"
+            >可提现余额{{ fen2yuan(state.brokerageInfo.brokeragePrice) }}元</text
+          >
+          <view class="withdraw-audit-tip">
+            <text class="withdraw-audit-tip-text">{{ withdrawThresholdTip }}</text>
+            <text class="withdraw-audit-tip-text">{{ withdrawArrivalTip }}</text>
+            <view class="withdraw-service-row flex-row align-center justify-between">
+              <text class="withdraw-audit-tip-text withdraw-service-text"
+                >如用户无法成功即时提现，请联系客服协助处理</text
+              >
+              <button class="ss-reset-button withdraw-contact-btn" open-type="contact">
+                联系客服
+              </button>
             </view>
-            <text class="agreement-link" @tap="state.showStatement = true">《提现相关声明》</text>
           </view>
-          <button class="ss-reset-button apply-btn" @tap="onConfirm">
-            <text class="apply-btn-text">申请提现</text>
-          </button>
         </view>
-      </su-fixed>
+
+        <view class="rules-card flex-col">
+          <view class="rules-header flex-row align-center justify-between">
+            <text class="rules-title">提现规则</text>
+            <text class="rules-subtitle"></text>
+          </view>
+          <view class="rules-list flex-col">
+            <view v-for="(item, idx) in withdrawRuleItems" :key="idx" class="rules-row flex-row">
+              <text class="rules-label">{{ item.label }}</text>
+              <text class="rules-value">{{ item.value }}</text>
+            </view>
+          </view>
+        </view>
+
+        <su-fixed bottom placeholder :bgStyles="{ backgroundColor: 'rgba(255, 255, 250, 1.0)' }">
+          <view class="bottom-bar flex-col">
+            <view class="agreement-box flex-row align-center justify-center">
+              <view class="radio-box flex-row align-center" @tap="state.isAgree = !state.isAgree">
+                <view class="coupon-check flex-col" :class="state.isAgree ? 'coupon-check-on' : ''">
+                  <image
+                    v-if="state.isAgree"
+                    class="check-icon"
+                    :src="sheep.$url.cdn('/mp/static/confirmSelected.png')"
+                    mode="aspectFit"
+                  ></image>
+                </view>
+                <text class="agreement-text">我已阅读并同意</text>
+              </view>
+              <text class="agreement-link" @tap="state.showStatement = true">《提现相关声明》</text>
+            </view>
+            <button class="ss-reset-button apply-btn" @tap="onConfirm">
+              <text class="apply-btn-text">申请提现</text>
+            </button>
+          </view>
+        </su-fixed>
+      </view>
 
       <account-type-select
-        :show="state.accountSelect"
+        :show="state.accountSelect && state.realNameConfirmed"
         @close="onAccountSelect(false)"
         round="10"
         v-model="state.accountInfo"
@@ -175,6 +233,7 @@
 
 <script setup>
   import { onBeforeMount, reactive, computed, watch } from 'vue';
+  import { onShow } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import accountTypeSelect from './components/account-type-select.vue';
   import { showAuthModal } from '@/sheep/hooks/useModal';
@@ -182,7 +241,8 @@
   import TradeConfigApi from '@/sheep/api/trade/config';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
   import BrokerageWithdrawConfigApi from '@/sheep/api/trade/brokerageWithdrawConfig';
-  import { getWeixinPayChannelCode, goBindWeixin } from '@/sheep/platform/pay';
+  import LinggongApi from '@/sheep/api/trade/linggong';
+  import { getWeixinPayChannelCode } from '@/sheep/platform/pay';
 
   const WITHDRAW_SUBSCRIBE_TEMPLATE_ID = '9_HMmiB6fKcwt6_FwhZ8l4Q-uvnrkA8MKwRst9Ka-GY';
 
@@ -190,8 +250,7 @@
     isAgree: false,
     showStatement: false,
     accountInfo: {
-      // 提现表单
-      type: '1', // 默认选中钱包余额
+      type: '1',
       price: '',
       userAccount: undefined,
       userName: undefined,
@@ -202,16 +261,33 @@
 
     accountSelect: false,
 
-    brokerageInfo: {}, // 分销信息
+    brokerageInfo: {},
 
-    frozenDays: 0, // 冻结天数
-    minPrice: 0, // 最低提现金额
-    maxPrice: 0, // 最高提现金额(单笔)
-    withdrawDailyTimes: 1, // 每日提现次数
-    withdrawTimeRange: '全天可申请', // 提现时间
-    withdrawArrivalTime: '审核通过后1-3个工作日到账', // 到账时间
-    withdrawAuditTime: '提交后1-3个工作日完成审核', // 审核时间
-    withdrawTypes: [], // 提现方式
+    frozenDays: 0,
+    minPrice: 0,
+    maxPrice: 0,
+    withdrawDailyTimes: 1,
+    withdrawTimeRange: '全天可申请',
+    withdrawArrivalTime: '审核通过后1-3个工作日到账',
+    withdrawAuditTime: '提交后1-3个工作日完成审核',
+    withdrawTypes: [],
+
+    submitting: false,
+    pendingWithdrawPayload: null,
+
+    preCheckLoaded: false,
+    preCheckPassed: false,
+    preCheckData: null,
+    preCheckTip: '',
+    signStatusLoaded: false,
+    signStatusRaw: '',
+    signStatus: '',
+    signStatusTip: '',
+
+    showRealNameForm: false,
+    realNameInput: '',
+    realNameConfirmed: false,
+    realNameSubmitting: false,
   });
 
   const withdrawRuleItems = computed(() => {
@@ -426,13 +502,11 @@
     state.accountSelect = e;
   };
 
-  // 提交提现
-  const onConfirm = async () => {
+  async function validateWithdrawParams() {
     if (!state.isAgree) {
       sheep.$helper.toast('请先阅读并勾选同意提现声明');
-      return;
+      return null;
     }
-    // 参数校验
     const price = Number(state.accountInfo.price);
     const maxPrice = Number(state.brokerageInfo.brokeragePrice || 0) / 100;
     const minLimit = Number(state.minPrice || 0) || 0;
@@ -441,78 +515,81 @@
     const actualMin = minLimit > 0 ? minLimit : 200;
     if (!price || price < actualMin) {
       sheep.$helper.toast(`提现金额不得小于${actualMin}元`);
-      return;
+      return null;
     }
     if (price > maxPrice) {
       sheep.$helper.toast('提现金额不得大于可提现余额');
-      return;
+      return null;
     }
     if (price > actualMax) {
       sheep.$helper.toast(`提现金额不得大于${actualMax}元`);
-      return;
+      return null;
     }
     if (!state.accountInfo.type) {
       sheep.$helper.toast('请选择提现方式');
-      return;
+      return null;
     }
     if (!['1', '5'].includes(String(state.accountInfo.type))) {
       sheep.$helper.toast('暂不支持该提现方式');
-      return;
+      return null;
     }
     let openid;
     if (String(state.accountInfo.type) === '5') {
-      const wechatProvider = sheep.$platform.useProvider('wechat');
-      if (WITHDRAW_SUBSCRIBE_TEMPLATE_ID && typeof uni?.requestSubscribeMessage === 'function') {
-        uni.requestSubscribeMessage({
-          tmplIds: [WITHDRAW_SUBSCRIBE_TEMPLATE_ID],
-          success: () => {},
-          fail: () => {},
-        });
-      } else if (typeof uni?.showModal === 'function') {
-        uni.showModal({
-          content: '你的微信版本过低，请更新至最新版本。',
-          showCancel: false,
-        });
-      }
-      openid = await wechatProvider.getOpenid(true);
-
-      const realName = String(state.accountInfo.userName || '').trim();
-      if (!realName) {
-        sheep.$helper.toast('请输入微信提现真实姓名');
-        return;
-      }
-
-      let isBound = true;
-      if (wechatProvider.getInfo) {
-        const socialInfo = await wechatProvider.getInfo();
-        if (!socialInfo) {
-          isBound = false;
+      try {
+        const wechatProvider = sheep.$platform.useProvider('wechat');
+        if (WITHDRAW_SUBSCRIBE_TEMPLATE_ID && typeof uni?.requestSubscribeMessage === 'function') {
+          uni.requestSubscribeMessage({
+            tmplIds: [WITHDRAW_SUBSCRIBE_TEMPLATE_ID],
+            success: () => {},
+            fail: () => {},
+          });
+        } else if (typeof uni?.showModal === 'function') {
+          uni.showModal({
+            content: '你的微信版本过低，请更新至最新版本。',
+            showCancel: false,
+          });
         }
-      }
+        openid = await wechatProvider.getOpenid(true);
 
-      // 如果获取不到 openid 或者未完全绑定微信，此时需要引导
-      if (!openid || !isBound) {
-        uni.showModal({
-          title: '提示',
-          content: '请先绑定微信后再进行提现',
-          success: async function (res) {
-            if (res.confirm) {
-              uni.showLoading({ title: '正在绑定微信' });
-              const result = await wechatProvider.bind();
-              uni.hideLoading();
-              if (result) {
-                sheep.$helper.toast('微信绑定成功，请再次点击提现');
-              } else {
-                sheep.$helper.toast('微信绑定失败');
+        const realName = String(state.accountInfo.userName || '').trim();
+        if (!realName) {
+          sheep.$helper.toast('请输入微信提现真实姓名');
+          return null;
+        }
+
+        let isBound = true;
+        if (wechatProvider.getInfo) {
+          const socialInfo = await wechatProvider.getInfo();
+          if (!socialInfo) {
+            isBound = false;
+          }
+        }
+
+        if (!openid || !isBound) {
+          uni.showModal({
+            title: '提示',
+            content: '请先绑定微信后再进行提现',
+            success: async function (res) {
+              if (res.confirm) {
+                uni.showLoading({ title: '正在绑定微信' });
+                const result = await wechatProvider.bind();
+                uni.hideLoading();
+                if (result) {
+                  sheep.$helper.toast('微信绑定成功，请再次点击提现');
+                } else {
+                  sheep.$helper.toast('微信绑定失败');
+                }
               }
-            }
-          },
-        });
-        return;
+            },
+          });
+          return null;
+        }
+      } catch (e) {
+        sheep.$helper.toast('微信信息获取失败，请稍后重试');
+        return null;
       }
     }
 
-    // 提交请求
     const data = {
       ...state.accountInfo,
       price: price * 100,
@@ -525,7 +602,15 @@
       delete data.userAccount;
       delete data.transferChannelCode;
     }
+    return data;
+  }
+
+  async function doCreateWithdraw(data) {
     let res = await BrokerageApi.createBrokerageWithdraw(data);
+    if (!res) {
+      sheep.$helper.toast('提现失败：网络异常');
+      return false;
+    }
     if (res.code !== 0) {
       if (res.msg && (res.msg.includes('昵称') || res.msg.includes('微信'))) {
         const userInfo = sheep.$store('user').userInfo;
@@ -558,9 +643,8 @@
           });
         }
       }
-      return;
+      return false;
     }
-    // 提示
     uni.showModal({
       title: '操作成功',
       content: '您的提现申请已成功提交',
@@ -575,6 +659,314 @@
         state.accountInfo = {};
       },
     });
+    return true;
+  }
+
+  async function openLinggongWebview() {
+    const res = await LinggongApi.getSignUrl({ realName: state.realNameInput });
+    if (!res) {
+      sheep.$helper.toast('获取签约链接失败：网络异常');
+      return false;
+    }
+    if (res.code !== 0 || !res.data) {
+      sheep.$helper.toast(res.msg || '获取签约链接失败');
+      return false;
+    }
+    const url = typeof res.data === 'string' ? res.data : res.data.url || res.data.h5Url || '';
+    if (!url) {
+      sheep.$helper.toast('获取签约链接失败');
+      return false;
+    }
+    try {
+      if (/^https?:\/\//.test(url)) {
+        uni.navigateTo({
+          url:
+            '/pages/public/webview?url=' +
+            encodeURIComponent(url + (url.indexOf('?') > -1 ? '&' : '?') + '_t=' + Date.now()),
+        });
+        return true;
+      }
+    } catch (e) {}
+    sheep.$router.go(url);
+    return true;
+  }
+
+  async function handleSignStatus(status, payload) {
+    const S = LinggongApi.Status;
+    if (status === S.OK) {
+      if (payload) {
+        const ok = await doCreateWithdraw(payload);
+        if (ok) {
+          state.pendingWithdrawPayload = null;
+        }
+      }
+      return;
+    }
+    if (status === S.NEED_SUBMIT) {
+      if (payload) {
+        state.pendingWithdrawPayload = payload;
+      }
+      sheep.$router.go('/pages/commission/linggong-sign-submit');
+      return;
+    }
+    if (status === S.NEED_SIGN) {
+      if (payload) {
+        state.pendingWithdrawPayload = payload;
+      }
+      await openLinggongWebview();
+      return;
+    }
+    if (status === S.NEED_CERT) {
+      if (payload) {
+        state.pendingWithdrawPayload = payload;
+      }
+      await openLinggongWebview();
+      return;
+    }
+    sheep.$helper.toast(`当前状态：${status || '未知'}，暂无法提现`);
+  }
+
+  async function ensurePreSignFlow(status, payload) {
+    const S = LinggongApi.Status;
+    if (!status) return false;
+    if (status === S.NEED_SUBMIT) {
+      if (payload) {
+        state.pendingWithdrawPayload = payload;
+      }
+      try {
+        uni.navigateTo({
+          url: '/pages/commission/linggong-sign-submit',
+          fail() {
+            sheep.$helper.toast('跳转资料提交页失败');
+          },
+        });
+      } catch (e) {
+        sheep.$router.go('/pages/commission/linggong-sign-submit');
+      }
+      return true;
+    }
+    if (status === S.NEED_SIGN) {
+      if (payload) {
+        state.pendingWithdrawPayload = payload;
+      }
+      await openLinggongWebview();
+      return true;
+    }
+    if (status === S.NEED_CERT) {
+      if (payload) {
+        state.pendingWithdrawPayload = payload;
+      }
+      await openLinggongWebview();
+      return true;
+    }
+    return false;
+  }
+
+  async function refreshPreCheck() {
+    const preRes = await BrokerageWithdrawConfigApi.prerequisiteCheck();
+    if (!preRes) {
+      state.preCheckLoaded = true;
+      state.preCheckPassed = false;
+      state.preCheckTip = '前置检查失败：网络异常';
+      return false;
+    }
+    if (preRes.code !== 0) {
+      state.preCheckLoaded = true;
+      state.preCheckPassed = false;
+      state.preCheckTip = preRes.msg || '提现前置检查失败';
+      return false;
+    }
+    const preData = preRes.data || {};
+    const inTime = preData.inTime !== undefined ? !!preData.inTime : true;
+    const dailyTimesOk = preData.dailyTimesOk !== undefined ? !!preData.dailyTimesOk : true;
+    state.preCheckLoaded = true;
+    state.preCheckData = preData;
+    if (!dailyTimesOk) {
+      state.preCheckPassed = false;
+      state.preCheckTip = preData.dailyTimesMsg || '今日提现次数已达上限';
+      return false;
+    }
+    if (!inTime) {
+      state.preCheckPassed = false;
+      state.preCheckTip =
+        preData.timeRangeMsg ||
+        (preData.startTime && preData.endTime
+          ? `当前不在提现时段内，提现时间：${preData.startTime}-${preData.endTime}`
+          : '当前不在提现时段内');
+      return false;
+    }
+    state.preCheckPassed = true;
+    state.preCheckTip = '';
+    return true;
+  }
+
+  async function refreshSignStatus() {
+    const statusRes = await LinggongApi.getSignStatus({ realName: state.realNameInput });
+    if (!statusRes) {
+      state.signStatusLoaded = true;
+      state.signStatusRaw = '';
+      state.signStatus = '';
+      state.signStatusTip = '查询签约状态失败：网络异常';
+      return '';
+    }
+    if (statusRes.code !== 0) {
+      state.signStatusLoaded = true;
+      state.signStatusRaw = '';
+      state.signStatus = '';
+      state.signStatusTip = statusRes.msg || '查询签约状态失败';
+      return '';
+    }
+    const raw =
+      statusRes.data && typeof statusRes.data === 'object' && statusRes.data.status !== undefined
+        ? statusRes.data.status
+        : statusRes.data || '';
+    const normalized = LinggongApi.normalizeStatus(raw);
+    state.signStatusLoaded = true;
+    state.signStatusRaw = String(raw);
+    state.signStatus = normalized;
+    state.signStatusTip = '';
+    return normalized;
+  }
+
+  async function onConfirmRealName() {
+    const realName = String(state.realNameInput || '').trim();
+    if (!realName) {
+      state.showRealNameForm = true;
+      sheep.$helper.toast('请输入真实姓名');
+      return;
+    }
+    if (realName.length < 2 || realName.length > 20) {
+      state.showRealNameForm = true;
+      sheep.$helper.toast('请填写合法的真实姓名');
+      return;
+    }
+    if (state.realNameSubmitting) return;
+    state.realNameSubmitting = true;
+    state.showRealNameForm = false;
+    uni.showLoading({ title: '处理中...', mask: true });
+    try {
+      state.realNameConfirmed = true;
+      if (state.accountInfo.type === '5' && !state.accountInfo.userName) {
+        state.accountInfo.userName = realName;
+      }
+      const preOk = await refreshPreCheck();
+      if (!preOk && state.preCheckTip) {
+        sheep.$helper.toast(state.preCheckTip);
+      }
+      const status = await refreshSignStatus();
+      if (status) {
+        const handled = await ensurePreSignFlow(status, null);
+        if (!handled && status === LinggongApi.Status.OK) {
+          sheep.$helper.toast('身份核验通过，请继续填写提现信息');
+        }
+        if (!handled && status !== LinggongApi.Status.OK) {
+          sheep.$helper.toast('当前状态：' + state.signStatusRaw);
+        }
+      } else if (state.signStatusTip) {
+        sheep.$helper.toast(state.signStatusTip);
+      }
+    } catch (e) {
+      state.realNameConfirmed = false;
+      sheep.$helper.toast('处理异常，请稍后重试');
+    } finally {
+      uni.hideLoading();
+      state.realNameSubmitting = false;
+    }
+  }
+
+  async function continuePendingWithdraw() {
+    const payload = state.pendingWithdrawPayload;
+    if (!payload) return;
+    const realName = String(state.realNameInput || '').trim();
+    if (!realName) {
+      state.realNameConfirmed = false;
+      return;
+    }
+    state.submitting = true;
+    uni.showLoading({ title: '处理中...', mask: true });
+    try {
+      await refreshPreCheck();
+      if (!state.preCheckPassed) {
+        sheep.$helper.toast(state.preCheckTip || '提现前置校验未通过');
+        return;
+      }
+      const status = await refreshSignStatus();
+      if (!status) {
+        if (state.signStatusTip) {
+          sheep.$helper.toast(state.signStatusTip);
+        }
+        return;
+      }
+      await handleSignStatus(status, payload);
+    } catch (e) {
+      sheep.$helper.toast('处理异常，请稍后重试');
+    } finally {
+      uni.hideLoading();
+      state.submitting = false;
+    }
+  }
+
+  onShow(async () => {
+    if (!state.realNameConfirmed) {
+      return;
+    }
+    if (state.pendingWithdrawPayload) {
+      await continuePendingWithdraw();
+      return;
+    }
+    const preOk = await refreshPreCheck();
+    if (!preOk && state.preCheckTip) {
+      sheep.$helper.toast(state.preCheckTip);
+    }
+    const status = await refreshSignStatus();
+    if (status) {
+      const handled = await ensurePreSignFlow(status, null);
+      if (!handled && status === LinggongApi.Status.OK) {
+        // ok：静默，不打扰用户填写提现信息
+      }
+      if (!handled && status !== LinggongApi.Status.OK) {
+        sheep.$helper.toast('当前状态：' + (state.signStatusRaw || status));
+      }
+    } else if (state.signStatusTip) {
+      sheep.$helper.toast(state.signStatusTip);
+    }
+  });
+
+  // 提交提现
+  const onConfirm = async () => {
+    if (!state.realNameConfirmed) {
+      state.showRealNameForm = true;
+      sheep.$helper.toast('请先填写真实姓名');
+      return;
+    }
+    if (state.submitting) return;
+    state.submitting = true;
+    uni.showLoading({ title: '处理中...', mask: true });
+    try {
+      const payload = await validateWithdrawParams();
+      if (!payload) return;
+
+      if (!state.preCheckLoaded) {
+        await refreshPreCheck();
+      }
+      if (!state.preCheckPassed) {
+        sheep.$helper.toast(state.preCheckTip || '提现前置校验未通过');
+        return;
+      }
+      if (!state.signStatusLoaded) {
+        await refreshSignStatus();
+      }
+      if (!state.signStatus && state.signStatusTip) {
+        sheep.$helper.toast(state.signStatusTip);
+        return;
+      }
+      await handleSignStatus(state.signStatus, payload);
+    } catch (e) {
+      sheep.$helper.toast('提现异常，请稍后重试');
+    } finally {
+      uni.hideLoading();
+      state.submitting = false;
+    }
   };
 
   // 获得分销配置
@@ -1021,5 +1413,171 @@
     text-align: left;
     white-space: nowrap;
     line-height: 45rpx;
+  }
+
+  .realname-gate-card {
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 30rpx;
+    margin: 24rpx 38rpx 0 32rpx;
+    padding: 36rpx 28rpx 32rpx 28rpx;
+    box-sizing: border-box;
+    border: 2rpx solid rgba(151, 151, 151, 0.12);
+    box-shadow: 0 12rpx 28rpx rgba(0, 0, 0, 0.05);
+  }
+
+  .realname-gate-header {
+    margin-bottom: 18rpx;
+  }
+
+  .realname-gate-icon {
+    width: 40rpx;
+    height: 40rpx;
+    border-radius: 12rpx;
+    margin-right: 16rpx;
+    background: linear-gradient(135deg, rgba(30, 63, 28, 0.9) 0%, rgba(181, 158, 109, 0.9) 100%);
+    position: relative;
+  }
+
+  .realname-gate-icon::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 10rpx;
+    transform: translateX(-50%);
+    width: 14rpx;
+    height: 14rpx;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 250, 1);
+  }
+
+  .realname-gate-icon::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 22rpx;
+    transform: translateX(-50%);
+    width: 22rpx;
+    height: 10rpx;
+    border-radius: 10rpx 10rpx 6rpx 6rpx;
+    background-color: rgba(255, 255, 250, 1);
+  }
+
+  .realname-gate-title {
+    color: rgba(61, 61, 60, 1);
+    font-size: 30rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    line-height: 42rpx;
+  }
+
+  .realname-gate-subtitle {
+    color: rgba(102, 102, 102, 1);
+    font-size: 26rpx;
+    font-family: PingFangSC-Regular;
+    line-height: 40rpx;
+    margin-top: 4rpx;
+  }
+
+  .realname-gate-display {
+    margin-top: 24rpx;
+    padding: 24rpx 26rpx;
+    background-color: rgba(248, 249, 243, 1);
+    border-radius: 20rpx;
+  }
+
+  .realname-gate-label {
+    color: rgba(102, 102, 102, 1);
+    font-size: 26rpx;
+    line-height: 38rpx;
+  }
+
+  .realname-gate-value {
+    color: rgba(61, 61, 60, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    line-height: 40rpx;
+  }
+
+  .realname-gate-btn {
+    margin-top: 28rpx;
+  }
+
+  .realname-form {
+    width: 100%;
+    background-color: rgba(255, 255, 250, 1);
+    border-radius: 20rpx 20rpx 0 0;
+  }
+
+  .realname-form-header {
+    padding: 36rpx 32rpx 18rpx 32rpx;
+    border-bottom: 2rpx solid rgba(151, 151, 151, 0.1);
+  }
+
+  .realname-form-title {
+    flex: 1;
+    color: rgba(61, 61, 60, 1);
+    font-size: 32rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    line-height: 44rpx;
+    text-align: center;
+  }
+
+  .realname-form-close {
+    width: 44rpx;
+    height: 44rpx;
+    text-align: center;
+    line-height: 40rpx;
+    font-size: 40rpx;
+    color: rgba(157, 156, 150, 1);
+    padding-left: 12rpx;
+  }
+
+  .realname-form-body {
+    padding: 28rpx 32rpx 20rpx 32rpx;
+  }
+
+  .realname-form-item {
+    background-color: rgba(248, 249, 243, 1);
+    border-radius: 20rpx;
+    padding: 22rpx 26rpx;
+  }
+
+  .realname-form-label {
+    display: block;
+    color: rgba(157, 156, 150, 1);
+    font-size: 24rpx;
+    line-height: 34rpx;
+    margin-bottom: 8rpx;
+  }
+
+  .realname-form-input {
+    color: rgba(61, 61, 60, 1);
+    font-size: 32rpx;
+    line-height: 46rpx;
+    min-height: 46rpx;
+    width: 100%;
+  }
+
+  .realname-placeholder {
+    color: rgba(157, 156, 150, 0.8);
+    font-size: 32rpx;
+  }
+
+  .realname-form-tip {
+    color: rgba(102, 102, 102, 1);
+    font-size: 24rpx;
+    line-height: 38rpx;
+    margin-top: 18rpx;
+  }
+
+  .realname-form-footer {
+    padding: 18rpx 32rpx calc(24rpx + env(safe-area-inset-bottom));
+    background-color: rgba(255, 255, 250, 1);
+  }
+
+  .main-content-wrap {
+    width: 100%;
   }
 </style>

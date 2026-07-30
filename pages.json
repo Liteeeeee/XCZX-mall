@@ -746,6 +746,17 @@
                   "title": "申请提现",
                   "group": "分销商城"
                 }
+              }, {
+                "path": "linggong-sign-submit",
+                "style": {
+                  "navigationBarTitleText": "提交资料"
+                },
+                "meta": {
+                  "auth": true,
+                  "sync": true,
+                  "title": "提交资料",
+                  "group": "分销商城"
+                }
               }
 			]
 		},
