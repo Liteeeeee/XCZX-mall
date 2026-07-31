@@ -440,11 +440,25 @@
     return '';
   }
 
+  function formatTimeArr(arr) {
+    if (!Array.isArray(arr) || arr.length < 2) return '';
+    const h = String(Number(arr[0] || 0)).padStart(2, '0');
+    const m = String(Number(arr[1] || 0)).padStart(2, '0');
+    return `${h}:${m}`;
+  }
+
   function pickTimeRange(obj) {
     if (!obj) return '';
     const start =
-      pickString(obj, ['withdrawStartTime', 'startTime', 'timeStart', 'withdrawTimeStart']) || '';
-    const end = pickString(obj, ['withdrawEndTime', 'endTime', 'timeEnd', 'withdrawTimeEnd']) || '';
+      pickString(obj, ['withdrawStartTime', 'startTime', 'timeStart', 'withdrawTimeStart']) ||
+      formatTimeArr(obj.applyStartTime) ||
+      formatTimeArr(obj.withdrawApplyStartTime) ||
+      '';
+    const end =
+      pickString(obj, ['withdrawEndTime', 'endTime', 'timeEnd', 'withdrawTimeEnd']) ||
+      formatTimeArr(obj.applyEndTime) ||
+      formatTimeArr(obj.withdrawApplyEndTime) ||
+      '';
     if (start && end) return `${start}-${end}`;
     return '';
   }
@@ -485,6 +499,18 @@
           'arrivalDesc',
         ]);
         if (arrivalTime) state.withdrawArrivalTime = arrivalTime;
+        const frozenDaysRaw = pickNumber(cfg, [
+          'frozenDays',
+          'brokerageFrozenDays',
+          'freezeDays',
+          'freezePeriodDays',
+          '冻结天数',
+        ]);
+        if (frozenDaysRaw > 0) {
+          state.frozenDays = frozenDaysRaw;
+        } else if (frozenDaysRaw === 0) {
+          state.frozenDays = 0;
+        }
       }
     } catch (e) {}
   }
