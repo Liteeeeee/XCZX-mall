@@ -13,6 +13,15 @@ const BrokerageWithdrawConfigApi = {
     });
   },
 
+  get: (code = 'default') => {
+    return request({
+      url: '/trade/brokerage-withdraw-config/get',
+      method: 'GET',
+      params: { code },
+      custom: NO_LOAD,
+    });
+  },
+
   prerequisiteCheck: (code = 'default') => {
     return request({
       url: '/trade/brokerage-withdraw-config/prerequisite-check',

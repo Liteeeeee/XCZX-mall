@@ -2,6 +2,7 @@ import request from '@/sheep/request';
 
 const LinggongSignStatus = {
   OK: 'ok',
+  ALL_OK: 'ALL_OK',
   NEED_SUBMIT: 'NEED_SUBMIT',
   NEED_SIGN: 'NEED_SIGN',
   NEED_CERT: 'NEED_CERT',
@@ -14,6 +15,7 @@ function normalizeStatus(raw) {
   const key = String(prefix || '').toUpperCase().replace(/_/g, '_');
   const lookup = {
     OK: LinggongSignStatus.OK,
+    ALL_OK: LinggongSignStatus.ALL_OK,
     NEED_SUBMIT: LinggongSignStatus.NEED_SUBMIT,
     NEED_SIGN: LinggongSignStatus.NEED_SIGN,
     NEED_CERT: LinggongSignStatus.NEED_CERT,
@@ -21,7 +23,14 @@ function normalizeStatus(raw) {
   if (key in lookup) return lookup[key];
   const low = String(s || '').toLowerCase();
   if (low === 'ok') return LinggongSignStatus.OK;
+  if (low === 'all_ok' || low === 'allok') return LinggongSignStatus.ALL_OK;
   return s;
+}
+
+function isSuccessStatus(status) {
+  return (
+    status === LinggongSignStatus.OK || status === LinggongSignStatus.ALL_OK
+  );
 }
 
 const NO_LOAD = { showLoading: false };
@@ -29,6 +38,7 @@ const NO_LOAD = { showLoading: false };
 const LinggongApi = {
   Status: LinggongSignStatus,
   normalizeStatus,
+  isSuccessStatus,
 
   getSignStatus: (data = {}) => {
     return request({

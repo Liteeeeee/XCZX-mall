@@ -95,31 +95,13 @@
       </view>
 
       <view class="main-content-wrap flex-col" v-if="state.realNameConfirmed">
-        <view class="account-card flex-row justify-between" @tap="onAccountSelect(true)">
-          <text class="account-label">提现账号</text>
-          <text class="account-value">{{ withdrawAccountText }}</text>
-        </view>
-
-        <view
-          v-if="String(state.accountInfo.type) === '5'"
-          class="realname-card flex-row justify-between"
-        >
-          <text class="account-label">微信提现姓名</text>
-          <input
-            class="realname-input"
-            v-model="state.accountInfo.userName"
-            placeholder="请输入真实姓名"
-            placeholder-class="amount-placeholder"
-          />
-        </view>
-
         <view class="amount-card flex-col">
           <text class="amount-label">提现金额</text>
           <view class="amount-row flex-row align-end">
             <text class="currency">¥</text>
             <input
               class="amount-input"
-              v-model="state.accountInfo.price"
+              v-model="state.priceInput"
               type="digit"
               placeholder="0.00"
               placeholder-class="amount-placeholder"
@@ -130,6 +112,14 @@
           <text class="balance-tip"
             >可提现余额{{ fen2yuan(state.brokerageInfo.brokeragePrice) }}元</text
           >
+          <view class="withdraw-fee-row flex-row align-center justify-between">
+            <text class="withdraw-audit-tip-text withdraw-service-text">预计手续费</text>
+            <text class="withdraw-fee-value">{{ withdrawFeeText }}</text>
+          </view>
+          <view class="withdraw-fee-row flex-row align-center justify-between">
+            <text class="withdraw-audit-tip-text withdraw-service-text">预计到账金额</text>
+            <text class="withdraw-fee-value withdraw-arrive">¥{{ withdrawArriveText }}</text>
+          </view>
           <view class="withdraw-audit-tip">
             <text class="withdraw-audit-tip-text">{{ withdrawThresholdTip }}</text>
             <text class="withdraw-audit-tip-text">{{ withdrawArrivalTip }}</text>
@@ -153,6 +143,24 @@
             <view v-for="(item, idx) in withdrawRuleItems" :key="idx" class="rules-row flex-row">
               <text class="rules-label">{{ item.label }}</text>
               <text class="rules-value">{{ item.value }}</text>
+            </view>
+            <view
+              v-if="state.withdrawConfig?.withdrawDescription"
+              class="rules-desc rules-row flex-row"
+            >
+              <text class="rules-label">提现说明</text>
+              <text class="rules-value rules-multiline">{{
+                state.withdrawConfig.withdrawDescription
+              }}</text>
+            </view>
+            <view
+              v-if="state.withdrawConfig?.otherDescription"
+              class="rules-desc rules-row flex-row"
+            >
+              <text class="rules-label">其他说明</text>
+              <text class="rules-value rules-multiline">{{
+                state.withdrawConfig.otherDescription
+              }}</text>
             </view>
           </view>
         </view>
@@ -179,14 +187,6 @@
           </view>
         </su-fixed>
       </view>
-
-      <account-type-select
-        :show="state.accountSelect && state.realNameConfirmed"
-        @close="onAccountSelect(false)"
-        round="10"
-        v-model="state.accountInfo"
-        :methods="state.withdrawTypes"
-      />
 
       <su-popup
         :show="state.showStatement"
@@ -232,36 +232,24 @@
 </template>
 
 <script setup>
-  import { onBeforeMount, reactive, computed, watch } from 'vue';
+  import { onBeforeMount, reactive, computed } from 'vue';
   import { onShow } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
-  import accountTypeSelect from './components/account-type-select.vue';
-  import { showAuthModal } from '@/sheep/hooks/useModal';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
-  import TradeConfigApi from '@/sheep/api/trade/config';
   import BrokerageApi from '@/sheep/api/trade/brokerage';
   import BrokerageWithdrawConfigApi from '@/sheep/api/trade/brokerageWithdrawConfig';
   import LinggongApi from '@/sheep/api/trade/linggong';
-  import { getWeixinPayChannelCode } from '@/sheep/platform/pay';
+  import TradeConfigApi from '@/sheep/api/trade/config';
 
   const WITHDRAW_SUBSCRIBE_TEMPLATE_ID = '9_HMmiB6fKcwt6_FwhZ8l4Q-uvnrkA8MKwRst9Ka-GY';
 
   const state = reactive({
     isAgree: false,
     showStatement: false,
-    accountInfo: {
-      type: '1',
-      price: '',
-      userAccount: undefined,
-      userName: undefined,
-      qrCodeUrl: undefined,
-      bankName: undefined,
-      bankAddress: undefined,
-    },
-
-    accountSelect: false,
+    priceInput: '',
 
     brokerageInfo: {},
+    withdrawConfig: null,
 
     frozenDays: 0,
     minPrice: 0,
@@ -270,7 +258,6 @@
     withdrawTimeRange: '全天可申请',
     withdrawArrivalTime: '审核通过后1-3个工作日到账',
     withdrawAuditTime: '提交后1-3个工作日完成审核',
-    withdrawTypes: [],
 
     submitting: false,
     pendingWithdrawPayload: null,
@@ -290,23 +277,77 @@
     realNameSubmitting: false,
   });
 
+  const withFen2Yuan = (fen) => {
+    const n = Number(fen || 0);
+    if (!Number.isFinite(n) || n <= 0) return 0;
+    return Number((n / 100).toFixed(2));
+  };
+
+  const currentMinYuan = computed(() => {
+    const cfgMin = withFen2Yuan(state.withdrawConfig?.withdrawMinPrice);
+    const legacyMin = Number(state.minPrice || 0) || 0;
+    if (cfgMin > 0) return cfgMin;
+    return legacyMin > 0 ? legacyMin : 200;
+  });
+
+  const currentMaxYuan = computed(() => {
+    const cfgMax = withFen2Yuan(state.withdrawConfig?.withdrawMaxPrice);
+    const legacyMax = Number(state.maxPrice || 0) || 0;
+    if (cfgMax > 0) return cfgMax;
+    return legacyMax > 0 ? legacyMax : 0;
+  });
+
+  const currentFeeRate = computed(() => {
+    const n = Number(state.withdrawConfig?.withdrawFeeRate);
+    return Number.isFinite(n) && n > 0 ? Number(n.toFixed(4)) : 0;
+  });
+
+  const currentApplyTimeRange = computed(() => {
+    const cfg = state.withdrawConfig;
+    if (cfg && cfg.applyStartTime && cfg.applyEndTime) {
+      return `${cfg.applyStartTime}-${cfg.applyEndTime}`;
+    }
+    return state.withdrawTimeRange || '全天可申请';
+  });
+
+  const currentDailyLimit = computed(() => {
+    const n = Number(state.withdrawConfig?.dailyWithdrawLimit);
+    if (Number.isFinite(n) && n > 0) return n;
+    return Number(state.withdrawDailyTimes || 0) || 1;
+  });
+
+  const withdrawFeeText = computed(() => {
+    const price = Number(state.priceInput || 0);
+    if (!price || price <= 0 || currentFeeRate.value <= 0) return '¥0.00';
+    const fee = Number((price * (currentFeeRate.value / 100)).toFixed(2));
+    return `¥${fee.toFixed(2)}（${currentFeeRate.value}%）`;
+  });
+
+  const withdrawArriveText = computed(() => {
+    const price = Number(state.priceInput || 0);
+    if (!price || price <= 0) return '0.00';
+    const fee =
+      currentFeeRate.value > 0 ? Number((price * (currentFeeRate.value / 100)).toFixed(2)) : 0;
+    return Math.max(price - fee, 0).toFixed(2);
+  });
+
   const withdrawRuleItems = computed(() => {
     const balanceYuan = fen2yuan(state.brokerageInfo?.brokeragePrice || 0);
     const frozenYuan = fen2yuan(state.brokerageInfo?.frozenPrice || 0);
     const frozenDays = Number(state.frozenDays || 0) || 0;
-    const minLimit = Number(state.minPrice || 0) || 0;
-    const maxLimit = Number(state.maxPrice || 0) || 0;
-    const actualMin = minLimit > 0 ? minLimit : 200;
-    const daily = Number(state.withdrawDailyTimes || 0) || 1;
-    const timeRange = state.withdrawTimeRange || '全天可申请';
+    const minYuan = currentMinYuan.value;
+    const maxYuan = currentMaxYuan.value;
+    const rate = currentFeeRate.value;
+    const daily = currentDailyLimit.value;
+    const timeRange = currentApplyTimeRange.value;
     const auditTime = state.withdrawAuditTime || '提交后1-3个工作日完成审核';
     const arrivalTime = state.withdrawArrivalTime || '审核通过后1-3个工作日到账';
 
-    return [
+    const list = [
       { label: '可提现额度', value: `${balanceYuan}元` },
       {
         label: '提现门槛',
-        value: `账户可提现金额满${actualMin}元后方可申请提现。`,
+        value: `账户可提现金额满${minYuan}元后方可申请提现`,
       },
       { label: '冻结收益', value: `${frozenYuan}元` },
       {
@@ -315,22 +356,27 @@
       },
       {
         label: '单笔额度',
-        value: `最低${actualMin}元${maxLimit > 0 ? `，最高${maxLimit}元` : ''}`,
+        value: `最低${minYuan}元${maxYuan > 0 ? `，最高${maxYuan}元` : ''}`,
       },
-      { label: '每日次数', value: `${daily}次` },
+    ];
+    if (rate > 0) {
+      list.push({ label: '提现手续费', value: `${rate}%，具体以实际结算为准` });
+    }
+    list.push(
+      { label: '每日次数', value: daily > 0 ? `${daily}次` : '不限制' },
       { label: '提现时间', value: timeRange },
       { label: '审核时间', value: auditTime },
       { label: '到账时间', value: arrivalTime },
       { label: '到账说明', value: '提现申请提交后进入审核流程，非即时到账' },
       { label: '客服协助', value: '如用户无法成功即时提现，请联系在线客服处理' },
       { label: '申请限制', value: '同一时间仅可提交1笔，审核结束后可再次申请' },
-    ];
+    );
+    return list;
   });
 
   const withdrawThresholdTip = computed(() => {
-    const minLimit = Number(state.minPrice || 0) || 0;
-    const actualMin = minLimit > 0 ? minLimit : 200;
-    return `提现门槛：账户可提现金额满${actualMin}元后方可申请提现。`;
+    const minYuan = currentMinYuan.value;
+    return `提现门槛：账户可提现金额满${minYuan}元后方可申请提现。`;
   });
 
   const withdrawArrivalTip = computed(() => {
@@ -354,32 +400,14 @@
       '提现失败后，冻结金额会再次计入账户余额中，可重新申请提现',
       '实际审核与到账时间可能受节假日、渠道处理进度影响，请以最终到账为准',
     ].filter(Boolean);
+    if (state.withdrawConfig?.withdrawDescription) {
+      extra.unshift(state.withdrawConfig.withdrawDescription);
+    }
+    if (state.withdrawConfig?.otherDescription) {
+      extra.unshift(state.withdrawConfig.otherDescription);
+    }
     return base.concat(extra);
   });
-
-  const withdrawAccountText = computed(() => {
-    const t = String(state.accountInfo.type || '');
-    if (t === '1') return '钱包余额';
-    if (t === '2') return '银行卡转账';
-    if (t === '3') return '微信收款码';
-    if (t === '4') return '支付宝收款码';
-    if (t === '5') return '微信钱包';
-    if (t === '6') return '支付宝余额';
-    return '请选择';
-  });
-
-  watch(
-    () => String(state.accountInfo.type || ''),
-    async (t) => {
-      if (t !== '5') {
-        state.accountInfo.userName = undefined;
-      } else if (typeof state.accountInfo.userName === 'undefined') {
-        state.accountInfo.userName = '';
-      }
-      await getWithdrawConfig();
-    },
-    { immediate: true },
-  );
 
   function normalizeWithdrawPrice(value) {
     const n = Number(value);
@@ -422,186 +450,96 @@
   }
 
   async function getWithdrawConfig() {
-    const code = 'default';
-    if (!code) {
-      return;
-    }
-    const { code: resCode, data } = await BrokerageWithdrawConfigApi.getBrokerageWithdrawConfig(
-      code,
-    );
-    if (resCode !== 0 || !data) {
-      return;
-    }
-    const minRaw = pickNumber(data, [
-      'minPrice',
-      'withdrawMinPrice',
-      'minWithdrawPrice',
-      'minWithdrawAmount',
-      'minAmount',
-    ]);
-    const maxRaw = pickNumber(data, [
-      'maxPrice',
-      'withdrawMaxPrice',
-      'maxWithdrawPrice',
-      'maxWithdrawAmount',
-      'maxAmount',
-    ]);
-    state.minPrice = normalizeWithdrawPrice(minRaw);
-    state.maxPrice = normalizeWithdrawPrice(maxRaw);
-
-    const dailyTimes = pickNumber(data, [
-      'withdrawDailyTimes',
-      'dailyTimes',
-      'dayTimes',
-      'maxTimesPerDay',
-      'dayWithdrawLimit',
-      'dayWithdrawTimes',
-    ]);
-    if (dailyTimes > 0) {
-      state.withdrawDailyTimes = dailyTimes;
-    }
-
-    const timeRange =
-      pickString(data, ['withdrawTimeRange', 'withdrawTime', 'timeRange', 'availableTime']) ||
-      pickTimeRange(data);
-    if (timeRange) {
-      state.withdrawTimeRange = timeRange;
-    }
-
-    const auditTime = pickString(data, [
-      'withdrawAuditTime',
-      'auditTime',
-      'reviewTime',
-      'auditDesc',
-    ]);
-    if (auditTime) {
-      state.withdrawAuditTime = auditTime;
-    }
-
-    const arrivalTime = pickString(data, [
-      'withdrawArrivalTime',
-      'arrivalTime',
-      'transferTime',
-      '到账时间',
-      'arrivalDesc',
-    ]);
-    if (arrivalTime) {
-      state.withdrawArrivalTime = arrivalTime;
-    }
+    try {
+      const res = await BrokerageWithdrawConfigApi.get('default');
+      if (!res) return;
+      if (res.code === 0 && res.data) {
+        state.withdrawConfig = res.data;
+        const cfg = res.data;
+        const minRaw = pickNumber(cfg, ['withdrawMinPrice', 'minPrice', 'minWithdrawPrice']);
+        const maxRaw = pickNumber(cfg, ['withdrawMaxPrice', 'maxPrice', 'maxWithdrawPrice']);
+        state.minPrice = normalizeWithdrawPrice(minRaw);
+        state.maxPrice = normalizeWithdrawPrice(maxRaw);
+        const dailyLimit = pickNumber(cfg, [
+          'dailyWithdrawLimit',
+          'withdrawDailyTimes',
+          'dailyTimes',
+          'dayTimes',
+        ]);
+        if (dailyLimit > 0) state.withdrawDailyTimes = dailyLimit;
+        const timeRange =
+          pickString(cfg, ['withdrawTimeRange', 'withdrawTime', 'timeRange', 'availableTime']) ||
+          pickTimeRange(cfg);
+        if (timeRange) state.withdrawTimeRange = timeRange;
+        const auditTime = pickString(cfg, [
+          'withdrawAuditTime',
+          'auditTime',
+          'reviewTime',
+          'auditDesc',
+        ]);
+        if (auditTime) state.withdrawAuditTime = auditTime;
+        const arrivalTime = pickString(cfg, [
+          'withdrawArrivalTime',
+          'arrivalTime',
+          'transferTime',
+          'arrivalDesc',
+        ]);
+        if (arrivalTime) state.withdrawArrivalTime = arrivalTime;
+      }
+    } catch (e) {}
   }
 
   function onWithdrawAll() {
     const balance = Number(state.brokerageInfo.brokeragePrice || 0) / 100;
-    const maxLimit = Number(state.maxPrice || 0) || 0;
+    const maxLimit = currentMaxYuan.value || 0;
     const actualMax = maxLimit > 0 ? Math.min(maxLimit, balance) : balance;
-    state.accountInfo.price = String(actualMax || 0);
+    state.priceInput = String(Number(actualMax || 0).toFixed(2));
   }
-
-  // 打开提现方式的弹窗
-  const onAccountSelect = (e) => {
-    state.accountSelect = e;
-  };
 
   async function validateWithdrawParams() {
     if (!state.isAgree) {
       sheep.$helper.toast('请先阅读并勾选同意提现声明');
       return null;
     }
-    const price = Number(state.accountInfo.price);
-    const maxPrice = Number(state.brokerageInfo.brokeragePrice || 0) / 100;
-    const minLimit = Number(state.minPrice || 0) || 0;
-    const maxLimit = Number(state.maxPrice || 0) || 0;
-    const actualMax = maxLimit > 0 ? Math.min(maxLimit, maxPrice) : maxPrice;
-    const actualMin = minLimit > 0 ? minLimit : 200;
-    if (!price || price < actualMin) {
-      sheep.$helper.toast(`提现金额不得小于${actualMin}元`);
+    const realName = String(state.realNameInput || '').trim();
+    if (!realName) {
+      sheep.$helper.toast('请先完成真实姓名核验');
       return null;
     }
-    if (price > maxPrice) {
+    const price = Number(state.priceInput || 0);
+    const maxPriceAvailable = Number(state.brokerageInfo.brokeragePrice || 0) / 100;
+    const minLimit = currentMinYuan.value;
+    const maxLimit = currentMaxYuan.value;
+    const actualMax = maxLimit > 0 ? Math.min(maxLimit, maxPriceAvailable) : maxPriceAvailable;
+    if (!price || price < minLimit) {
+      sheep.$helper.toast(`提现金额不得小于${minLimit}元`);
+      return null;
+    }
+    if (price > maxPriceAvailable) {
       sheep.$helper.toast('提现金额不得大于可提现余额');
       return null;
     }
     if (price > actualMax) {
-      sheep.$helper.toast(`提现金额不得大于${actualMax}元`);
+      sheep.$helper.toast(`提现金额不得大于${Number(actualMax).toFixed(2)}元`);
       return null;
     }
-    if (!state.accountInfo.type) {
-      sheep.$helper.toast('请选择提现方式');
-      return null;
-    }
-    if (!['1', '5'].includes(String(state.accountInfo.type))) {
-      sheep.$helper.toast('暂不支持该提现方式');
-      return null;
-    }
-    let openid;
-    if (String(state.accountInfo.type) === '5') {
+    if (WITHDRAW_SUBSCRIBE_TEMPLATE_ID && typeof uni?.requestSubscribeMessage === 'function') {
       try {
-        const wechatProvider = sheep.$platform.useProvider('wechat');
-        if (WITHDRAW_SUBSCRIBE_TEMPLATE_ID && typeof uni?.requestSubscribeMessage === 'function') {
-          uni.requestSubscribeMessage({
-            tmplIds: [WITHDRAW_SUBSCRIBE_TEMPLATE_ID],
-            success: () => {},
-            fail: () => {},
-          });
-        } else if (typeof uni?.showModal === 'function') {
-          uni.showModal({
-            content: '你的微信版本过低，请更新至最新版本。',
-            showCancel: false,
-          });
-        }
-        openid = await wechatProvider.getOpenid(true);
-
-        const realName = String(state.accountInfo.userName || '').trim();
-        if (!realName) {
-          sheep.$helper.toast('请输入微信提现真实姓名');
-          return null;
-        }
-
-        let isBound = true;
-        if (wechatProvider.getInfo) {
-          const socialInfo = await wechatProvider.getInfo();
-          if (!socialInfo) {
-            isBound = false;
-          }
-        }
-
-        if (!openid || !isBound) {
-          uni.showModal({
-            title: '提示',
-            content: '请先绑定微信后再进行提现',
-            success: async function (res) {
-              if (res.confirm) {
-                uni.showLoading({ title: '正在绑定微信' });
-                const result = await wechatProvider.bind();
-                uni.hideLoading();
-                if (result) {
-                  sheep.$helper.toast('微信绑定成功，请再次点击提现');
-                } else {
-                  sheep.$helper.toast('微信绑定失败');
-                }
-              }
-            },
-          });
-          return null;
-        }
-      } catch (e) {
-        sheep.$helper.toast('微信信息获取失败，请稍后重试');
-        return null;
-      }
+        uni.requestSubscribeMessage({
+          tmplIds: [WITHDRAW_SUBSCRIBE_TEMPLATE_ID],
+          success: () => {},
+          fail: () => {},
+        });
+      } catch (e) {}
     }
-
+    const priceFen = Math.round(price * 100);
     const data = {
-      ...state.accountInfo,
-      price: price * 100,
+      type: 7,
+      price: priceFen,
+      transferChannelCode: 'linggong',
+      userAccount: '',
+      userName: realName,
     };
-    if (String(state.accountInfo.type) === '5') {
-      data.userAccount = openid;
-      data.transferChannelCode = getWeixinPayChannelCode();
-      data.userName = String(state.accountInfo.userName || '').trim();
-    } else {
-      delete data.userAccount;
-      delete data.transferChannelCode;
-    }
     return data;
   }
 
@@ -612,36 +550,10 @@
       return false;
     }
     if (res.code !== 0) {
-      if (res.msg && (res.msg.includes('昵称') || res.msg.includes('微信'))) {
-        const userInfo = sheep.$store('user').userInfo;
-        if (!userInfo.nickname) {
-          uni.showModal({
-            title: '提示',
-            content: '需要完善您的昵称和头像信息后才能提现',
-            success: function (modalRes) {
-              if (modalRes.confirm) {
-                showAuthModal('mpAuthorization');
-              }
-            },
-          });
-        } else {
-          uni.showModal({
-            title: '提示',
-            content: '您的微信未绑定或信息异常，请重新绑定微信',
-            success: async function (modalRes) {
-              if (modalRes.confirm) {
-                uni.showLoading({ title: '正在绑定微信' });
-                const result = await sheep.$platform.useProvider('wechat').bind();
-                uni.hideLoading();
-                if (result) {
-                  sheep.$helper.toast('微信绑定成功，请再次点击提现');
-                } else {
-                  sheep.$helper.toast('微信绑定失败');
-                }
-              }
-            },
-          });
-        }
+      if (res.msg) {
+        sheep.$helper.toast(res.msg);
+      } else {
+        sheep.$helper.toast('提现失败');
       }
       return false;
     }
@@ -656,7 +568,7 @@
           return;
         }
         getBrokerageUser();
-        state.accountInfo = {};
+        state.priceInput = '';
       },
     });
     return true;
@@ -672,9 +584,24 @@
       sheep.$helper.toast(res.msg || '获取签约链接失败');
       return false;
     }
-    const url = typeof res.data === 'string' ? res.data : res.data.url || res.data.h5Url || '';
-    if (!url) {
-      sheep.$helper.toast('获取签约链接失败');
+    let url = '';
+    let errorMsg = '';
+    let successFlag = true;
+    if (typeof res.data === 'string') {
+      url = res.data;
+    } else if (res.data && typeof res.data === 'object') {
+      successFlag = res.data.success !== false;
+      errorMsg = String(res.data.errorMsg || res.data.errorMessage || res.data.msg || '').trim();
+      url =
+        res.data.certUrl ||
+        res.data.url ||
+        res.data.h5Url ||
+        res.data.signUrl ||
+        res.data.pageUrl ||
+        '';
+    }
+    if (!successFlag || !url) {
+      sheep.$helper.toast(errorMsg || '获取签约链接失败');
       return false;
     }
     try {
@@ -683,6 +610,9 @@
           url:
             '/pages/public/webview?url=' +
             encodeURIComponent(url + (url.indexOf('?') > -1 ? '&' : '?') + '_t=' + Date.now()),
+          fail() {
+            sheep.$router.go(url);
+          },
         });
         return true;
       }
@@ -693,7 +623,7 @@
 
   async function handleSignStatus(status, payload) {
     const S = LinggongApi.Status;
-    if (status === S.OK) {
+    if (LinggongApi.isSuccessStatus(status)) {
       if (payload) {
         const ok = await doCreateWithdraw(payload);
         if (ok) {
@@ -723,7 +653,9 @@
       await openLinggongWebview();
       return;
     }
-    sheep.$helper.toast(`当前状态：${status || '未知'}，暂无法提现`);
+    if (!LinggongApi.isSuccessStatus(status)) {
+      sheep.$helper.toast(`当前状态：${status || '未知'}，暂无法提现`);
+    }
   }
 
   async function ensurePreSignFlow(status, payload) {
@@ -846,9 +778,7 @@
     uni.showLoading({ title: '处理中...', mask: true });
     try {
       state.realNameConfirmed = true;
-      if (state.accountInfo.type === '5' && !state.accountInfo.userName) {
-        state.accountInfo.userName = realName;
-      }
+      await getWithdrawConfig();
       const preOk = await refreshPreCheck();
       if (!preOk && state.preCheckTip) {
         sheep.$helper.toast(state.preCheckTip);
@@ -856,10 +786,7 @@
       const status = await refreshSignStatus();
       if (status) {
         const handled = await ensurePreSignFlow(status, null);
-        if (!handled && status === LinggongApi.Status.OK) {
-          sheep.$helper.toast('身份核验通过，请继续填写提现信息');
-        }
-        if (!handled && status !== LinggongApi.Status.OK) {
+        if (!handled && !LinggongApi.isSuccessStatus(status)) {
           sheep.$helper.toast('当前状态：' + state.signStatusRaw);
         }
       } else if (state.signStatusTip) {
@@ -910,6 +837,7 @@
     if (!state.realNameConfirmed) {
       return;
     }
+    await getWithdrawConfig();
     if (state.pendingWithdrawPayload) {
       await continuePendingWithdraw();
       return;
@@ -921,10 +849,7 @@
     const status = await refreshSignStatus();
     if (status) {
       const handled = await ensurePreSignFlow(status, null);
-      if (!handled && status === LinggongApi.Status.OK) {
-        // ok：静默，不打扰用户填写提现信息
-      }
-      if (!handled && status !== LinggongApi.Status.OK) {
+      if (!handled && !LinggongApi.isSuccessStatus(status)) {
         sheep.$helper.toast('当前状态：' + (state.signStatusRaw || status));
       }
     } else if (state.signStatusTip) {
@@ -969,16 +894,14 @@
     }
   };
 
-  // 获得分销配置
+  // 获得分销配置 (冻结期等全局交易参数)
   async function getWithdrawRules() {
-    let { code, data } = await TradeConfigApi.getTradeConfig();
-    if (code !== 0) {
+    const res = await TradeConfigApi.getTradeConfig();
+    if (!res || res.code !== 0) {
       return;
     }
-    if (data) {
-      state.frozenDays = data.brokerageFrozenDays || 0;
-      const enabled = (data.brokerageWithdrawTypes || []).filter((v) => [1, 5].includes(Number(v)));
-      state.withdrawTypes = enabled.length ? enabled : [1, 5];
+    if (res.data) {
+      state.frozenDays = Number(res.data.brokerageFrozenDays || 0) || 0;
     }
   }
 
@@ -993,6 +916,7 @@
   onBeforeMount(() => {
     getWithdrawRules();
     getBrokerageUser();
+    getWithdrawConfig();
   });
 </script>
 
@@ -1189,6 +1113,29 @@
     white-space: nowrap;
     line-height: 33rpx;
     margin-top: 21rpx;
+  }
+
+  .withdraw-fee-row {
+    padding: 18rpx 0 0 0;
+  }
+
+  .withdraw-fee-row + .withdraw-fee-row {
+    padding-top: 10rpx;
+  }
+
+  .withdraw-fee-value {
+    color: rgba(61, 61, 60, 1);
+    font-size: 26rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    line-height: 38rpx;
+  }
+
+  .withdraw-arrive {
+    color: rgba(30, 63, 28, 1);
+    font-size: 28rpx;
+    font-family: DINAlternate-Bold;
+    font-weight: 700;
   }
 
   .withdraw-audit-tip {

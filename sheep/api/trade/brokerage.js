@@ -68,10 +68,17 @@ const BrokerageApi = {
   },
   // 创建分销提现
   createBrokerageWithdraw: (data) => {
+    const payload = Object.assign(
+      {
+        type: 7,
+        transferChannelCode: 'linggong',
+      },
+      data || {}
+    );
     return request({
       url: '/trade/brokerage-withdraw/create',
       method: 'POST',
-      data,
+      data: payload,
     });
   },
   // 获得分销提现分页
