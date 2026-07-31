@@ -236,7 +236,9 @@ const decryptSpm = (spm, options = {}) => {
   }
   shareParams.platform = platformMap[shareParamsArray[3] - 1];
   shareParams.from = fromMap[shareParamsArray[4] - 1];
-  if (shareId > 0) {
+  const currentUserId = user.isLogin ? Number(user.userInfo?.id || 0) : 0;
+  const isSelfShare = shareId > 0 && currentUserId > 0 && shareId === currentUserId;
+  if (shareId > 0 && !isSelfShare) {
     // 若页面为 MEMBER，则是会员邀请注册（存 inviterId）
     if (shareParamsArray[1] === SharePageEnum.MEMBER.value) {
       uni.setStorageSync('inviterId', String(shareId));
@@ -247,7 +249,7 @@ const decryptSpm = (spm, options = {}) => {
   }
 
   // 若未登录且有分享者ID，强制跳转登录页并设置 returnUrl
-  if (shareId > 0 && !user.isLogin) {
+  if (shareId > 0 && !user.isLogin && !isSelfShare) {
     let returnUrl = '';
     if (shareParams.page !== SharePageEnum.HOME.page) {
       const queryStr = Object.keys(shareParams.query)
@@ -265,8 +267,8 @@ const decryptSpm = (spm, options = {}) => {
   // 已登录则直接绑定推广员
   // （注意：如果 shareId > 0，但是页面是 MEMBER 的情况，inviterId 已经在上面写入，
   //  邀请注册通常是在未登录注册时使用，若已登录则不需要再绑定 inviterId，除非业务要求。
-  //  这里仅当存在普通的 shareId 时才走 bindBrokerageUser 逻辑）
-  if (shareId > 0 && user.isLogin && shareParamsArray[1] !== SharePageEnum.MEMBER.value) {
+  //  这里仅当存在普通的 shareId 时才走 bindBrokerageUser 逻辑；自己分享给自己则跳过）
+  if (shareId > 0 && user.isLogin && !isSelfShare && shareParamsArray[1] !== SharePageEnum.MEMBER.value) {
     bindBrokerageUser();
   }
 
@@ -297,6 +299,7 @@ const bindBrokerageUser = async () => {
     }
 
     const userInfo = userStore.userInfo || {};
+    const currentUserId = Number(userInfo.id || 0);
     let res;
 
     // 存在 promotionId，走 admin-api 推广人员绑定接口
@@ -314,8 +317,8 @@ const bindBrokerageUser = async () => {
         uni.showToast({ title: res.msg || '推广员绑定成功', icon: 'success' });
       }
     }
-    // 存在 shareId，走 app-api 分销用户绑定接口
-    else if (shareId) {
+    // 存在 shareId，走 app-api 分销用户绑定接口；自己分享给自己则跳过绑定
+    else if (shareId && shareId !== currentUserId) {
       res = await BrokerageApi.bindBrokerageUserByShareId({
         bindUserId: shareId,
       });
@@ -323,6 +326,8 @@ const bindBrokerageUser = async () => {
       if (res.code === 0) {
         uni.showToast({ title: res.msg || '分销绑定成功', icon: 'success' });
       }
+    } else if (shareId && shareId === currentUserId) {
+      uni.removeStorageSync('shareId');
     }
   } catch (e) {
     console.error(e);
