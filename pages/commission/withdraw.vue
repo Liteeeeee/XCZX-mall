@@ -304,8 +304,14 @@
 
   const currentApplyTimeRange = computed(() => {
     const cfg = state.withdrawConfig;
-    if (cfg && cfg.applyStartTime && cfg.applyEndTime) {
-      return `${cfg.applyStartTime}-${cfg.applyEndTime}`;
+    const startStr = cfg
+      ? formatTimeArr(cfg.applyStartTime) || formatTimeArr(cfg.withdrawApplyStartTime)
+      : '';
+    const endStr = cfg
+      ? formatTimeArr(cfg.applyEndTime) || formatTimeArr(cfg.withdrawApplyEndTime)
+      : '';
+    if (startStr && endStr) {
+      return `${startStr}-${endStr}`;
     }
     return state.withdrawTimeRange || '全天可申请';
   });
