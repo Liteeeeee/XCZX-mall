@@ -253,7 +253,7 @@
     summary: {},
     todayStatistics: {},
     brokerageUser: {},
-    frozenDays: 0,
+    frozenDays: 14,
     minPrice: 0,
     maxPrice: 0,
     withdrawDailyTimes: 1,
@@ -277,7 +277,7 @@
   const withdrawingFen = computed(() => Number(state.summary?.frozenPrice) || 0);
   const totalEarnedFen = computed(() => Number(state.brokerageUser?.historyBrokeragePrice) || 0);
   const frozenTipText = computed(() => {
-    const days = Number(state.frozenDays || 0) || 0;
+    const days = Number(state.frozenDays || 0) || 14;
     if (days <= 0) return '存在售后冻结期，确认收货无纠纷后自动解冻';
     return `${days}天售后冻结期，确认收货无纠纷后自动解冻`;
   });
@@ -297,7 +297,7 @@
   const withdrawRuleItems = computed(() => {
     const balanceYuan = fen2yuan(balanceFen.value || 0);
     const frozenYuan = fen2yuan(withdrawingFen.value || 0);
-    const frozenDays = Number(state.frozenDays || 0) || 0;
+    const frozenDays = Number(state.frozenDays || 0) || 14;
     const minLimit = Number(state.minPrice || 0) || 0;
     const maxLimit = Number(state.maxPrice || 0) || 0;
     const actualMin = minLimit > 0 ? minLimit : 200;
@@ -358,7 +358,7 @@
   });
 
   const withdrawStatementLines = computed(() => {
-    const frozenDays = Number(state.frozenDays || 0) || 0;
+    const frozenDays = Number(state.frozenDays || 0) || 14;
     const base = withdrawRuleItems.value.map((it) => `${it.label}：${it.value}`);
     const extra = [
       '可提现额度为已结算且非冻结的收益金额，具体以页面展示为准',
@@ -420,7 +420,7 @@
   async function loadTradeConfig() {
     const { code, data } = await TradeConfigApi.getTradeConfig();
     if (code !== 0) return;
-    state.frozenDays = Number(data?.brokerageFrozenDays || 0) || 0;
+    state.frozenDays = Number(data?.brokerageFrozenDays || 0) || 14;
   }
 
   function normalizeWithdrawPrice(value) {
@@ -541,11 +541,7 @@
       'freezePeriodDays',
       '冻结天数',
     ]);
-    if (frozenDaysRaw > 0) {
-      state.frozenDays = frozenDaysRaw;
-    } else if (frozenDaysRaw === 0) {
-      state.frozenDays = 0;
-    }
+    state.frozenDays = frozenDaysRaw && frozenDaysRaw > 0 ? frozenDaysRaw : 14;
   }
 
   async function loadList() {

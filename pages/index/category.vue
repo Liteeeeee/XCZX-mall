@@ -57,11 +57,17 @@
       <view class="three-level-wrap ss-flex ss-col-top">
         <!-- 商品分类（左） -->
         <view class="side-menu-wrap">
-          <scroll-view scroll-y :style="[{ height: menuScrollHeight + 'px' }]">
+          <scroll-view
+            scroll-y
+            scroll-with-animation
+            :scroll-into-view="state.leftScrollIntoViewId"
+            :style="[{ height: menuScrollHeight + 'px' }]"
+          >
             <view
               class="menu-item ss-flex"
               v-for="(item, index) in state.categoryList"
               :key="item.id"
+              :id="'menu-item-' + index"
               :class="[{ 'menu-item-active': index === state.activeMenu }]"
               @tap="onMenu(index)"
             >
@@ -78,10 +84,15 @@
         <view class="goods-list-box" v-if="state.categoryList?.length">
           <scroll-view
             scroll-y
+            scroll-with-animation
+            :scroll-into-view="state.rightScrollIntoViewId"
             :style="[{ height: menuScrollHeight + 'px' }]"
             :lower-threshold="50"
+            @scroll="onRightScroll"
             @scrolltolower="loadMore"
           >
+            <!-- 回到顶部锚点（配合 scroll-into-view 丝滑滚顶） -->
+            <view id="right-scroll-top-anchor" style="width: 0; height: 0"></view>
             <image
               v-if="bannerPicUrl"
               class="banner-img"
@@ -103,10 +114,30 @@
               :data="state.categoryList"
               :activeMenu="state.activeMenu"
             />
+            <!-- 下一个分类过渡条（非最后一个分类且已加载完本分类时显示） -->
+            <view
+              v-if="
+                (state.style === 'first_one' || state.style === 'first_two') &&
+                state.pagination.total > 0 &&
+                state.loadStatus === 'noMore' &&
+                state.activeMenu < state.categoryList.length - 1
+              "
+              class="next-category-hint"
+            >
+              <view class="next-hint-l flex-row">
+                <text class="next-hint-label">下一个分类</text>
+                <text class="next-hint-name">{{
+                  state.categoryList[state.activeMenu + 1]?.name || ''
+                }}</text>
+              </view>
+              <uni-icons type="right" size="16" color="rgba(30, 63, 28, 0.9)" />
+            </view>
+            <!-- 最后一个分类的 noMore 状态（保留原组件） -->
             <uni-load-more
               v-if="
                 (state.style === 'first_one' || state.style === 'first_two') &&
-                state.pagination.total > 0
+                state.pagination.total > 0 &&
+                state.activeMenu >= state.categoryList.length - 1
               "
               :status="state.loadStatus"
               :content-text="{
@@ -145,7 +176,7 @@
   import BannerApi from '@/sheep/api/promotion/banner';
   import SpuApi from '@/sheep/api/product/spu';
   import { onLoad, onReachBottom, onShow } from '@dcloudio/uni-app';
-  import { computed, reactive } from 'vue';
+  import { computed, nextTick, reactive } from 'vue';
   import { concat } from 'lodash-es';
   import { handleTree } from '@/sheep/helper/utils';
 
@@ -167,6 +198,12 @@
     bannerPicUrl: '',
     showBannerPreviewVideo: false,
     bannerPreviewVideoUrl: '',
+
+    // 分类丝滑切换（新增）
+    rightScrollIntoViewId: '', // 右栏 scroll-view scroll-into-view 锚点
+    leftScrollIntoViewId: '', // 左栏 scroll-view 滚动到目标 id
+    isSwitchingCategory: false, // 分类切换锁，防止重复触发
+    lastScrollTop: 0, // 记录上一次滚动位置，判断方向
   });
 
   const bannerPicUrl = computed(() => {
@@ -197,12 +234,18 @@
     state.categoryList = secondLevelList.length > 0 ? secondLevelList : tree;
   }
 
-  // 选中菜单
+  // 选中菜单（左栏点击 / 自动切换 / 外部传参 均走此处）
   const onMenu = (val) => {
     state.activeMenu = val;
+    state.leftScrollIntoViewId = 'menu-item-' + val; // 左栏同步滚到可视区
     state.pagination.pageNo = 1;
     state.pagination.list = [];
     state.pagination.total = 0;
+    // 丝滑滚动到右栏顶部（先清空锚点 → 下一帧再设锚点，规避 uni-app 同值不触发滚动的坑）
+    state.rightScrollIntoViewId = '';
+    nextTick(() => {
+      state.rightScrollIntoViewId = 'right-scroll-top-anchor';
+    });
     getGoodsList();
   };
 
@@ -216,7 +259,9 @@
       pageSize: state.pagination.pageSize,
       keyword: state.keyword,
     });
-    if (res.code !== 0) {
+    if (!res || res.code !== 0) {
+      // 失败时也要解锁切换锁（否则锁死）
+      state.isSwitchingCategory = false;
       return;
     }
     // 合并列表
@@ -225,9 +270,36 @@
     state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
   }
 
-  // 加载更多商品
+  // 监听右栏滚动（记录位置 & 方向）
+  function onRightScroll(e) {
+    state.lastScrollTop = e.detail.scrollTop || 0;
+  }
+
+  // 【核心】丝滑切到下一个分类
+  async function switchToNextCategory() {
+    if (state.isSwitchingCategory) return;
+    if (!Array.isArray(state.categoryList) || state.categoryList.length === 0) return;
+    if (state.activeMenu >= state.categoryList.length - 1) return;
+    state.isSwitchingCategory = true;
+    const nextIdx = state.activeMenu + 1;
+    // 过渡条已由 v-if 渲染（毛玻璃卡片），给用户一个短暂的感知时间
+    await new Promise((r) => setTimeout(r, 380));
+    // 走 onMenu 统一逻辑：左栏滚动 + 右栏滚顶 + 重置分页 + 拉新商品
+    onMenu(nextIdx);
+    // 等商品请求回来 & 滚动动画差不多完成，再解锁
+    setTimeout(() => {
+      state.isSwitchingCategory = false;
+    }, 700);
+  }
+
+  // 加载更多商品（改造：到底后如果已 noMore 且非最后分类 → 自动切下一个）
   function loadMore() {
+    if (state.isSwitchingCategory) return;
     if (state.loadStatus === 'noMore') {
+      // 本分类已加载完，判断是否有下一个分类可切
+      if (state.activeMenu < state.categoryList.length - 1) {
+        switchToNextCategory();
+      }
       return;
     }
     state.pagination.pageNo++;
@@ -515,6 +587,59 @@
         width: calc(100vw - 200rpx);
         border-radius: 5px;
       }
+    }
+  }
+
+  // ── 下一个分类过渡提示条（毛玻璃 + 淡入上移动画）──
+  .s-category .next-category-hint {
+    margin: 24rpx 4rpx 40rpx 4rpx;
+    padding: 22rpx 28rpx;
+    border-radius: 18rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    // 毛玻璃
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    background: rgba(255, 255, 255, 0.72);
+    border: 1rpx solid rgba(30, 63, 28, 0.08);
+    box-shadow: 0 8rpx 24rpx rgba(30, 63, 28, 0.08);
+    animation: fadeSlideUp 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+
+  .s-category .next-hint-l {
+    align-items: center;
+    min-width: 0;
+  }
+
+  .s-category .next-hint-label {
+    font-size: 22rpx;
+    color: rgba(157, 156, 150, 1);
+    letter-spacing: 1rpx;
+    flex-shrink: 0;
+  }
+
+  .s-category .next-hint-name {
+    margin-left: 16rpx;
+    font-size: 30rpx;
+    font-weight: 600;
+    color: rgba(30, 63, 28, 1);
+    font-family: PingFangSC-Medium;
+    // 超长省略
+    max-width: 300rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @keyframes fadeSlideUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20rpx);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
     }
   }
 

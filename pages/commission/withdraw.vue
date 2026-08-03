@@ -153,15 +153,6 @@
                 state.withdrawConfig.withdrawDescription
               }}</text>
             </view>
-            <view
-              v-if="state.withdrawConfig?.otherDescription"
-              class="rules-desc rules-row flex-row"
-            >
-              <text class="rules-label">其他说明</text>
-              <text class="rules-value rules-multiline">{{
-                state.withdrawConfig.otherDescription
-              }}</text>
-            </view>
           </view>
         </view>
 
@@ -251,7 +242,7 @@
     brokerageInfo: {},
     withdrawConfig: null,
 
-    frozenDays: 0,
+    frozenDays: 14,
     minPrice: 0,
     maxPrice: 0,
     withdrawDailyTimes: 1,
@@ -340,7 +331,7 @@
   const withdrawRuleItems = computed(() => {
     const balanceYuan = fen2yuan(state.brokerageInfo?.brokeragePrice || 0);
     const frozenYuan = fen2yuan(state.brokerageInfo?.frozenPrice || 0);
-    const frozenDays = Number(state.frozenDays || 0) || 0;
+    const frozenDays = Number(state.frozenDays || 0) || 14;
     const minYuan = currentMinYuan.value;
     const maxYuan = currentMaxYuan.value;
     const rate = currentFeeRate.value;
@@ -392,7 +383,7 @@
 
   const withdrawStatementLines = computed(() => {
     const base = withdrawRuleItems.value.map((it) => `${it.label}：${it.value}`);
-    const frozenDays = Number(state.frozenDays || 0) || 0;
+    const frozenDays = Number(state.frozenDays || 0) || 14;
     const extra = [
       '可提现额度为已结算且非冻结的收益金额，具体以页面展示为准',
       withdrawThresholdTip.value,
@@ -408,9 +399,6 @@
     ].filter(Boolean);
     if (state.withdrawConfig?.withdrawDescription) {
       extra.unshift(state.withdrawConfig.withdrawDescription);
-    }
-    if (state.withdrawConfig?.otherDescription) {
-      extra.unshift(state.withdrawConfig.otherDescription);
     }
     return base.concat(extra);
   });
@@ -512,11 +500,7 @@
           'freezePeriodDays',
           '冻结天数',
         ]);
-        if (frozenDaysRaw > 0) {
-          state.frozenDays = frozenDaysRaw;
-        } else if (frozenDaysRaw === 0) {
-          state.frozenDays = 0;
-        }
+        state.frozenDays = frozenDaysRaw && frozenDaysRaw > 0 ? frozenDaysRaw : 14;
       }
     } catch (e) {}
   }
@@ -933,7 +917,7 @@
       return;
     }
     if (res.data) {
-      state.frozenDays = Number(res.data.brokerageFrozenDays || 0) || 0;
+      state.frozenDays = Number(res.data.brokerageFrozenDays || 0) || 14;
     }
   }
 
