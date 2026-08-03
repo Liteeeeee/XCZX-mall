@@ -39,15 +39,21 @@
         <text
           class="tab-item"
           :class="state.currentSubTab === 2 ? 'text_3' : 'text_inactive_color'"
-          @tap="onSubTabsChange(2, '2')"
-          >已失效</text
+          @tap="onSubTabsChange(2, '3')"
+          >已过期</text
+        >
+        <text
+          class="tab-item"
+          :class="state.currentSubTab === 3 ? 'text_3' : 'text_inactive_color'"
+          @tap="onSubTabsChange(3, '2')"
+          >已使用</text
         >
       </view>
       <view class="section_7">
         <view
           class="section_3"
           :style="{
-            transform: `translateX(${state.currentSubTab * 250 + 109}rpx)`,
+            transform: `translateX(${state.currentSubTab * 187.5 + 77.75}rpx)`,
             transition: 'transform 0.3s',
           }"
         ></view>
@@ -139,7 +145,8 @@
   const subTabMaps = [
     { name: '全部', value: 'all' },
     { name: '未使用', value: '1' },
-    { name: '已失效', value: '2' },
+    { name: '已过期', value: '3' },
+    { name: '已使用', value: '2' },
   ];
 
   function onTabsChange(e) {
@@ -188,7 +195,7 @@
       pageSize: state.pagination.pageSize,
       discountType: state.currentTab === 0 ? undefined : tabMaps[state.currentTab].value,
     };
-    if (['1', '2'].includes(state.type)) {
+    if (['1', '2', '3'].includes(state.type)) {
       params.status = state.type;
     }
     const { data, code } = await CouponApi.getCouponPage(params);
@@ -228,7 +235,10 @@
     if (Option.type) {
       if (Option.type === 'expired') {
         state.currentSubTab = 2;
-        state.type = '2'; // 已失效的 status 为 2
+        state.type = '3'; // 已失效(过期)的 status 为 3
+      } else if (Option.type === 'used') {
+        state.currentSubTab = 3;
+        state.type = '2'; // 已使用的 status 为 2
       } else if (Option.type === 'geted' || Option.type === 'unused') {
         state.currentSubTab = 1;
         state.type = '1'; // 未使用的 status 为 1
