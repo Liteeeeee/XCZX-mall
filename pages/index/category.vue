@@ -102,7 +102,11 @@
             />
             <view class="group_60 flex-row">
               <view class="section_26 flex-col"></view>
-              <text class="text_27">{{ state.categoryList[state.activeMenu]?.name || '' }}</text>
+              <text class="text_27">{{
+                state.categoryList[state.topDisplayedCategoryIdx]?.name ||
+                state.categoryList[state.activeMenu]?.name ||
+                ''
+              }}</text>
               <view class="section_27 flex-col"></view>
             </view>
             <second-one
@@ -114,30 +118,13 @@
               :data="state.categoryList"
               :activeMenu="state.activeMenu"
             />
-            <!-- 下一个分类过渡条（非最后一个分类且已加载完本分类时显示） -->
-            <view
-              v-if="
-                (state.style === 'first_one' || state.style === 'first_two') &&
-                state.pagination.total > 0 &&
-                state.loadStatus === 'noMore' &&
-                state.activeMenu < state.categoryList.length - 1
-              "
-              class="next-category-hint"
-            >
-              <view class="next-hint-l flex-row">
-                <text class="next-hint-label">下一个分类</text>
-                <text class="next-hint-name">{{
-                  state.categoryList[state.activeMenu + 1]?.name || ''
-                }}</text>
-              </view>
-              <uni-icons type="right" size="16" color="rgba(30, 63, 28, 0.9)" />
-            </view>
             <!-- 最后一个分类的 noMore 状态（保留原组件） -->
             <uni-load-more
               v-if="
                 (state.style === 'first_one' || state.style === 'first_two') &&
                 state.pagination.total > 0 &&
-                state.activeMenu >= state.categoryList.length - 1
+                state.virtualActiveMenu >= state.categoryList.length - 1 &&
+                state.loadStatus === 'noMore'
               "
               :status="state.loadStatus"
               :content-text="{
@@ -180,18 +167,23 @@
   import { concat } from 'lodash-es';
   import { handleTree } from '@/sheep/helper/utils';
 
+  const PREFETCH_CACHE_MAX = 5;
+  const SWITCH_UNLOCK_MS = 80;
+  const MARKER_TYPE = '__CAT_DIVIDER__';
+  const GOODS_TYPE = 'goods';
+
   const state = reactive({
-    style: 'first_two', // first_one（一级 - 样式一）, first_two（二级 - 样式二）, second_one（二级）
-    categoryList: [], // 商品分类树
-    activeMenu: 0, // 选中的一级菜单，在 categoryList 的下标
+    style: 'first_two',
+    categoryList: [],
+    activeMenu: 0,
     pendingCategoryId: null,
 
     pagination: {
-      // 商品分页
-      list: [], // 商品列表
-      total: [], // 商品总数
+      list: [],
+      total: 0,
       pageNo: 1,
       pageSize: 6,
+      perCat: new Map(),
     },
     loadStatus: '',
     keyword: '',
@@ -199,12 +191,59 @@
     showBannerPreviewVideo: false,
     bannerPreviewVideoUrl: '',
 
-    // 分类丝滑切换（新增）
-    rightScrollIntoViewId: '', // 右栏 scroll-view scroll-into-view 锚点
-    leftScrollIntoViewId: '', // 左栏 scroll-view 滚动到目标 id
-    isSwitchingCategory: false, // 分类切换锁，防止重复触发
-    lastScrollTop: 0, // 记录上一次滚动位置，判断方向
+    rightScrollIntoViewId: '',
+    leftScrollIntoViewId: '',
+    isSwitchingCategory: false,
+    isPrefetchingNext: false,
+    lastScrollTop: 0,
+    prefetchCache: new Map(),
+    virtualActiveMenu: 0,
+    topDisplayedCategoryIdx: 0,
+    categoryBreakPoints: [],
+    enableSeamless: true,
   });
+
+  function _clamp(v, min, max) {
+    return Math.max(min, Math.min(v, max));
+  }
+
+  function _assertInvariant(tag) {
+    const L = state.categoryList.length;
+    if (!L) return;
+    let a = state.activeMenu;
+    let t = state.topDisplayedCategoryIdx;
+    let v = state.virtualActiveMenu;
+    const ok = 0 <= a && a <= t && t <= v && v < L;
+    if (!ok) {
+      // eslint-disable-next-line no-console
+      console.warn('[CAT_INVARIANT_VIOLATION@' + tag + ']', { a, t, v, L });
+      const maxV = L - 1;
+      v = _clamp(v, 0, maxV);
+      t = _clamp(t, Math.max(0, a), Math.min(maxV, v));
+      a = _clamp(a, 0, Math.min(maxV, t));
+      state.virtualActiveMenu = v;
+      state.topDisplayedCategoryIdx = t;
+      state.activeMenu = a;
+    }
+  }
+
+  function _evictPrefetchCache() {
+    try {
+      if (state.prefetchCache.size <= PREFETCH_CACHE_MAX) return;
+      const keys = Array.from(state.prefetchCache.keys());
+      for (let i = 0; i < keys.length - PREFETCH_CACHE_MAX; i++) {
+        state.prefetchCache.delete(keys[i]);
+      }
+    } catch (e) {
+      /* noop */
+    }
+  }
+
+  function _catByIdxOrFirst(idx) {
+    return (
+      state.categoryList[_clamp(idx, 0, Math.max(0, state.categoryList.length - 1))] || null
+    );
+  }
 
   const bannerPicUrl = computed(() => {
     const raw = state.bannerPicUrl;
@@ -222,7 +261,6 @@
     Math.max(0, pageHeight.value - Number(sheep.$platform.navbar || 0) - searchBlockHeightPx),
   );
 
-  // 加载商品分类
   async function getList() {
     const { code, data } = await CategoryApi.getCategoryList();
     if (code !== 0) {
@@ -234,76 +272,280 @@
     state.categoryList = secondLevelList.length > 0 ? secondLevelList : tree;
   }
 
-  // 选中菜单（左栏点击 / 自动切换 / 外部传参 均走此处）
-  const onMenu = (val) => {
-    state.activeMenu = val;
-    state.leftScrollIntoViewId = 'menu-item-' + val; // 左栏同步滚到可视区
-    state.pagination.pageNo = 1;
+  function _resetSeamlessStateForClick(targetIdx) {
+    state.activeMenu = targetIdx;
+    state.virtualActiveMenu = targetIdx;
+    state.topDisplayedCategoryIdx = targetIdx;
     state.pagination.list = [];
+    state.pagination.pageNo = 1;
     state.pagination.total = 0;
-    // 丝滑滚动到右栏顶部（先清空锚点 → 下一帧再设锚点，规避 uni-app 同值不触发滚动的坑）
+    state.pagination.perCat.clear();
+    state.categoryBreakPoints = [];
+    state.prefetchCache.clear();
     state.rightScrollIntoViewId = '';
     nextTick(() => {
       state.rightScrollIntoViewId = 'right-scroll-top-anchor';
     });
-    getGoodsList();
+    state.leftScrollIntoViewId = 'menu-item-' + targetIdx;
+  }
+
+  function _setActiveMenu(idx, source) {
+    const L = state.categoryList.length;
+    if (!L) return;
+    const clamped = _clamp(idx, 0, L - 1);
+    if (source === 'click') {
+      _resetSeamlessStateForClick(clamped);
+      getGoodsList(clamped);
+      _assertInvariant('_setActiveMenu:click');
+      return;
+    }
+    state.activeMenu = clamped;
+    state.leftScrollIntoViewId = 'menu-item-' + clamped;
+    if (state.virtualActiveMenu < clamped) state.virtualActiveMenu = clamped;
+    if (state.topDisplayedCategoryIdx < clamped) state.topDisplayedCategoryIdx = clamped;
+    if (state.topDisplayedCategoryIdx > state.virtualActiveMenu)
+      state.topDisplayedCategoryIdx = state.virtualActiveMenu;
+    _assertInvariant('_setActiveMenu:scroll');
+  }
+
+  const onMenu = (val, source = 'click') => {
+    _setActiveMenu(val, source);
   };
 
-  // 加载商品列表
-  async function getGoodsList() {
-    // 加载列表
-    state.loadStatus = 'loading';
+  function _ensurePerCat(catIdx) {
+    const i = _clamp(catIdx, 0, Math.max(0, state.categoryList.length - 1));
+    if (!state.pagination.perCat.has(i)) {
+      state.pagination.perCat.set(i, {
+        pageNo: 1,
+        pageSize: state.pagination.pageSize,
+        total: 0,
+        loadedCount: 0,
+      });
+    }
+    return state.pagination.perCat.get(i);
+  }
+
+  async function _fetchCategoryPage(catIdx, pageNo, silent) {
+    const cat = _catByIdxOrFirst(catIdx);
+    if (!cat) return { list: [], total: 0 };
     const res = await SpuApi.getSpuPage({
-      categoryId: state.categoryList[state.activeMenu].id,
-      pageNo: state.pagination.pageNo,
+      categoryId: cat.id,
+      pageNo: pageNo,
       pageSize: state.pagination.pageSize,
       keyword: state.keyword,
     });
     if (!res || res.code !== 0) {
-      // 失败时也要解锁切换锁（否则锁死）
+      if (!silent) state.isSwitchingCategory = false;
+      return { list: [], total: 0 };
+    }
+    const list = Array.isArray(res.data?.list) ? res.data.list : [];
+    const total = Number(res.data?.total || 0);
+    return { list, total };
+  }
+
+  function _appendGoodsToStream(catIdx, goodsList) {
+    const arr = Array.isArray(goodsList) ? goodsList : [];
+    for (let i = 0; i < arr.length; i++) {
+      const it = arr[i];
+      state.pagination.list.push({
+        ...it,
+        _type: GOODS_TYPE,
+        _$catIdx: catIdx,
+        __streamKey: 'g_' + catIdx + '_' + state.pagination.list.length + '_' + (it?.id || ''),
+      });
+    }
+  }
+
+  function _preloadImagesForGoods(goodsList) {
+    try {
+      const urls = (Array.isArray(goodsList) ? goodsList : [])
+        .map((g) => g?.picUrl || g?.imageUrl || g?.imgUrl)
+        .filter(Boolean)
+        .slice(0, 3)
+        .map((raw) => sheep.$url.cdn(raw));
+      if (urls.length && uni.preloadImage) {
+        uni.preloadImage({ urls });
+      }
+    } catch (e) {
+      /* noop */
+    }
+  }
+
+  async function prefetchNextCategoryFirstPage() {
+    if (state.isPrefetchingNext) return;
+    const nextIdx = state.virtualActiveMenu + 1;
+    const L = state.categoryList.length;
+    if (!L || nextIdx >= L) return;
+    if (state.prefetchCache.has(nextIdx)) return;
+    state.isPrefetchingNext = true;
+    try {
+      const page = await _fetchCategoryPage(nextIdx, 1, true);
+      state.prefetchCache.set(nextIdx, {
+        list: page.list,
+        total: page.total,
+        loadedAt: Date.now(),
+      });
+      _evictPrefetchCache();
+      _preloadImagesForGoods(page.list);
+    } finally {
+      state.isPrefetchingNext = false;
+    }
+  }
+
+  function _updateLoadStatusForVirtualTail() {
+    const tail = _ensurePerCat(state.virtualActiveMenu);
+    if (!tail || tail.total <= 0) {
+      state.loadStatus = 'more';
+      return;
+    }
+    state.loadStatus = tail.loadedCount < tail.total ? 'more' : 'noMore';
+  }
+
+  async function getGoodsList(catIdxOrUndefined) {
+    state.loadStatus = 'loading';
+    const catIdx =
+      typeof catIdxOrUndefined === 'number' ? catIdxOrUndefined : state.virtualActiveMenu;
+    const cat = _catByIdxOrFirst(catIdx);
+    if (!cat) {
       state.isSwitchingCategory = false;
       return;
     }
-    // 合并列表
-    state.pagination.list = concat(state.pagination.list, res.data.list);
-    state.pagination.total = res.data.total;
-    state.loadStatus = state.pagination.list.length < state.pagination.total ? 'more' : 'noMore';
+    const per = _ensurePerCat(catIdx);
+    const { list, total } = await _fetchCategoryPage(catIdx, per.pageNo, false);
+    per.total = total;
+    _appendGoodsToStream(catIdx, list);
+    per.loadedCount = Number(per.loadedCount || 0) + list.length;
+    state.pagination.total = Number(state.pagination.total || 0) + total;
+    _updateLoadStatusForVirtualTail();
+    if (per.loadedCount >= per.total - state.pagination.pageSize) {
+      prefetchNextCategoryFirstPage();
+    }
   }
 
-  // 监听右栏滚动（记录位置 & 方向）
+  function _findDisplayedCatByBreakPoint(scrollTop, breakPoints, activeMenu) {
+    if (!Array.isArray(breakPoints) || breakPoints.length === 0) return activeMenu;
+    const anchorOffset = 0;
+    const target = (scrollTop || 0) + anchorOffset;
+    let lo = 0;
+    let hi = breakPoints.length - 1;
+    let ans = activeMenu;
+    while (lo <= hi) {
+      const mid = (lo + hi) >> 1;
+      const bp = breakPoints[mid];
+      if ((bp?.approxScrollTop || 0) <= target) {
+        ans = bp.catIdx;
+        lo = mid + 1;
+      } else {
+        hi = mid - 1;
+      }
+    }
+    return ans;
+  }
+
   function onRightScroll(e) {
     state.lastScrollTop = e.detail.scrollTop || 0;
+    if (!state.enableSeamless) return;
+    const displayed = _findDisplayedCatByBreakPoint(
+      state.lastScrollTop,
+      state.categoryBreakPoints,
+      state.activeMenu,
+    );
+    const safe = _clamp(
+      displayed,
+      Math.min(state.activeMenu, state.topDisplayedCategoryIdx),
+      state.virtualActiveMenu,
+    );
+    if (safe !== state.topDisplayedCategoryIdx) {
+      state.topDisplayedCategoryIdx = safe;
+      if (safe !== state.activeMenu) _setActiveMenu(safe, 'scroll');
+    }
   }
 
-  // 【核心】丝滑切到下一个分类
+  function _pushCategoryDividerMarker(catIdx) {
+    const cat = _catByIdxOrFirst(catIdx);
+    const markerItemIdx = state.pagination.list.length;
+    state.pagination.list.push({
+      __streamKey: 'm_' + catIdx + '_' + markerItemIdx,
+      id: '__divider_' + catIdx + '_' + markerItemIdx,
+      _type: MARKER_TYPE,
+      _$catIdx: catIdx,
+      name: cat?.name || '',
+      bannerPicUrl: state.bannerPicUrl || '',
+    });
+    // approximate 320rpx * windowWidth/750 ≈ 预估高度，scrollTop 匹配时不准也没关系，只是滚动驱动换标题会延迟/提前一点点
+    const approxPx =
+      (windowWidth || 375) *
+      ((state.lastScrollTop > 0 && state.pagination.list.length > 8 ? 410 : 320) / 750);
+    state.categoryBreakPoints.push({
+      catIdx,
+      itemIndex: markerItemIdx,
+      approxScrollTop: state.lastScrollTop + Math.max(20, approxPx),
+    });
+  }
+
   async function switchToNextCategory() {
+    if (!state.enableSeamless) return;
     if (state.isSwitchingCategory) return;
-    if (!Array.isArray(state.categoryList) || state.categoryList.length === 0) return;
-    if (state.activeMenu >= state.categoryList.length - 1) return;
+    const L = state.categoryList.length;
+    if (!L) return;
+    const nextIdx = state.virtualActiveMenu + 1;
+    if (nextIdx >= L) return;
+    if (nextIdx <= state.virtualActiveMenu) return;
     state.isSwitchingCategory = true;
-    const nextIdx = state.activeMenu + 1;
-    // 过渡条已由 v-if 渲染（毛玻璃卡片），给用户一个短暂的感知时间
-    await new Promise((r) => setTimeout(r, 380));
-    // 走 onMenu 统一逻辑：左栏滚动 + 右栏滚顶 + 重置分页 + 拉新商品
-    onMenu(nextIdx);
-    // 等商品请求回来 & 滚动动画差不多完成，再解锁
-    setTimeout(() => {
-      state.isSwitchingCategory = false;
-    }, 700);
+    try {
+      _pushCategoryDividerMarker(nextIdx);
+
+      let firstPage = null;
+      if (state.prefetchCache.has(nextIdx)) {
+        firstPage = state.prefetchCache.get(nextIdx);
+        state.prefetchCache.delete(nextIdx);
+      } else {
+        firstPage = await _fetchCategoryPage(nextIdx, 1, false);
+      }
+      const list = Array.isArray(firstPage?.list) ? firstPage.list : [];
+      const total = Number(firstPage?.total || 0);
+      _appendGoodsToStream(nextIdx, list);
+      _preloadImagesForGoods(list);
+      state.pagination.perCat.set(nextIdx, {
+        pageNo: 1,
+        pageSize: state.pagination.pageSize,
+        total,
+        loadedCount: list.length,
+      });
+      state.pagination.total = Number(state.pagination.total || 0) + total;
+      state.virtualActiveMenu = nextIdx;
+      if (state.topDisplayedCategoryIdx < state.activeMenu)
+        state.topDisplayedCategoryIdx = state.activeMenu;
+      if (state.topDisplayedCategoryIdx > state.virtualActiveMenu)
+        state.topDisplayedCategoryIdx = state.virtualActiveMenu;
+      _updateLoadStatusForVirtualTail();
+      _assertInvariant('switchToNext');
+    } finally {
+      setTimeout(() => {
+        state.isSwitchingCategory = false;
+      }, SWITCH_UNLOCK_MS);
+    }
   }
 
-  // 加载更多商品（改造：到底后如果已 noMore 且非最后分类 → 自动切下一个）
   function loadMore() {
     if (state.isSwitchingCategory) return;
+    const cur = _ensurePerCat(state.virtualActiveMenu);
     if (state.loadStatus === 'noMore') {
-      // 本分类已加载完，判断是否有下一个分类可切
-      if (state.activeMenu < state.categoryList.length - 1) {
+      if (state.enableSeamless && state.virtualActiveMenu < state.categoryList.length - 1) {
         switchToNextCategory();
       }
       return;
     }
-    state.pagination.pageNo++;
-    getGoodsList();
+    if (cur.loadedCount >= cur.total) {
+      if (state.enableSeamless && state.virtualActiveMenu < state.categoryList.length - 1) {
+        switchToNextCategory();
+      } else {
+        state.loadStatus = 'noMore';
+      }
+      return;
+    }
+    cur.pageNo = Number(cur.pageNo || 0) + 1;
+    getGoodsList(state.virtualActiveMenu);
   }
 
   onReachBottom(() => {
@@ -334,34 +576,29 @@
 
   function initMenuIndex() {
     const appStore = sheep.$store('app');
-    // 处理 tabbar 传参的情况
     const tabbarParams = appStore.paramsForTabbar || {};
     const tabbarId = tabbarParams.id;
-    appStore.clearParamsForTabbar(); // 使用完后清理，避免影响下次跳转
+    appStore.clearParamsForTabbar();
     const id = state.pendingCategoryId || (tabbarId ? Number(tabbarId) : null);
     state.pendingCategoryId = null;
 
     if (id) {
-      // 如果有传参 id（比如从首页分类入口跳过来），则去匹配对应的分类
       const foundCategory = state.categoryList.find(
         (category) => Number(category.id) === Number(id),
       );
       if (foundCategory) {
-        onMenu(state.categoryList.indexOf(foundCategory));
+        onMenu(state.categoryList.indexOf(foundCategory), 'click');
       } else {
-        onMenu(0);
+        onMenu(0, 'click');
       }
     } else {
-      // 如果没有传参，并且是第一次加载（loadStatus 为空），才默认选中第一个
       if (state.categoryList.length > 0 && state.loadStatus === '') {
-        onMenu(0);
+        onMenu(0, 'click');
       }
-      // 如果已有数据且没有传参（例如从商品详情页返回），则什么都不做，保留原状
     }
   }
 
   onShow(async () => {
-    // 只有当分类列表为空时才去请求，避免每次显示页面（如返回时）重新加载刷新
     if (state.categoryList.length === 0) {
       await getList();
     }
@@ -372,10 +609,8 @@
   });
 
   function onSearch() {
-    state.pagination.pageNo = 1;
-    state.pagination.list = [];
-    state.pagination.total = 0;
-    getGoodsList();
+    _resetSeamlessStateForClick(state.activeMenu);
+    getGoodsList(state.activeMenu);
   }
 
   async function loadBanner() {

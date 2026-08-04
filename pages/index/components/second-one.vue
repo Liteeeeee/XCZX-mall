@@ -1,38 +1,59 @@
 <template>
   <view class="goods-item-box">
-    <view v-for="item in list" :key="item.id" class="group_49 flex-col" @tap="onItemTap(item)">
-      <image class="box_51 flex-col" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
-      <text class="paragraph_1">
-        {{ item.name }}
-      </text>
-      <text class="paragraph_2">{{ item.introduction }}</text>
-      <view class="section_30 flex-row justify-between">
-        <view class="price-sold flex-col">
-          <view class="text-wrapper_8">
-            <text class="text_28">¥</text>
-            <text class="text_29">{{ priceText(item) }}</text>
+    <template v-for="(item, idx) in list" :key="item.__streamKey || item.id || ('item_' + idx)">
+      <!-- Marker：分类分界（吸顶标题块，与原 category 顶部 group_60 样式对齐） -->
+      <view v-if="item._type === '__CAT_DIVIDER__'" class="cat-divider-marker">
+        <view class="group_60 flex-row">
+          <view class="section_26 flex-col"></view>
+          <text class="text_27">{{ item.name || '' }}</text>
+          <view class="section_27 flex-col"></view>
+        </view>
+        <image
+          v-if="item.bannerPicUrl"
+          class="divider-banner-img"
+          :src="sheep.$url.cdn(item.bannerPicUrl)"
+          mode="widthFix"
+        />
+      </view>
+      <!-- 商品卡片 -->
+      <view
+        v-else
+        class="group_49 flex-col"
+        @tap="onItemTap(item)"
+      >
+        <image class="box_51 flex-col" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
+        <text class="paragraph_1">
+          {{ item.name }}
+        </text>
+        <text class="paragraph_2">{{ item.introduction }}</text>
+        <view class="section_30 flex-row justify-between">
+          <view class="price-sold flex-col">
+            <view class="text-wrapper_8">
+              <text class="text_28">¥</text>
+              <text class="text_29">{{ priceText(item) }}</text>
+              <image
+                class="vip-price-icon"
+                :src="sheep.$url.cdn('/mp/static/vipPrice.png')"
+                mode="aspectFit"
+              />
+            </view>
+            <view class="sold-row ss-flex">
+              <text class="origin-price" v-if="originPriceText(item)"
+                >¥{{ originPriceText(item) }}</text
+              >
+              <text class="text_30" v-if="soldText(item)">{{ soldText(item) }}</text>
+            </view>
+          </view>
+          <view class="add-cart-btn ss-flex" @tap.stop="onAddCart(item)">
             <image
-              class="vip-price-icon"
-              :src="sheep.$url.cdn('/mp/static/vipPrice.png')"
+              class="add-cart-icon"
+              :src="sheep.$url.cdn('/mp/static/add.webp')"
               mode="aspectFit"
             />
           </view>
-          <view class="sold-row ss-flex">
-            <text class="origin-price" v-if="originPriceText(item)"
-              >¥{{ originPriceText(item) }}</text
-            >
-            <text class="text_30" v-if="soldText(item)">{{ soldText(item) }}</text>
-          </view>
-        </view>
-        <view class="add-cart-btn ss-flex" @tap.stop="onAddCart(item)">
-          <image
-            class="add-cart-icon"
-            :src="sheep.$url.cdn('/mp/static/add.webp')"
-            mode="aspectFit"
-          />
         </view>
       </view>
-    </view>
+    </template>
   </view>
 </template>
 
@@ -294,5 +315,59 @@
     -webkit-line-clamp: 2;
     line-clamp: 2;
     line-height: 33rpx;
+  }
+
+  .cat-divider-marker {
+    width: 100%;
+    padding-top: 4rpx;
+    padding-bottom: 16rpx;
+    background-color: rgba(255, 255, 250, 1);
+    flex-shrink: 0;
+  }
+
+  .cat-divider-marker .group_60 {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 16rpx 0 18rpx 0;
+  }
+
+  .cat-divider-marker .section_26 {
+    width: 48rpx;
+    height: 1rpx;
+    border: 2rpx solid rgba(61, 61, 60, 1);
+    margin: 22rpx 0;
+    box-sizing: border-box;
+  }
+
+  .cat-divider-marker .section_27 {
+    width: 48rpx;
+    height: 1rpx;
+    border: 2rpx solid rgba(61, 61, 60, 1);
+    margin: 22rpx 0 22rpx 14rpx;
+    box-sizing: border-box;
+  }
+
+  .cat-divider-marker .text_27 {
+    overflow-wrap: break-word;
+    color: rgba(61, 61, 60, 1);
+    font-size: 32rpx;
+    font-family: PingFangSC-Medium;
+    font-weight: 500;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 45rpx;
+    margin-left: 15rpx;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 360rpx;
+  }
+
+  .divider-banner-img {
+    width: calc(100vw - 200rpx);
+    border-radius: 5px;
+    display: block;
+    margin: 0 auto;
   }
 </style>
