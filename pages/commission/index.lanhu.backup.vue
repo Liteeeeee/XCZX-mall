@@ -322,7 +322,6 @@
       { label: '到账说明', value: '提现申请提交后进入审核流程，非即时到账' },
       { label: '冻结期', value: frozenDays > 0 ? `${frozenDays}天（冻结期内收益不可提现）` : '无' },
       { label: '冻结收益', value: `${frozenYuan}元` },
-      { label: '申请限制', value: '同一时间仅可提交1笔，审核结束后可再次申请' },
     ];
   });
 

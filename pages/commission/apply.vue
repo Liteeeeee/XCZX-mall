@@ -46,6 +46,7 @@
 
       <view v-else class="card flex-col">
         <view class="row flex-row">
+          <text class="required-star">*</text>
           <text class="row-label">昵称</text>
           <input
             class="row-input"
@@ -380,7 +381,7 @@
   function hydrateForm(data) {
     if (!data) return;
     const additionalInfo = parseAdditionalInfo(data.additionalInfo);
-    state.nickname = data.nickname || additionalInfo.nickname || state.nickname || '';
+    state.nickname = data.nickname || additionalInfo.nickname || '';
     state.mobile = data.mobile || state.mobile || '';
     state.idCardNo = data.idCardNo || '';
     state.idCardFrontUrl = normalizeUploadUrl(data.idCardFrontUrl);
@@ -437,6 +438,11 @@
   }
 
   async function onSubmit() {
+    const nickname = String(state.nickname || '').trim();
+    if (!nickname) {
+      uni.showToast({ title: '请输入昵称', icon: 'none' });
+      return;
+    }
     const mobile = normalizeMobile(state.mobile);
     if (!mobile) {
       uni.showToast({ title: '请输入手机号', icon: 'none' });
@@ -474,7 +480,7 @@
     };
 
     const payload = {
-      nickname: String(state.nickname || userInfo.value?.nickname || '').trim(),
+      nickname,
       mobile,
       idCardNo: '',
       idCardFrontUrl: '',
@@ -519,7 +525,7 @@
   }
 
   onLoad(async () => {
-    state.nickname = userInfo.value?.nickname || '';
+    state.nickname = '';
     state.mobile = userInfo.value?.mobile || '';
     loadCareerOptions();
 
@@ -956,5 +962,19 @@
     box-sizing: border-box;
     background-color: rgba(255, 255, 250, 1);
     box-shadow: 0rpx -6rpx 10rpx 0rpx rgba(0, 0, 0, 0.02);
+  }
+
+  .required-star {
+    flex-shrink: 0;
+    width: 14rpx;
+    overflow-wrap: break-word;
+    color: rgba(245, 63, 63, 1);
+    font-size: 28rpx;
+    font-family: PingFangSC-Semibold;
+    font-weight: 600;
+    text-align: left;
+    white-space: nowrap;
+    line-height: 40rpx;
+    margin-right: 4rpx;
   }
 </style>

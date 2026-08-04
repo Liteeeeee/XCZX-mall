@@ -366,7 +366,6 @@
       { label: '到账时间', value: arrivalTime },
       { label: '到账说明', value: '提现申请提交后进入审核流程，非即时到账' },
       { label: '客服协助', value: '如用户无法成功即时提现，请联系在线客服处理' },
-      { label: '申请限制', value: '同一时间仅可提交1笔，审核结束后可再次申请' },
     );
     return list;
   });
