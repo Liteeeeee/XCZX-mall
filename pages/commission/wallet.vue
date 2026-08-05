@@ -39,12 +39,14 @@
 
           <view class="ss-flex">
             <view
+              v-show="false"
               class="use-btn ss-flex ss-row-center ss-col-center ss-m-r-20"
               @tap="sheep.$router.go('/pages/commission/withdraw')"
             >
               提现
             </view>
             <view
+              v-show="false"
               class="use-btn-outline ss-flex ss-row-center ss-col-center"
               @tap="state.showModal = true"
             >
