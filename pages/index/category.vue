@@ -240,9 +240,7 @@
   }
 
   function _catByIdxOrFirst(idx) {
-    return (
-      state.categoryList[_clamp(idx, 0, Math.max(0, state.categoryList.length - 1))] || null
-    );
+    return state.categoryList[_clamp(idx, 0, Math.max(0, state.categoryList.length - 1))] || null;
   }
 
   const bannerPicUrl = computed(() => {
@@ -287,6 +285,11 @@
       state.rightScrollIntoViewId = 'right-scroll-top-anchor';
     });
     state.leftScrollIntoViewId = 'menu-item-' + targetIdx;
+    state.categoryBreakPoints.push({
+      catIdx: targetIdx,
+      itemIndex: 0,
+      approxScrollTop: 0,
+    });
   }
 
   function _setActiveMenu(idx, source) {
@@ -301,10 +304,8 @@
     }
     state.activeMenu = clamped;
     state.leftScrollIntoViewId = 'menu-item-' + clamped;
+    if (state.topDisplayedCategoryIdx !== clamped) state.topDisplayedCategoryIdx = clamped;
     if (state.virtualActiveMenu < clamped) state.virtualActiveMenu = clamped;
-    if (state.topDisplayedCategoryIdx < clamped) state.topDisplayedCategoryIdx = clamped;
-    if (state.topDisplayedCategoryIdx > state.virtualActiveMenu)
-      state.topDisplayedCategoryIdx = state.virtualActiveMenu;
     _assertInvariant('_setActiveMenu:scroll');
   }
 
@@ -450,11 +451,7 @@
       state.categoryBreakPoints,
       state.activeMenu,
     );
-    const safe = _clamp(
-      displayed,
-      Math.min(state.activeMenu, state.topDisplayedCategoryIdx),
-      state.virtualActiveMenu,
-    );
+    const safe = _clamp(displayed, 0, state.virtualActiveMenu);
     if (safe !== state.topDisplayedCategoryIdx) {
       state.topDisplayedCategoryIdx = safe;
       if (safe !== state.activeMenu) _setActiveMenu(safe, 'scroll');
@@ -472,14 +469,13 @@
       name: cat?.name || '',
       bannerPicUrl: state.bannerPicUrl || '',
     });
-    // approximate 320rpx * windowWidth/750 ≈ 预估高度，scrollTop 匹配时不准也没关系，只是滚动驱动换标题会延迟/提前一点点
-    const approxPx =
-      (windowWidth || 375) *
-      ((state.lastScrollTop > 0 && state.pagination.list.length > 8 ? 410 : 320) / 750);
+    const viewportH = Number(menuScrollHeight.value || 0);
+    const lowerThreshold = 50;
+    const approxScrollTop = state.lastScrollTop + viewportH - lowerThreshold;
     state.categoryBreakPoints.push({
       catIdx,
       itemIndex: markerItemIdx,
-      approxScrollTop: state.lastScrollTop + Math.max(20, approxPx),
+      approxScrollTop: Math.max(0, approxScrollTop),
     });
   }
 
