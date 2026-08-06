@@ -10,6 +10,7 @@ import $platform from '@/sheep/platform';
 import { showAuthModal } from '@/sheep/hooks/useModal';
 import AuthUtil from '@/sheep/api/member/auth';
 import { getTerminal } from '@/sheep/helper/const';
+import $helper from '@/sheep/helper';
 
 const options = {
   // 显示操作成功消息 默认不显示
@@ -148,7 +149,10 @@ http.interceptors.response.use(
         return refreshToken(response.config);
       }
       // 特殊：处理推广员绑定接口返回的 msg，通过 toast 提示用户
-      if ((response.data.code + '').includes('1011007')||(response.data.code + '').includes('1011011005')) {
+      if (
+        (response.data.code + '').includes('1011007') ||
+        (response.data.code + '').includes('1011011005')
+      ) {
         uni.showToast({
           title: response.data.msg || '推广员绑定失败',
           icon: 'none',

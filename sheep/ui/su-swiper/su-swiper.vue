@@ -222,7 +222,6 @@
       state.videoPlaySataus = true;
     } else {
       if (!item?.url) {
-        sheep.$helper.toast('当前轮播图未配置跳转地址');
         return;
       }
       sheep.$router.go(item.url);
