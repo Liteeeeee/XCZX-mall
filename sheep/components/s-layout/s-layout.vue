@@ -290,7 +290,6 @@
     display: flex;
     width: 100%;
     height: 100vh;
-    overflow: hidden;
     .page-main {
       position: absolute;
       z-index: 1;

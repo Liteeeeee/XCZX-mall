@@ -36,22 +36,9 @@
 
     <view class="s-category">
       <view class="search-wrap" :style="{ top: sheep.$platform.navbar + 'px' }">
-        <view class="search-inner ss-flex ss-col-center">
-          <uni-icons
-            type="search"
-            size="16"
-            color="rgba(157, 156, 150, 1)"
-            class="search-icon"
-            @tap="onSearch"
-          />
-          <input
-            v-model="state.keyword"
-            class="search-input"
-            confirm-type="search"
-            placeholder="搜索您想要的商品"
-            placeholder-class="search-placeholder"
-            @confirm="onSearch"
-          />
+        <view class="search-inner ss-flex ss-col-center" @tap="onOpenSearchPage">
+          <uni-icons type="search" size="16" color="rgba(157, 156, 150, 1)" class="search-icon" />
+          <view class="search-input search-placeholder">搜索您想要的商品</view>
         </view>
       </view>
       <view class="three-level-wrap ss-flex ss-col-top">
@@ -104,12 +91,16 @@
             :pagination="state.pagination"
             :scrollable="true"
             :scroll-height="menuScrollHeight"
-            :scroll-with-animation="state.stream.forceNextScrollTop <= 0"
+            :scroll-with-animation="false"
             :scroll-into-view="state.rightScrollIntoViewId"
             :scroll-top="
-              state.stream.forceNextScrollTop > 0 ? state.stream.forceNextScrollTop : undefined
+              state.stream._isUserTouching || state.stream.forceNextScrollTop <= 0
+                ? undefined
+                : state.stream.forceNextScrollTop
             "
             :top-padding="state.stream.dynamicTopPadding"
+            :min-content-height="state.stream.globalReservedMinHeight"
+            :upper-threshold="150"
             :lower-threshold="50"
             @scroll="onRightScroll"
             @scrolltolower="loadMore"
@@ -177,13 +168,19 @@
   // #region debug-point shared:category-stream-highlight
   const __DBG_URL__ = 'http://127.0.0.1:7777/event';
   const __DBG_SESSION_ID__ = 'category-stream-highlight';
-  const __DBG_RUN_ID__ = 'pre-fix';
+  const __DBG_RUN_ID__ = 'fix-loading-jump';
   const __dbgState = {
     scrollAt: 0,
     sampleAt: 0,
     highlightAt: 0,
   };
   const __dbgEmit = (hypothesisId, location, msg, data = {}) => {
+    // 同时也输出到控制台，用醒目的样式方便用户看到
+    console.log(
+      `%c[${hypothesisId}] ${location}: ${msg}`,
+      'color: #007aff; font-weight: bold; font-size: 12px;',
+      data,
+    );
     const payload = {
       sessionId: __DBG_SESSION_ID__,
       runId: __DBG_RUN_ID__,
@@ -203,13 +200,6 @@
         });
         return;
       }
-      if (typeof fetch === 'function') {
-        fetch(__DBG_URL__, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        }).catch(() => {});
-      }
     } catch (_) {}
   };
   // #endregion
@@ -219,9 +209,11 @@
     ANCHOR_HEAD_N: 1,
     ANCHOR_MID_N: 3,
     ANCHOR_TAIL_N: 1,
-    PAGE_N: 5,
+    // ★★★ 关键：加大 pageSize，一次拉更多数据，减少触发 prepend 的次数 → 消除多次"数据弹出"导致的跳跃
+    PAGE_N: 30,
+    PAGE_N_MAX: 200, // 上限
     EST_DIVIDER_HEIGHT: 255, // 1 banner + divider 毛玻璃 ≈ 250-260px
-    EST_GOODS_HEIGHT: 180, // 商品卡片 widthFix 动态高，先估 180
+    EST_GOODS_HEIGHT: 260, // 安全上限：确保预留空间足够大，不撞 scrollTop=0
     LOAD_TRIGGER_VIEWPORT_RATIO: 1.0,
     IGNORE_N_SCROLL_AFTER_ANCHOR_MS: 700,
     MIN_HEAD_DECREASE_PX: 8,
@@ -235,6 +227,297 @@
   // 实际用的 nearHead / nearTail px 阈值（按当前 viewport 实时算）
   const _streamTriggerPx = () =>
     Math.max(60, Number(menuScrollHeight.value || 0) * STREAM.LOAD_TRIGGER_VIEWPORT_RATIO);
+
+  // ════════════════════════════════════════════════
+  // ★★★ 新架构：真实测量高度同步（从 second-one 拉取真实测量值，更新 state
+  //   失败则 fallback 到原估算值（保证不会归零）
+  // ════════════════════════════════════════════════
+  function _streamUpdateUnitMetricsFromChild(syncNow) {
+    try {
+      if (secondOneRef.value && typeof secondOneRef.value.getUnitMetrics === 'function') {
+        const m = secondOneRef.value.getUnitMetrics() || {};
+        const gH = Number(m.goodsHeight || 0);
+        const dH = Number(m.dividerHeight || 0);
+        if (gH > 80) state.streamUnitGoodsHeight = gH;
+        if (dH > 50) state.streamUnitDividerHeight = dH;
+        if (m.ready) state.streamUnitMetricsReady = true;
+        if (syncNow) _streamRebuildGlobalBreakPointsIfReady();
+      } else if (
+        secondOneRef.value &&
+        typeof secondOneRef.value.measureUnitMetrics === 'function'
+      ) {
+        // 还没 ready，触发一次立刻测量
+        secondOneRef.value
+          .measureUnitMetrics()
+          .then((m) => {
+            const gH = Number(m?.goodsHeight || 0);
+            const dH = Number(m?.dividerHeight || 0);
+            if (gH > 80) state.streamUnitGoodsHeight = gH;
+            if (dH > 50) state.streamUnitDividerHeight = dH;
+            if (m?.ready) state.streamUnitMetricsReady = true;
+            if (syncNow) _streamRebuildGlobalBreakPointsIfReady();
+          })
+          .catch(() => {});
+      }
+    } catch (_) {}
+  }
+
+  // ════════════════════════════════════════════════
+  // ★★★ 新架构：基于 categoryGroups × 真实测量高 → 一次性算出全局精确断点（bp_exact）
+  //   streamCatBreakPointsExact[catIdx] = { startOffset, endOffset, goodsCount }
+  //   streamGlobalTotalHeight = sum
+  //   只有当 categoryGroups 存在时才计算；否则不报错（兼容后端还没返回 groups 的老版本
+  // ════════════════════════════════════════════════
+  function _streamRebuildGlobalBreakPointsIfReady() {
+    const L = state.categoryList.length;
+    if (!L) return;
+    const gH = Math.max(80, Number(state.streamUnitGoodsHeight || STREAM.EST_GOODS_HEIGHT));
+    const dH = Math.max(50, Number(state.streamUnitDividerHeight || STREAM.EST_DIVIDER_HEIGHT));
+    let totalH = 0;
+    const exactBp = [];
+    const map = new Map();
+    for (let i = 0; i < L; i++) {
+      const cat = state.categoryList[i];
+      let count = 0;
+      if (Array.isArray(state.streamCategoryGroups) && state.streamCategoryGroups.length) {
+        const rawG = state.streamCategoryGroups.find(
+          (g) => Number(g.categoryId) === Number(cat?.id),
+        );
+        if (rawG) count = Number(rawG.count || 0);
+      }
+      if (!count && state.pagination.perCat && state.pagination.perCat.has(i)) {
+        const per = state.pagination.perCat.get(i);
+        if (per && Number(per.total || 0) > 0) count = Number(per.total);
+      }
+      if (!count) count = 5;
+      const startOffset = totalH;
+      const catH = dH + count * gH;
+      const endOffset = startOffset + catH;
+      exactBp.push({ catIdx: i, startOffset, goodsCount: count, endOffset });
+      map.set(i, { categoryId: Number(cat?.id || 0), count, startOffset, endOffset });
+      totalH = endOffset;
+    }
+    state.streamCatBreakPointsExact = exactBp;
+    state.streamCategoryGroupMap = map;
+    state.streamGlobalTotalHeight = Math.max(0, totalH);
+    // ★★★ 直接元凶：不再把 globalReservedMinHeight 设置为「全局几万 px 总高」
+    // 用户明确表示"不期望每个类目都预留全部高度"（会导致尾部大面积空白，而且 min-height 写进 DOM 后小程序不会回缩）
+    // 这里永远归零；真正的上方占位由 dynamicTopPadding 精确控制（只占位还没加载的上方分类高
+    state.stream.globalReservedMinHeight = 0;
+    __dbgEmit('GOD', '_streamRebuildGlobalBreakPointsIfReady', 'God-view model rebuilt', {
+      globalH: totalH,
+      gH,
+      dH,
+      cats: exactBp.length,
+      groups: state.streamCategoryGroups.length,
+    });
+  }
+
+  // ════════════════════════════════════════════════
+  // ★★★ 新架构：将「全量缓存」streamAllGoodsByCat → 重建 mainList（按分类顺序平铺）
+  //   并重建 categoryBreakPoints 用于高亮 fallback
+  // ════════════════════════════════════════════════
+  function _streamFlushAllCachedGoodsIntoMainList(opts = {}) {
+    const mustIncludeCatIdx = Number.isFinite(opts?.mustIncludeCatIdx)
+      ? Number(opts.mustIncludeCatIdx)
+      : -1;
+    const L = state.categoryList.length;
+    if (!L) return;
+    const gH = Math.max(80, Number(state.streamUnitGoodsHeight || STREAM.EST_GOODS_HEIGHT));
+    const dH = Math.max(50, Number(state.streamUnitDividerHeight || STREAM.EST_DIVIDER_HEIGHT));
+
+    // ① 先扫一遍：已加载分类的范围 [minLoadedCatIdx..maxLoadedCatIdx]
+    let minLoadedCatIdx = L;
+    let maxLoadedCatIdx = -1;
+    for (let i = 0; i < L; i++) {
+      const catMap = state.streamAllGoodsByCat.get(i);
+      const loaded = state.streamCatLoaded.get(i);
+      const hasGoods = catMap && catMap.size > 0;
+      if (hasGoods || loaded) {
+        if (i < minLoadedCatIdx) minLoadedCatIdx = i;
+        if (i > maxLoadedCatIdx) maxLoadedCatIdx = i;
+      }
+    }
+    // ★ FIX R2：mustIncludeCatIdx 强制 expand 区间边界（保证 targetIdx 的 marker 一定进 mainList
+    if (mustIncludeCatIdx >= 0 && mustIncludeCatIdx < L) {
+      if (minLoadedCatIdx > mustIncludeCatIdx) minLoadedCatIdx = mustIncludeCatIdx;
+      if (maxLoadedCatIdx < mustIncludeCatIdx) maxLoadedCatIdx = mustIncludeCatIdx;
+    }
+    if (minLoadedCatIdx > maxLoadedCatIdx) {
+      minLoadedCatIdx = state.activeMenu;
+      maxLoadedCatIdx = state.activeMenu;
+    }
+
+    // ② 只在 paddingTop 中预留「[0..minLoadedCatIdx-1]」未加载分类的虚拟高
+    //    - 没加载到第 0 类时：paddingTop = Σ 0..(min-1) 的 (dH + count*gH) → 让你能向上滑，不撞 scrollTop=0 墙
+    //    - 已加载到第 0 类时：minLoadedCatIdx=0 → paddingTop=0 → 不留任何顶部空白
+    let virtualTopPadH = 0;
+    if (
+      state.streamCatBreakPointsExact &&
+      state.streamCatBreakPointsExact.length === L &&
+      minLoadedCatIdx > 0
+    ) {
+      const bpAtMin = state.streamCatBreakPointsExact[minLoadedCatIdx];
+      virtualTopPadH = Math.max(0, Number(bpAtMin?.startOffset || 0));
+    } else if (minLoadedCatIdx > 0) {
+      for (let i = 0; i < minLoadedCatIdx; i++) {
+        const cat = state.categoryList[i];
+        let count = 5;
+        const group = Array.isArray(state.streamCategoryGroups)
+          ? state.streamCategoryGroups.find((g) => Number(g.categoryId) === Number(cat?.id))
+          : null;
+        if (group) count = Number(group.count || count);
+        virtualTopPadH += dH + count * gH;
+      }
+    }
+    state.stream.dynamicTopPadding = virtualTopPadH;
+    // 用户明确说"不预留每个类目全部高度" → 彻底取消全局 minHeight
+    state.stream.globalReservedMinHeight = 0;
+
+    // ③ 仅平铺 [minLoadedCatIdx..maxLoadedCatIdx] 范围（marker+goods 连续，不乱加空 marker 给还没加载的分类
+    const newList = [];
+    const newBp = [];
+    let runningOffset = virtualTopPadH;
+    for (let i = minLoadedCatIdx; i <= maxLoadedCatIdx; i++) {
+      const cat = state.categoryList[i];
+      if (!cat) continue;
+      const catMap = state.streamAllGoodsByCat.get(i);
+      const hasGoods = catMap && catMap.size > 0;
+      const markerIdx = newList.length;
+      const markerId = '__divider_' + i + '_stable';
+      newList.push({
+        __streamKey: markerId,
+        id: markerId,
+        _type: MARKER_TYPE,
+        _$catIdx: i,
+        categoryId: Number(cat.id || 0),
+        name: cat.name || '',
+        bannerPicUrl: state.bannerPicUrl || '',
+      });
+      newBp.push({
+        catIdx: i,
+        itemIndex: markerIdx,
+        approxScrollTop: runningOffset,
+      });
+      runningOffset += dH;
+      if (hasGoods) {
+        const arr = Array.from(catMap.values()).sort(
+          (a, b) => Number(a?.id || 0) - Number(b?.id || 0),
+        );
+        for (let gi = 0; gi < arr.length; gi++) {
+          const g = arr[gi];
+          newList.push({
+            ...g,
+            _type: GOODS_TYPE,
+            _$catIdx: i,
+            __streamKey: 'g_' + i + '_' + (g?.id || gi),
+          });
+          runningOffset += gH;
+        }
+      }
+    }
+    state.pagination.prependList = [];
+    state.pagination.mainList = newList;
+    state.pagination.list = newList;
+    state.categoryBreakPoints = newBp.sort(
+      (a, b) => Number(a.approxScrollTop || 0) - Number(b.approxScrollTop || 0),
+    );
+    state.topDisplayedCategoryIdx = _clamp(
+      state.topDisplayedCategoryIdx,
+      minLoadedCatIdx,
+      maxLoadedCatIdx,
+    );
+    if (state.virtualActiveMenu < maxLoadedCatIdx) state.virtualActiveMenu = maxLoadedCatIdx;
+    if (state.activeMenu < minLoadedCatIdx) state.activeMenu = minLoadedCatIdx;
+    if (state.activeMenu > maxLoadedCatIdx) state.activeMenu = maxLoadedCatIdx;
+    state.pagination.total = newList.length;
+
+    // hasMoreHead/Tail 重算（更精确：比 min 还小的分类有没有未完全加载
+    state.stream.hasMoreHead = false;
+    for (let i = 0; i < minLoadedCatIdx; i++) {
+      const catMap = state.streamAllGoodsByCat.get(i);
+      const fullLoaded = state.streamCatLoaded.get(i);
+      const count = catMap?.size || 0;
+      if (!count || !fullLoaded) {
+        state.stream.hasMoreHead = true;
+        break;
+      }
+    }
+    state.stream.hasMoreTail = false;
+    for (let i = maxLoadedCatIdx; i < L; i++) {
+      const catMap = state.streamAllGoodsByCat.get(i);
+      const fullLoaded = state.streamCatLoaded.get(i);
+      const count = catMap?.size || 0;
+      if (!count || !fullLoaded) {
+        state.stream.hasMoreTail = true;
+        break;
+      }
+    }
+    // ★★★ 最终兜底（防止尾部大面积空白）：
+    // 已经加载到最后一个分类（maxLoadedCatIdx == L-1）且 hasMoreTail=false →
+    //  1) 再强制清零 globalReservedMinHeight（避免双线程竞态遗留 min-height）
+    //  2) 把 dynamicTopPadding 再约束为「仅 0..minLoadedCatIdx-1 精准累加」
+    //  3) 若 minLoadedCatIdx=0 已加载第 0 类 → 动态顶部必须为 0，顶部/底部都不留白
+    if (maxLoadedCatIdx === L - 1 && !state.stream.hasMoreTail) {
+      state.stream.globalReservedMinHeight = 0;
+      if (minLoadedCatIdx <= 0) {
+        state.stream.dynamicTopPadding = 0;
+      }
+    }
+    if (minLoadedCatIdx <= 0) {
+      state.stream.dynamicTopPadding = 0;
+    }
+    __dbgEmit('FLUSH', '_streamFlushAllCachedGoodsIntoMainList', 'Rebuilt mainList from cache', {
+      listLen: newList.length,
+      minCat: minLoadedCatIdx,
+      maxCat: maxLoadedCatIdx,
+      padTop: virtualTopPadH,
+      hasMoreHead: state.stream.hasMoreHead,
+      hasMoreTail: state.stream.hasMoreTail,
+    });
+  }
+
+  // ★ 存入缓存（去重）且刷新 mainList（非破坏性追加）
+  function _streamCacheGoodsForCat(catIdx, goodsArr) {
+    if (!Array.isArray(goodsArr) || !goodsArr.length) return 0;
+    if (!state.streamAllGoodsByCat.has(catIdx)) state.streamAllGoodsByCat.set(catIdx, new Map());
+    const m = state.streamAllGoodsByCat.get(catIdx);
+    let added = 0;
+    for (const g of goodsArr) {
+      const id = Number(g?.id || 0);
+      if (!id || m.has(id)) continue;
+      m.set(id, g);
+      added++;
+    }
+    return added;
+  }
+
+  // ════════════════════════════════════════════════
+  // ════════════════════════════════════════════════
+  // ★★★ 公共跳转：切类 / CACHE HIT / CACHE MISS → 统一走这里双保险
+  //   主方案：nextTick 写 rightScrollIntoViewId = '__divider_${catIdx}_stable'（小程序原生，抗竞态）
+  //   次方案：150ms 后"先清空再写入同样的 id"（双脉冲触发，消动态 marker 首次不生效机问题）
+  //   ⚠️ 彻底移除「forceNextScrollTop + 220ms 归零」兜底——是导致"先正确再顶飞"的直接元凶
+  // ════════════════════════════════════════════════
+  function _streamJumpToCatIdx(catIdx, _opts = {}) {
+    const L = state.categoryList.length;
+    if (!L || catIdx < 0 || catIdx >= L) return;
+    const markerId = '__divider_' + catIdx + '_stable';
+    // 先清 + forceNextScrollTop=0 双保险（不留下任何会把你滚到 0 的变量残余）
+    state.rightScrollIntoViewId = '';
+    state.stream.forceNextScrollTop = 0;
+    // 第一脉冲：nextTick 写 → 对应"第一时间准确滚动到该区域"的肉眼第一帧
+    nextTick(() => {
+      state.rightScrollIntoViewId = markerId;
+    });
+    // 第二脉冲：150ms 后再次"空→值"触发，完全不涉及 scroll-top prop，不会顶飞
+    setTimeout(() => {
+      state.rightScrollIntoViewId = '';
+      nextTick(() => {
+        state.rightScrollIntoViewId = markerId;
+      });
+    }, 150);
+  }
 
   const state = reactive({
     style: 'first_two',
@@ -270,8 +553,30 @@
     categoryBreakPoints: [],
     enableSeamless: true,
     enableStream: STREAM.ENABLE,
+    // ════════════════════════════════════════════════
+    // ★★★ 新增：上帝视角（God-View）全局建模 + 全量缓存
+    // ════════════════════════════════════════════════
+    // categoryGroups 原始值（首次 anchor 接口返回）
+    streamCategoryGroups: [], // [{ categoryId, count, total }] 原始后端数组
+    streamCategoryGroupMap: new Map(), // catIdx => { categoryId, count, total }
+    streamUnitMetricsReady: false, // 真实单元高度是否已拿到（子组件 mounted 后返回）
+    streamUnitGoodsHeight: 260, // 真实测量 = 单卡片高（从子组件 getUnitMetrics 拿
+    streamUnitDividerHeight: 255, // 真实测量 = 分类分界线（含 banner
+    // ★★ 全局精确断点（由 groups × 真实单元高 计算，首次计算后永不更改（只要 groups 不换
+    //   -> 这是「精确预留空间」与「0 跳动」的基石
+    streamCatBreakPointsExact: [], // [{ catIdx, startOffset, goodsCount, endOffset }]
+    streamGlobalTotalHeight: 0, // 全部分类累加后的总高 = minContentHeight
+    // ★★ 全量缓存（永不清空！用户从第 3 类滑回第 1 类再切回第 3 类 → 全内存复用）
+    //    key = catIdx, value = Map<goodsId, goodsRaw>
+    streamAllGoodsByCat: new Map(),
+    // 标记该分类是否已完全加载（用于避免重复请求
+    streamCatLoaded: new Map(), // catIdx => bool
+    // 记录每个 cat 的 cursorId（方便后续 cursor 定位加载
+    streamCatFirstCursor: new Map(), // catIdx => 最顶商品 id (用于补上方
+    streamCatLastCursor: new Map(), // catIdx => 最底商品 id (用于补下方
     stream: {
       dynamicTopPadding: 0,
+      globalReservedMinHeight: 0, // 一次性写死的 minHeight（=streamGlobalTotalHeight
       prependHeight: 0,
       headCursorId: null, // 当前已加载窗口在全流中的最 HEAD 商品 id（下一次 direction=up 就传这个）
       tailCursorId: null, // 当前已加载窗口在全流中的最 TAIL 商品 id（下一次 direction=down 就传这个）
@@ -283,6 +588,9 @@
       // prepend scrollTop 补偿用的双向绑定值（因为 uni.pageScrollTo 对 scroll-view 内部无效，改通过 :scroll-top prop 精准设置）
       scrollTopPinch: 0,
       forceNextScrollTop: 0, // 0=忽略，>0=下一帧立刻 scroll-view 滚到这个值
+      // ★★★ 防抖动：标记用户是否正在拖动 scroll-view
+      // 拖动期间 forceNextScrollTop 临时不生效（避免 prop 抖动）
+      _isUserTouching: false,
       // ════════════════════════════════════════════════
       // 防误触发三剑客（nearHead/nearTail 乱撞）
       // ════════════════════════════════════════════════
@@ -536,40 +844,33 @@
     state.pagination.mainList = [];
     state.pagination.prependList = [];
     state.pagination.pageNo = 1;
-    state.pagination.total = 0;
-    state.pagination.perCat.clear();
     state.categoryBreakPoints = [];
-    state.prefetchCache.clear();
     state.rightScrollIntoViewId = '';
+    // ★ FIX R1：彻底移除"根据 bp[targetIdx].startOffset 预设 paddingTop"的单帧假值
+    // dynamicTopPadding 完全交给 flush 去根据 minLoadedCatIdx 精确重算，不打架
+    state.stream.dynamicTopPadding = 0;
+    state.stream.prependHeight = 0;
 
-    // 如果是首个分类，不需要预留向上生长的负空间
-    state.stream.dynamicTopPadding = targetIdx === 0 ? 0 : STREAM.TOP_PADDING;
-
-    // 初始强制滚动定位到 Padding 下方，避免 scroll-into-view 失效导致的大白屏
-    if (state.stream.dynamicTopPadding > 0) {
-      state.stream.forceNextScrollTop = state.stream.dynamicTopPadding;
-      setTimeout(() => {
-        state.stream.forceNextScrollTop = 0;
-      }, 100);
-    }
+    // 重置 cursors & flags
+    state.stream.headCursorId = null;
+    state.stream.tailCursorId = null;
+    state.stream.hasMoreHead = targetIdx > 0;
+    state.stream.hasMoreTail = targetIdx < state.categoryList.length - 1;
+    state.stream.isLoadingHead = false;
+    state.stream.isLoadingTail = false;
+    state.stream.prependHeight = 0;
 
     state.leftScrollIntoViewId = 'menu-item-' + targetIdx;
-    state.categoryBreakPoints.push({
-      catIdx: targetIdx,
-      itemIndex: 0,
-      approxScrollTop: 0,
-    });
+    // ★ FIX R2：flush 时强制 expand 区间"至少包含 targetIdx"，保证其 marker 进 mainList
+    _streamFlushAllCachedGoodsIntoMainList({ mustIncludeCatIdx: targetIdx });
     // Stream 状态同步重置
     state.stream.headCursorId = null;
     state.stream.tailCursorId = null;
-    state.stream.hasMoreHead = true;
-    state.stream.hasMoreTail = true;
     state.stream.isLoadingHead = false;
     state.stream.isLoadingTail = false;
     state.stream.isLoadingAnchor = false;
     state.stream.scrollTopPinch = 0;
     state.stream.forceNextScrollTop = 0;
-    state.stream.perCatStreamMeta.clear();
     // 防误触发：anchor 开始，把「方向记忆 + 上次 settledAt」归零
     state.stream.lastAnchorSettledAt = 0;
     state.stream.prevScrollTop = 0;
@@ -800,37 +1101,49 @@
       const viewportH = Number(menuScrollHeight.value || 0);
       const contentH = state._lastMeasureContentH || 0;
       const prependH = state.stream.prependHeight || 0;
-      const topPadding = state.stream.dynamicTopPadding || 0;
+      const topPadding = Number(state.stream.dynamicTopPadding || 0);
       const th = _streamTriggerPx();
+
+      // ── v2 坐标系（用户要求版）：nearHead 判定
+      // contentStart = topPadding = 还没加载到第 0 类时，为"比 minLoadedCatIdx 更小的未加载分类"的虚拟占位高
+      // （prepend 加载到更小分类后，minLoaded 变小 → topPadding 自动缩减 → nearHead 触发线自动贴合真实内容起点
+      const contentStart = Math.max(0, topPadding);
+      const nearHead = viewportH > 0 && state.lastScrollTop <= contentStart + th + 200;
 
       const insideAnchorWindow =
         state.stream.lastAnchorSettledAt > 0 &&
         now - state.stream.lastAnchorSettledAt < STREAM.IGNORE_N_SCROLL_AFTER_ANCHOR_MS;
 
-      const nearTail =
-        viewportH > 0 &&
-        contentH > 0 &&
-        state.lastScrollTop + viewportH >= topPadding + contentH - th;
-
-      // nearHead：相对于“当前内容起始点”（topPadding - prependH）
-      const contentStart = Math.max(0, topPadding - prependH);
-      let nearHead;
-      if (viewportH > 0 && contentH > 0 && contentH < viewportH * 1.5) {
-        nearHead = state.lastScrollTop <= contentStart + Math.max(th, 220);
-      } else {
-        nearHead = state.lastScrollTop <= contentStart + th;
+      // nearTail：scrollTop + viewport >= (topPadding + 已渲染内容真实高) - 阈值
+      // ⚠️ 此处 contentH 来自 second-one.measureContentHeight，返回的是 .goods-item-box 整体高度（不含 paddingTop）
+      //    所以从 scroll-view 的 0 坐标看，内容尾部 = topPadding + contentH
+      let nearTail = false;
+      if (viewportH > 0) {
+        if (contentH > 0) {
+          nearTail = state.lastScrollTop + viewportH >= Math.max(0, topPadding) + contentH - th;
+        } else {
+          nearTail =
+            state.pagination.list.length > 0 &&
+            state.lastScrollTop + viewportH >=
+              Math.max(0, topPadding) +
+                state.pagination.list.length *
+                  Number(state.streamUnitGoodsHeight || STREAM.EST_GOODS_HEIGHT) -
+                th;
+        }
       }
 
-      // ── 安全兜底：如果用户滑出了内容区域（进入了 padding 留白区），强制拉回 ──
-      //    只有在没有正在加载且不是刚开始 anchor 时执行，避免干扰正常加载和定位
+      // ── 安全回弹锁 (Safety Buffer Clamp) ──
+      // 彻底移除：这是导致滑动冲突和跳动的元凶
+      /*
       const isSettled =
         !state.stream.isLoadingHead && !state.stream.isLoadingAnchor && !insideAnchorWindow;
-      if (isSettled && state.lastScrollTop < contentStart - 5) {
+      if (isSettled && state.lastScrollTop < contentStart - 100) {
         state.stream.forceNextScrollTop = contentStart;
         setTimeout(() => {
           state.stream.forceNextScrollTop = 0;
-        }, 60);
+        }, 100);
       }
+      */
 
       // ── 防误触发(A)：定位窗口内（anchor 结束后 <700ms）仍然允许触发加载，但过滤「定位伪 scrollTop=0」事件
       //    如果 prevScrollTop 很大突然变 0，且距 anchor < 700ms → 判为定位伪事件 skip
@@ -897,36 +1210,21 @@
       //    如果 nearHead 却走到 append（说明上面映射写错了）立刻 console.error 中断，防止方向混写
       if (nearHead && canLoad && headwardEnough) {
         if (state.stream.hasMoreHead) {
-          // eslint-disable-next-line no-console
-          const list = state.pagination.list || [];
-          const head2 = list
-            .slice(0, 2)
-            .map((it) =>
-              it?._type === MARKER_TYPE
-                ? 'M' + it._$catIdx
-                : 'c' + (it.categoryId || '?') + '#' + it.id,
-            )
-            .join(',');
-          const tail2 = list
-            .slice(Math.max(0, list.length - 2))
-            .map((it) =>
-              it?._type === MARKER_TYPE
-                ? 'M' + it._$catIdx
-                : 'c' + (it.categoryId || '?') + '#' + it.id,
-            )
-            .join(',');
-          console.debug(
-            '[STREAM_ASSERT_INSERT] nearHead(HEAD端 prepend) head=[' +
-              head2 +
-              '] tail=[' +
-              tail2 +
-              '] st=' +
-              state.lastScrollTop.toFixed(1),
-          );
+          __dbgEmit('STRM', 'onRightScroll', 'Triggering PrependHeadPage', {
+            scrollTop: state.lastScrollTop,
+            contentStart,
+            prependH,
+          });
           _streamPrependHeadPage();
-        } else if (state.stream.dynamicTopPadding > 0) {
-          // 兜底：如果已经没有更多了，但顶部 padding 还没裁掉，则裁掉它
-          _streamMeasureAllHeights();
+        } else {
+          // 触顶但无更多
+          if (now - (state._lastHeadRefuseAt || 0) > 3000) {
+            state._lastHeadRefuseAt = now;
+            __dbgEmit('STRM', 'onRightScroll', 'Refused Prepend: hasMoreHead is FALSE', {
+              scrollTop: state.lastScrollTop,
+              contentStart,
+            });
+          }
         }
       } else if (
         nearTail &&
@@ -1253,9 +1551,8 @@
     }
   });
 
-  function onSearch() {
-    _resetSeamlessStateForClick(state.activeMenu);
-    getGoodsList(state.activeMenu);
+  function onOpenSearchPage() {
+    sheep.$router.go('/pages/index/search');
   }
 
   async function loadBanner() {
@@ -1286,178 +1583,196 @@
   // ────────────────── Stream 三条主路径 ──────────────────
 
   // 路径 1：点击 tab 冷启动 anchor（三明治上下文）
+  //   ★ 新架构：
+  //     ① 先拿 groups → 建全局断点（God-view 建模，一次性留坑）
+  //     ② 从 cache 中 flush 出已有的商品（避免白屏闪烁）
+  //     ③ 只对「target 分类附近」未缓存的分类发 stream 请求拉数据
+  //     ④ 新数据写入 cache → flush 回 mainList
+  //     ⑤ 此时 paddingTop + scrollTop 的坐标系是 God-view 的绝对坐标，天然 0 跳动
   async function _streamStartAnchorHydration(targetIdx) {
     if (state.stream.isLoadingAnchor) return;
     const L = state.categoryList.length;
     if (!L) return;
     const targetCat = state.categoryList[targetIdx];
     if (!targetCat) return;
+
+    _streamUpdateUnitMetricsFromChild(false);
+
+    // ═══★ 新核心：CACHE HIT SHORTCUT（命中缓存直接跳断点，不发 HTTP）
+    const targetCatMap = state.streamAllGoodsByCat.get(targetIdx);
+    const hasCachedGoods = targetCatMap && targetCatMap.size > 0;
+    const isCatFullyLoaded = !!state.streamCatLoaded.get(targetIdx);
+    if (hasCachedGoods || isCatFullyLoaded) {
+      __dbgEmit('HIT', '_streamStartAnchorHydration', 'CACHE HIT: skip HTTP anchor', {
+        catIdx: targetIdx,
+        loadedCount: targetCatMap?.size || 0,
+        isFull: isCatFullyLoaded,
+      });
+      state.loadStatus = 'loading';
+      // 再次 flush 必须 expand 至少包含 targetIdx marker（保证 DOM id 存在，scroll-into-view 才能命中
+      _streamFlushAllCachedGoodsIntoMainList({ mustIncludeCatIdx: targetIdx });
+      if (
+        !state.streamCatBreakPointsExact ||
+        state.streamCatBreakPointsExact.length !== state.categoryList.length
+      ) {
+        _streamRebuildGlobalBreakPointsIfReady();
+      }
+      // ═══★ FIX：双保险跳（scroll-into-view 主 + forceNextScrollTop nextTick 80ms 次
+      _streamJumpToCatIdx(targetIdx);
+      state.pagination.total = state.pagination.list.length;
+      state.loadStatus = state.stream.hasMoreTail ? 'more' : 'noMore';
+      state.virtualActiveMenu = Math.max(state.virtualActiveMenu, targetIdx);
+      state.topDisplayedCategoryIdx = targetIdx;
+      state.activeMenu = targetIdx;
+      _syncTopDisplayedAndActiveMenuFromScroll(state.lastScrollTop);
+      setTimeout(() => {
+        let needPreHead = false;
+        for (let i = 0; i < targetIdx; i++) {
+          if (!state.streamCatLoaded.get(i)) {
+            needPreHead = true;
+            break;
+          }
+        }
+        if (needPreHead && state.stream.hasMoreHead && !state.stream.isLoadingHead) {
+          _streamPrependHeadPage({ isAutoPreload: true });
+        }
+        state.stream.lastAnchorSettledAt = Date.now();
+        _streamResampleBreakPointsExact();
+      }, 220);
+      return;
+    }
+
+    // ═══★ CACHE MISS → 真发 anchor HTTP
     const categoryIds = _streamAllCategoryIds();
-    const pageSize = Math.min(
-      200,
-      STREAM.ANCHOR_HEAD_N + STREAM.ANCHOR_MID_N + STREAM.ANCHOR_TAIL_N,
-    );
     state.stream.isLoadingAnchor = true;
     state.loadStatus = 'loading';
     try {
+      const viewportH = Number(menuScrollHeight.value || 800);
+      const perItemAvg =
+        Number(state.streamUnitDividerHeight || STREAM.EST_DIVIDER_HEIGHT) +
+        Number(state.streamUnitGoodsHeight || STREAM.EST_GOODS_HEIGHT);
+      const itemsForTwoScreens = Math.ceil((viewportH * 2) / perItemAvg);
+      const pageSize = Math.max(50, Math.min(STREAM.PAGE_N_MAX, itemsForTwoScreens * 3));
       const res = await SpuApi.getSpuStream({
         categoryId: Number(targetCat.id),
         categoryIds,
         keyword: state.keyword || undefined,
         pageSize,
-        // cursorId 不传 = 冷启动
-        // direction 不传 = 冷启动（后端按 categoryId 正向定位）
-        // reverse 永远不传（TODO_STREAM_R6）
       });
       if (!res || res.code !== 0) {
         state.stream.isLoadingAnchor = false;
         state.loadStatus = 'more';
-        // 接口失败：降级到旧模式（单分类首屏），不 block 用户
         getGoodsList(targetIdx);
         return;
       }
       const list = Array.isArray(res.data?.list) ? res.data.list : [];
       const hasMore = !!res.data?.hasMore;
       const hasMoreOpposite = res.data?.hasMoreOpposite;
-      if (list.length === 0) {
+
+      if (Array.isArray(res.data?.categoryGroups) && res.data.categoryGroups.length) {
+        state.streamCategoryGroups = res.data.categoryGroups;
+        _streamRebuildGlobalBreakPointsIfReady();
+      }
+      _streamUpdateUnitMetricsFromChild(true);
+
+      if (list.length) {
+        const buckets = _streamSliceBucketsFromFlatList(list);
+        for (const b of buckets) {
+          const catIdx = state.categoryList.findIndex((c) => Number(c.id) === Number(b.categoryId));
+          if (catIdx === -1) continue;
+          const goodsSlice = list.slice(b.range[0], b.range[1] + 1);
+          _streamCacheGoodsForCat(catIdx, goodsSlice);
+          const group = Array.isArray(state.streamCategoryGroups)
+            ? state.streamCategoryGroups.find((g) => Number(g.categoryId) === Number(b.categoryId))
+            : null;
+          const declared = group ? Number(group.count || 0) : 0;
+          const per = _ensurePerCat(catIdx);
+          if (!per.total && declared > 0) per.total = declared;
+          per.loadedCount = Math.max(Number(per.loadedCount), goodsSlice.length);
+          const fullLoaded =
+            declared > 0 ? goodsSlice.length >= declared : goodsSlice.length < pageSize;
+          if (fullLoaded) state.streamCatLoaded.set(catIdx, true);
+          if (goodsSlice.length) {
+            state.streamCatFirstCursor.set(
+              catIdx,
+              Number(goodsSlice[0]?.id ?? state.streamCatFirstCursor.get(catIdx) ?? 0),
+            );
+            state.streamCatLastCursor.set(
+              catIdx,
+              Number(
+                goodsSlice[goodsSlice.length - 1]?.id ?? state.streamCatLastCursor.get(catIdx) ?? 0,
+              ),
+            );
+          }
+          const meta = _streamEnsureMetaForCat(catIdx);
+          meta.loadedTailCount = Number(meta.loadedTailCount || 0) + goodsSlice.length;
+          if (goodsSlice.length) {
+            meta.firstSeenId = Number(goodsSlice[0]?.id) ?? meta.firstSeenId;
+            meta.lastSeenId = Number(goodsSlice[goodsSlice.length - 1]?.id) ?? meta.lastSeenId;
+          }
+        }
+        _streamUpdateCursorsAfterResp(list, 'anchor', hasMore, hasMoreOpposite);
+      } else if (list.length === 0) {
         state.loadStatus = 'noMore';
         _streamUpdateCursorsAfterResp([], 'anchor', false, hasMoreOpposite);
-        state.stream.isLoadingAnchor = false;
-        return;
-      }
-      const buckets = _streamSliceBucketsFromFlatList(list);
-      // ① 更新 perCat meta
-      for (const b of buckets) {
-        const catIdx = state.categoryList.findIndex((c) => Number(c.id) === Number(b.categoryId));
-        if (catIdx === -1) continue;
-        const meta = _streamEnsureMetaForCat(catIdx);
-        const bucketSlice = list.slice(b.range[0], b.range[1] + 1);
-        if (bucketSlice.length) {
-          meta.firstSeenId = Number(bucketSlice[0]?.id) ?? meta.firstSeenId;
-          meta.lastSeenId = Number(bucketSlice[bucketSlice.length - 1]?.id) ?? meta.lastSeenId;
-          // Workaround R4：如果该 bucket 数量 < PAGE_N 且在 head 端（target 的上一个），假设 headComplete
-          // 这里只初始化 loaded 计数，完成状态在后续翻页时再精确判断
-          if (b.count < STREAM.PAGE_N) {
-            // 无法判断是 head 还是 tail 少 → 两个方向都先标 false，下次请求回来 list 为空再置 true
-          }
-        }
-      }
-      // ② 找定位分类首条 index（debug 用，保留函数调用方便断点）
-      _streamFindAnchorFirstIndex(list, Number(targetCat.id));
-      // ③ 决定虚拟 virtualActiveMenu：取 buckets 中出现过的所有分类的最大 idx
-      let maxCatIdxInResp = targetIdx;
-      let minCatIdxInResp = targetIdx;
-      for (const b of buckets) {
-        const i = state.categoryList.findIndex((c) => Number(c.id) === Number(b.categoryId));
-        if (i === -1) continue;
-        if (i > maxCatIdxInResp) maxCatIdxInResp = i;
-        if (i < minCatIdxInResp) minCatIdxInResp = i;
-      }
-      state.virtualActiveMenu = Math.max(state.virtualActiveMenu, maxCatIdxInResp);
-      state.topDisplayedCategoryIdx = targetIdx;
-      state.activeMenu = targetIdx;
-      // ── bp 初始化：第 1 个 bucket 的 approx=0；之后每个 bucket 的 approx 在前一个累计基础上 + 估算（下帧 DOM 采样 exact 覆盖）
-      let cumEstimated = 0;
-      // ④ 分段插入 goods + 每段开头插 divider marker
-      for (let bi = 0; bi < buckets.length; bi++) {
-        const b = buckets[bi];
-        const catIdx = state.categoryList.findIndex((c) => Number(c.id) === Number(b.categoryId));
-        if (catIdx === -1) continue;
-        const markerItemIdx = state.pagination.mainList.length;
-        const cat = state.categoryList[catIdx];
-        state.pagination.mainList.push({
-          __streamKey: 'm_' + catIdx + '_' + markerItemIdx,
-          id: '__divider_' + catIdx + '_' + markerItemIdx,
-          _type: MARKER_TYPE,
-          _$catIdx: catIdx,
-          categoryId: Number(cat?.id || 0),
-          name: cat?.name || '',
-          bannerPicUrl: state.bannerPicUrl || '',
-        });
-        state.pagination.list = [...state.pagination.prependList, ...state.pagination.mainList];
-        // ── KEY FIX：approxScrollTop 严格按「当前累计估算高度」写，不再用 targetIdx 拍 0/ 非 target 乱估
-        const approxScrollTop = Math.max(0, cumEstimated);
-        state.categoryBreakPoints.push({
-          catIdx,
-          itemIndex: markerItemIdx,
-          approxScrollTop,
-        });
-        // 累加估算：1 divider (250) + N goods (180 each)
-        cumEstimated += STREAM.EST_DIVIDER_HEIGHT + b.count * STREAM.EST_GOODS_HEIGHT;
-        const goodsSlice = list.slice(b.range[0], b.range[1] + 1);
-        _appendGoodsToStream(catIdx, goodsSlice);
-        _preloadImagesForGoods(goodsSlice);
-        const meta = _streamEnsureMetaForCat(catIdx);
-        meta.loadedTailCount = Number(meta.loadedTailCount || 0) + goodsSlice.length;
-      }
-      // ── 立刻重排 bp （升序 approxScrollTop，二分安全）
-      state.categoryBreakPoints.sort(
-        (a, b) => Number(a.approxScrollTop || 0) - Number(b.approxScrollTop || 0),
-      );
-      // ── 立刻高亮重算一次（这时 bp 已经按 approx 排序初始化好了，不会再切来切去）
-      _syncTopDisplayedAndActiveMenuFromScroll(state.lastScrollTop);
-
-      // 强制初始滚动定位到 Padding 下方，避免 scroll-into-view 失效导致大白屏
-      if (state.stream.dynamicTopPadding > 0) {
-        state.stream.forceNextScrollTop = state.stream.dynamicTopPadding;
-        setTimeout(() => {
-          state.stream.forceNextScrollTop = 0;
-        }, 100);
       }
 
-      // ⑤ 双端 cursor 与 hasMore（hasMoreOpposite=后端已补字段，直接用）
-      _streamUpdateCursorsAfterResp(list, 'anchor', hasMore, hasMoreOpposite);
-      // 如果结果集中最小分类就是第 0 个（最顶部没出现上一分类，HEAD 端直接已完整
-      if (minCatIdxInResp === 0) state.stream.hasMoreHead = false;
-      state.pagination.prependList = [];
-      state.pagination.mainList = state.pagination.list;
+      // ═══★ flush + 强制 expand targetIdx marker，双保险跳
+      _streamFlushAllCachedGoodsIntoMainList({ mustIncludeCatIdx: targetIdx });
+      _streamJumpToCatIdx(targetIdx);
+
       state.pagination.total = state.pagination.list.length;
       state.loadStatus = state.stream.hasMoreTail ? 'more' : 'noMore';
-      // ⑥ 特殊兜底：如果本次首屏只有当前分类（count < ANCHOR 期望三段拼接需要）——例如当前分类只有 2 条商品，
-      //   anchor 返回 list.length=2，这时用户向上滑一屏就直接撞顶；但 hasMoreHead=hasMoreOpposite=true（后端已给）
-      //   且 headCursorId=list[0].id，接下来 nearTop 触发 _streamPrependHeadPage 会 direction=up + headCursorId
-      //   加载上一分类 —— 实测：direction=up from headCursorId=641(88HEAD) → 返回[87,87,86,...]（正确！）
-      //   → 所以 anchor 不需要额外兜底，正常流程即可触发逆向加载。
-      // ⑥ nextTick 后：① DOM 采样修正 bp 为 exact（下一帧）② scroll 定位到 target divider 的顶
+      state.virtualActiveMenu = Math.max(
+        state.virtualActiveMenu,
+        Math.max(targetIdx, state.topDisplayedCategoryIdx),
+      );
+      state.topDisplayedCategoryIdx = targetIdx;
+      state.activeMenu = targetIdx;
+      _syncTopDisplayedAndActiveMenuFromScroll(state.lastScrollTop);
+
       nextTick(() => {
-        // 先 scroll-into-view 定位到 target 分类的 divider（用户第一眼看到目标分类 banner）
-        const targetDividerMarkerIdx = state.categoryBreakPoints.find(
-          (bp) => bp.catIdx === targetIdx,
-        )?.itemIndex;
-        if (typeof targetDividerMarkerIdx === 'number') {
-          const marker = state.pagination.list[targetDividerMarkerIdx];
-          const markerDomId = _streamDomIdForItem(marker, targetDividerMarkerIdx);
-          if (markerDomId) {
-            state.rightScrollIntoViewId = '';
-            nextTick(() => {
-              state.rightScrollIntoViewId = markerDomId;
-            });
-          }
-        }
-        // 下一帧 DOM 采样 exact bp（减少 approx 偏差）
         setTimeout(() => {
+          if (secondOneRef.value) {
+            secondOneRef.value
+              .measureUnitMetrics()
+              .then(() => {
+                _streamUpdateUnitMetricsFromChild(true);
+              })
+              .catch(() => {});
+          }
           _streamResampleBreakPointsExact();
-          // ════════════════════════════════════════════════════════════════
-          // KEY FIX：不满一屏时（分类 88 这种整个才 2 条商品），永远滑不到撞顶，@scroll 也不会触发 nearTop
-          // → 直接在渲染完立刻判断「内容高度 ≤ 视口」→ 主动触发缺少的那端
-          // ════════════════════════════════════════════════════════════════
+          _streamMeasureAllHeights();
           if (STREAM.AUTO_TRIGGER_IF_SHORT_CONTENT) {
             _streamAutoTriggerIfShortContent();
           }
-          // ════════════════════════════════════════════════════════════════
-          // 自动预加载 (Auto-Preload)：冷启动完成后，静默加载上一分类，消除首次反向滑动的跳跃感
-          // ════════════════════════════════════════════════════════════════
-          if (state.stream.hasMoreHead && !state.stream.isLoadingHead) {
-            _streamPrependHeadPage({ isAutoPreload: true, anchorCatIdx: targetIdx });
+          if (targetIdx > 0 && !state.stream.isLoadingHead) {
+            let needPreload = false;
+            for (let i = 0; i < targetIdx; i++) {
+              if (!state.streamCatLoaded.get(i)) {
+                needPreload = true;
+                break;
+              }
+            }
+            if (needPreload && state.stream.hasMoreHead) {
+              _streamPrependHeadPage({ isAutoPreload: true });
+            }
           }
-          // ════════════════════════════════════════════════════════════════
-          // 防误触发(A)：此刻开始允许 @scroll 触发 nearHead/nearTail 加载
-          //（scroll-into-view 到中间分类的过程中会发一堆 scrollTop=0 的事件）
-          // ════════════════════════════════════════════════════════════════
+          if (state.stream.hasMoreTail) {
+            let needPreTail = false;
+            for (let i = targetIdx; i < state.categoryList.length; i++) {
+              if (!state.streamCatLoaded.get(i)) {
+                needPreTail = true;
+                break;
+              }
+            }
+            if (needPreTail && !state.stream.isLoadingTail) {
+              _streamAppendTailPage({ isAutoPreload: true });
+            }
+          }
           state.stream.lastAnchorSettledAt = Date.now();
-          // KEY FIX: 定位完成后清空 scroll-into-view，防止后续列表变更（如 prepend）时组件重新评估并强制跳回该锚点
           state.rightScrollIntoViewId = '';
-        }, 260);
+        }, 280);
       });
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -1515,16 +1830,19 @@
   // 不满一屏的橡皮筋兜底：用户手指碰了 scroll-view 上下滑橡皮筋（不触发 @scroll，只触发 touchEnd）→ 兜底触发出对应端
   function onRightScrollTouchMove() {
     if (!state.enableStream) return;
+    state.stream._isUserTouching = true;
     _streamAutoTriggerIfShortContent('gesture');
   }
 
   function onRightScrollTouchEnd() {
     if (!state.enableStream) return;
+    state.stream._isUserTouching = false;
     _streamAutoTriggerIfShortContent('touchend');
   }
 
-  // 路径 2：scrolltolower 正向 append（TAIL 方向，传后端 direction=down）
-  async function _streamAppendTailPage() {
+  // 路径 2：正向 append（TAIL 方向，传后端 direction=down）
+  //  新架构：请求到数据 → 写 cache → flush 重建 mainList；paddingTop/minHeight 不动
+  async function _streamAppendTailPage(opts = {}) {
     if (state.stream.isLoadingTail || state.stream.isLoadingAnchor || state.stream.isLoadingHead)
       return;
     if (!state.stream.hasMoreTail) {
@@ -1532,21 +1850,23 @@
       return;
     }
     state.stream.isLoadingTail = true;
-    // #region debug-point D:append-start
     __dbgEmit('D', 'pages/index/category.vue:_streamAppendTailPage', '[DEBUG] append start', {
       tailCursorId: Number(state.stream.tailCursorId || 0),
       hasMoreTail: !!state.stream.hasMoreTail,
       listLength: Array.isArray(state.pagination.list) ? state.pagination.list.length : 0,
       scrollTop: Number(state.lastScrollTop || 0),
     });
-    // #endregion
     try {
       const cursorId = state.stream.tailCursorId ?? undefined;
+      const viewportH = Number(menuScrollHeight.value || 800);
+      const perItemAvg = Number(state.streamUnitGoodsHeight || STREAM.EST_GOODS_HEIGHT);
+      const itemsForTwoScreens = Math.ceil((viewportH * 2) / perItemAvg);
+      const appendPageSize = Math.max(30, Math.min(STREAM.PAGE_N_MAX, itemsForTwoScreens * 2));
       const res = await SpuApi.getSpuStream({
         cursorId,
-        direction: 'down', // 后端 direction=down → 更 TAIL（排名更后）
+        direction: 'down',
         keyword: state.keyword || undefined,
-        pageSize: STREAM.PAGE_N,
+        pageSize: appendPageSize,
         categoryIds: _streamAllCategoryIds(),
       });
       if (!res || res.code !== 0) {
@@ -1562,64 +1882,60 @@
         state.stream.isLoadingTail = false;
         return;
       }
+      // 写 cache + 更新 perCat + loaded flag
       const buckets = _streamSliceBucketsFromFlatList(list);
-      for (let bi = 0; bi < buckets.length; bi++) {
-        const b = buckets[bi];
+      for (const b of buckets) {
         const catIdx = state.categoryList.findIndex((c) => Number(c.id) === Number(b.categoryId));
         if (catIdx === -1) continue;
-        const hadDivider = state.categoryBreakPoints.some((bp) => bp.catIdx === catIdx);
-        if (!hadDivider) {
-          const markerItemIdx = state.pagination.mainList.length;
-          const cat = state.categoryList[catIdx];
-          state.pagination.mainList.push({
-            __streamKey: 'm_' + catIdx + '_' + markerItemIdx,
-            id: '__divider_' + catIdx + '_' + markerItemIdx,
-            _type: MARKER_TYPE,
-            _$catIdx: catIdx,
-            categoryId: Number(cat?.id || 0),
-            name: cat?.name || '',
-            bannerPicUrl: state.bannerPicUrl || '',
-          });
-          state.pagination.list = [...state.pagination.prependList, ...state.pagination.mainList];
-          const viewportH = Number(menuScrollHeight.value || 0);
-          const approxScrollTop = state.lastScrollTop + viewportH - 50;
-          state.categoryBreakPoints.push({
-            catIdx,
-            itemIndex: markerItemIdx,
-            approxScrollTop: Math.max(0, approxScrollTop),
-          });
-          if (state.virtualActiveMenu < catIdx) state.virtualActiveMenu = catIdx;
-        }
         const goodsSlice = list.slice(b.range[0], b.range[1] + 1);
-        _appendGoodsToStream(catIdx, goodsSlice);
-        _preloadImagesForGoods(goodsSlice);
+        _streamCacheGoodsForCat(catIdx, goodsSlice);
+        const group = Array.isArray(state.streamCategoryGroups)
+          ? state.streamCategoryGroups.find((g) => Number(g.categoryId) === Number(b.categoryId))
+          : null;
+        const declared = group ? Number(group.count || 0) : 0;
+        const per = _ensurePerCat(catIdx);
+        if (!per.total && declared > 0) per.total = declared;
+        per.loadedCount = Math.max(Number(per.loadedCount || 0), goodsSlice.length);
+        const fullLoaded =
+          declared > 0 ? goodsSlice.length >= declared : goodsSlice.length < appendPageSize;
+        if (fullLoaded) state.streamCatLoaded.set(catIdx, true);
+        if (goodsSlice.length) {
+          state.streamCatFirstCursor.set(
+            catIdx,
+            Number(goodsSlice[0]?.id ?? state.streamCatFirstCursor.get(catIdx) ?? 0),
+          );
+          state.streamCatLastCursor.set(
+            catIdx,
+            Number(
+              goodsSlice[goodsSlice.length - 1]?.id ?? state.streamCatLastCursor.get(catIdx) ?? 0,
+            ),
+          );
+        }
         const meta = _streamEnsureMetaForCat(catIdx);
         meta.loadedTailCount = Number(meta.loadedTailCount || 0) + goodsSlice.length;
         if (goodsSlice.length) {
           meta.lastSeenId = Number(goodsSlice[goodsSlice.length - 1]?.id) ?? meta.lastSeenId;
         }
-        if (goodsSlice.length < STREAM.PAGE_N) meta.tailComplete = true;
+        if (goodsSlice.length < appendPageSize) meta.tailComplete = true;
+        if (state.virtualActiveMenu < catIdx) state.virtualActiveMenu = catIdx;
       }
       _streamUpdateCursorsAfterResp(list, 'down_append_tail', hasMore, hasMoreOpposite);
-      state.pagination.total = state.pagination.list.length;
+
+      // ★ 重建 mainList（永远是 [0..L] 全平铺，坐标系不变
+      _streamFlushAllCachedGoodsIntoMainList();
+
       state.loadStatus = state.stream.hasMoreTail ? 'more' : 'noMore';
-      // #region debug-point D:append-finish
       __dbgEmit('D', 'pages/index/category.vue:_streamAppendTailPage', '[DEBUG] append finish', {
         appendedCount: list.length,
         hasMoreTail: !!state.stream.hasMoreTail,
         tailCursorId: Number(state.stream.tailCursorId || 0),
         listLength: Array.isArray(state.pagination.list) ? state.pagination.list.length : 0,
       });
-      // #endregion
       setTimeout(() => {
         _streamResampleBreakPointsExact();
-        // append 后也可能不满一屏（极端情况）→ 同样兜底
-        if (STREAM.AUTO_TRIGGER_IF_SHORT_CONTENT) {
-          _streamAutoTriggerIfShortContent();
-        }
+        if (STREAM.AUTO_TRIGGER_IF_SHORT_CONTENT) _streamAutoTriggerIfShortContent();
       }, 200);
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('[STREAM_ERR] append tail failed', e);
     } finally {
       state.stream.isLoadingTail = false;
@@ -1628,37 +1944,22 @@
 
   async function _streamMeasureAllHeights() {
     if (secondOneRef.value) {
-      const [prependH, mainH] = await Promise.all([
-        secondOneRef.value.measurePrependHeight(),
-        secondOneRef.value.measureContentHeight(),
-      ]);
+      const prependH = await secondOneRef.value.measurePrependHeight();
+      const mainH = await secondOneRef.value.measureContentHeight();
       state.stream.prependHeight = prependH;
       state._lastMeasureContentH = mainH;
-
-      if (!state.stream.hasMoreHead && state.stream.dynamicTopPadding > 0) {
-        const currentPadding = state.stream.dynamicTopPadding;
-        if (Math.abs(currentPadding - prependH) > 2) {
-          const diff = currentPadding - prependH;
-          state.stream.dynamicTopPadding = prependH;
-          state.stream.forceNextScrollTop = Math.max(0, state.lastScrollTop - diff);
-          setTimeout(() => {
-            state.stream.forceNextScrollTop = 0;
-          }, 100);
-        }
-      }
     }
   }
 
-  // 路径 3：逆向 prepend（HEAD 方向，传后端 direction=up，撞顶触发）
+  // 路径 3：逆向 prepend（HEAD 方向，传后端 direction=up）
+  //   新架构：请求到数据 → 写 cache → flush；paddingTop 不动；坐标系天然稳定 = 0 jump
   async function _streamPrependHeadPage(opts = {}) {
     const isAutoPreload = opts.isAutoPreload;
-    const anchorCatIdx = opts.anchorCatIdx;
     if (state.stream.isLoadingHead || state.stream.isLoadingAnchor || state.stream.isLoadingTail)
       return;
     if (!state.stream.hasMoreHead) return;
     state.stream.isLoadingHead = true;
     const scrollTopBefore = Number(state.lastScrollTop || 0);
-    // #region debug-point D:prepend-start
     __dbgEmit('D', 'pages/index/category.vue:_streamPrependHeadPage', '[DEBUG] prepend start', {
       headCursorId: Number(state.stream.headCursorId || 0),
       hasMoreHead: !!state.stream.hasMoreHead,
@@ -1666,36 +1967,33 @@
       listLength: Array.isArray(state.pagination.list) ? state.pagination.list.length : 0,
       topDisplayedCategoryIdx: state.topDisplayedCategoryIdx,
     });
-    // #endregion
-    const oldList = state.pagination.list || [];
-    const L = oldList.length;
 
     try {
       const cursorId = state.stream.headCursorId ?? undefined;
+      const viewportH = Number(menuScrollHeight.value || 800);
+      const perItemAvg = Number(state.streamUnitGoodsHeight || STREAM.EST_GOODS_HEIGHT);
+      const itemsForTwoScreens = Math.ceil((viewportH * 2) / perItemAvg);
+      const prependPageSize = Math.max(30, Math.min(STREAM.PAGE_N_MAX, itemsForTwoScreens * 2));
       const res = await SpuApi.getSpuStream({
         cursorId,
         direction: 'up',
         keyword: state.keyword || undefined,
-        pageSize: STREAM.PAGE_N,
+        pageSize: prependPageSize,
         categoryIds: _streamAllCategoryIds(),
       });
       if (!res || res.code !== 0) {
         state.stream.isLoadingHead = false;
         return;
       }
-      const list = Array.isArray(res.data?.list) ? res.data.list : [];
+      let list = Array.isArray(res.data?.list) ? res.data.list : [];
       const hasMore = !!res.data?.hasMore;
       const hasMoreOpposite = res.data?.hasMoreOpposite;
       if (list.length === 0) {
         state.stream.hasMoreHead = false;
         state.stream.isLoadingHead = false;
-        setTimeout(() => {
-          _streamMeasureAllHeights();
-        }, 50);
         return;
       }
-      // direction=up 后端已经 reverse 成自然顺序 HEAD→TAIL，items[0] = 本次返回最最 HEAD
-      // 如果后端返回的是 TAIL->HEAD（比如由于 order by id desc 导致最下面的商品在最前面），必须将其翻转回自然顺序（HEAD->TAIL）
+      // direction=up 后端可能返回反序；和老方案一样用自然顺序纠正
       if (list.length > 1) {
         const firstCatIdx = state.categoryList.findIndex(
           (c) => Number(c.id) === Number(list[0].categoryId),
@@ -1704,168 +2002,67 @@
           (c) => Number(c.id) === Number(list[list.length - 1].categoryId),
         );
         let needsReverse = false;
-        if (firstCatIdx !== -1 && lastCatIdx !== -1 && firstCatIdx > lastCatIdx) {
+        if (firstCatIdx !== -1 && lastCatIdx !== -1 && firstCatIdx > lastCatIdx)
           needsReverse = true;
-        } else if (firstCatIdx === lastCatIdx) {
+        else if (firstCatIdx === lastCatIdx) {
           const firstId = Number(list[0].id);
           const lastId = Number(list[list.length - 1].id);
-          if (!isNaN(firstId) && !isNaN(lastId) && firstId > lastId) {
-            needsReverse = true;
-          }
+          if (!isNaN(firstId) && !isNaN(lastId) && firstId > lastId) needsReverse = true;
         }
         if (needsReverse) list.reverse();
       }
 
       const buckets = _streamSliceBucketsFromFlatList(list);
-      // ② 原子 prepend：保证 divider marker 始终在当前分类的最上方
-      const itemsToPrepend = [];
-      for (let bi = 0; bi < buckets.length; bi++) {
-        const b = buckets[bi];
+      for (const b of buckets) {
         const catIdx = state.categoryList.findIndex((c) => Number(c.id) === Number(b.categoryId));
         if (catIdx === -1) continue;
         const goodsSlice = list.slice(b.range[0], b.range[1] + 1);
-
-        // 核心修复：如果旧列表中已经有该分类的 marker，必须将其挖出，因为我们要把它重新置于本次加载的 goodsSlice 之上
-        const pIdx = state.pagination.prependList.findIndex(
-          (x) => x._type === MARKER_TYPE && x._$catIdx === catIdx,
-        );
-        if (pIdx !== -1) state.pagination.prependList.splice(pIdx, 1);
-        const mIdx = state.pagination.mainList.findIndex(
-          (x) => x._type === MARKER_TYPE && x._$catIdx === catIdx,
-        );
-        if (mIdx !== -1) state.pagination.mainList.splice(mIdx, 1);
-        const bpIdx = state.categoryBreakPoints.findIndex((bp) => bp.catIdx === catIdx);
-        if (bpIdx !== -1) state.categoryBreakPoints.splice(bpIdx, 1);
-
-        const cat = state.categoryList[catIdx];
-        const markerId = '__divider_' + catIdx + '_prepend_' + Date.now() + '_' + bi;
-        itemsToPrepend.push({
-          item: {
-            __streamKey: markerId,
-            id: markerId,
-            _type: MARKER_TYPE,
-            _$catIdx: catIdx,
-            categoryId: Number(cat?.id || 0),
-            name: cat?.name || '',
-            bannerPicUrl: state.bannerPicUrl || '',
-          },
-          catIdx,
-          isMarker: true,
-        });
-
-        for (let gi = 0; gi < goodsSlice.length; gi++) {
-          const g = goodsSlice[gi];
-          itemsToPrepend.push({
-            item: {
-              ...g,
-              _type: GOODS_TYPE,
-              _$catIdx: catIdx,
-              __streamKey:
-                'g_prepend_' + catIdx + '_' + (g?.id || '') + '_' + Date.now() + '_' + gi,
-            },
+        _streamCacheGoodsForCat(catIdx, goodsSlice);
+        const group = Array.isArray(state.streamCategoryGroups)
+          ? state.streamCategoryGroups.find((g) => Number(g.categoryId) === Number(b.categoryId))
+          : null;
+        const declared = group ? Number(group.count || 0) : 0;
+        const per = _ensurePerCat(catIdx);
+        if (!per.total && declared > 0) per.total = declared;
+        per.loadedCount = Math.max(Number(per.loadedCount || 0), goodsSlice.length);
+        const fullLoaded =
+          declared > 0 ? goodsSlice.length >= declared : goodsSlice.length < prependPageSize;
+        if (fullLoaded) state.streamCatLoaded.set(catIdx, true);
+        if (goodsSlice.length) {
+          state.streamCatFirstCursor.set(
             catIdx,
-            isMarker: false,
-          });
+            Number(goodsSlice[0]?.id ?? state.streamCatFirstCursor.get(catIdx) ?? 0),
+          );
+          state.streamCatLastCursor.set(
+            catIdx,
+            Number(
+              goodsSlice[goodsSlice.length - 1]?.id ?? state.streamCatLastCursor.get(catIdx) ?? 0,
+            ),
+          );
         }
         const meta = _streamEnsureMetaForCat(catIdx);
         meta.loadedHeadCount = Number(meta.loadedHeadCount || 0) + goodsSlice.length;
         if (goodsSlice.length) {
           meta.firstSeenId = Number(goodsSlice[0]?.id) ?? meta.firstSeenId;
         }
-        if (goodsSlice.length < STREAM.PAGE_N) meta.headComplete = true;
+        if (goodsSlice.length < prependPageSize) meta.headComplete = true;
       }
-      const prependedItemsCount = itemsToPrepend.length;
-      // ══════════════════════════════════════════════════════════════════════════
-      // ③ 单阶段真实偏移补偿（同步预估补偿）
-      //   - 结合预加载，让请求和 DOM 插入发生在视口上方远处
-      //   - 同时设置数据和预估高度差补偿，确保在同一帧生效，消除时间差导致的跳跃
-      // ══════════════════════════════════════════════════════════════════════════
-      let estPrependedHeight = 0;
-      for (const p of itemsToPrepend) {
-        estPrependedHeight += p.isMarker ? 250 : 180;
-      }
-      for (let i = 0; i < state.categoryBreakPoints.length; i++) {
-        const old = state.categoryBreakPoints[i];
-        state.categoryBreakPoints[i] = {
-          ...old,
-          approxScrollTop: (old.approxScrollTop || 0) + estPrependedHeight,
-          itemIndex: Number(old.itemIndex || 0) + prependedItemsCount,
-        };
-      }
-      let cumHeight = 0;
-      for (let i = 0; i < itemsToPrepend.length; i++) {
-        const p = itemsToPrepend[i];
-        if (p.isMarker) {
-          state.categoryBreakPoints.push({
-            catIdx: p.catIdx,
-            itemIndex: i,
-            approxScrollTop: Math.max(0, cumHeight),
-          });
-        }
-        cumHeight += p.isMarker ? 250 : 180;
-      }
-      state.categoryBreakPoints.sort((a, b) => Number(a.itemIndex || 0) - Number(b.itemIndex || 0));
-
-      // ③-A 原子拼接 list，并将新增项目放入 prependList 供 Absolute Container 向上渲染
-      const newItems = itemsToPrepend.map((x) => x.item);
-      state.pagination.prependList = [...newItems, ...state.pagination.prependList];
-      state.pagination.list = [...state.pagination.prependList, ...state.pagination.mainList];
-
-      // 更新双端 cursor（up_prepend_head 场景）
       _streamUpdateCursorsAfterResp(list, 'up_prepend_head', hasMore, hasMoreOpposite);
-      state.pagination.total = state.pagination.list.length;
 
-      if (isAutoPreload && anchorCatIdx !== undefined) {
-        // 冷启动自动预加载：用户正停留在目标分类，使用 scroll-into-view 原地锁定
-        const markerItem = state.pagination.list.find(
-          (it) => it._type === MARKER_TYPE && Number(it._$catIdx) === anchorCatIdx,
-        );
-        if (markerItem && markerItem.__streamKey) {
-          nextTick(() => {
-            state.rightScrollIntoViewId = '';
-            nextTick(() => {
-              state.rightScrollIntoViewId = markerItem.__streamKey;
-            });
-          });
-        }
-      }
-      // 正常滚动触发的 prepend：完全依赖原生 scroll-anchoring，不进行任何手动 scrollTop 干预
+      // ════════════════════════════════════════════════
+      // ★★★ KEY：重建 mainList，坐标系完全不动！（因为 paddingTop/minHeight 是一次性写死的全局坐标）
+      // 之前：unshift 进 list → scrollHeight 暴涨 → JS 补 scrollTop 才压住跳动；
+      // 现在：新数据在 paddingTop 预留的"物理空间"里渲染出来，scroll-height 增量为 0（精确建模的情况下）→ 视觉 0 跳
+      // ════════════════════════════════════════════════
+      _streamFlushAllCachedGoodsIntoMainList();
 
-      // ════════════════════════════════════════════════════════════════════════
-      // ④ DOM 更新后：重新采样高亮
-      // ════════════════════════════════════════════════════════════════════════
-      setTimeout(() => {
-        nextTick(async () => {
-          try {
-            // ── 动态测量并削减多余的顶部空白（当加载到真正最顶部时）──
-            await _streamMeasureAllHeights();
-
-            // ① 等 DOM layout 完成：对所有 divider marker 重新量 exact 位置写回 bp（Promise）
-            await _streamResampleBreakPointsExact();
-            // ② 立刻强制触发一次 DOM 高亮采样
-            _streamScheduleHighlight();
-
-            // #region debug-point D:prepend-finish
-            __dbgEmit(
-              'D',
-              'pages/index/category.vue:_streamPrependHeadPage',
-              '[DEBUG] prepend finish',
-              {
-                scrollTopBefore,
-                listLength: Array.isArray(state.pagination.list) ? state.pagination.list.length : 0,
-                headCursorId: Number(state.stream.headCursorId || 0),
-                topDisplayedCategoryIdx: state.topDisplayedCategoryIdx,
-              },
-            );
-            // #endregion
-          } catch (e) {
-            // eslint-disable-next-line no-console
-            console.error('[STREAM_ERR] prepend post-process failed', e);
-          }
-        });
-      }, 32);
+      __dbgEmit('STRM', '_streamPrependHeadPage', 'SUCCESS (cache-flush model)', {
+        newHeadId: state.stream.headCursorId,
+        hasMoreHead: state.stream.hasMoreHead,
+        dynamicTopPadding: state.stream.dynamicTopPadding,
+        listLength: state.pagination.list.length,
+      });
     } catch (e) {
-      // eslint-disable-next-line no-console
       console.error('[STREAM_ERR] prepend head failed', e);
     } finally {
       state.stream.isLoadingHead = false;

@@ -14,164 +14,78 @@
     @touchmove="emit('touchmove', $event)"
     @touchend="emit('touchend', $event)"
   >
-    <view :style="{ paddingTop: topPadding + 'px' }">
-      <view style="position: relative">
-        <view :id="topAnchorId" class="scroll-top-anchor"></view>
-        <!-- Prepend Container (Absolute, bottom aligned, grows upwards) -->
-        <view
-          class="prepend-container"
-          v-if="prependList && prependList.length"
-          style="
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            right: 0;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-          "
-        >
-          <view class="goods-item-box">
-            <template
-              v-for="(item, idx) in prependList"
-              :key="item.__streamKey || item.id || 'p_item_' + idx"
-            >
-              <view
-                v-if="item._type === '__CAT_DIVIDER__'"
-                class="cat-divider-marker"
-                :id="item.__streamKey || 'dm_' + (item.id || idx)"
-                :data-stream-id="item.__streamKey || item.id"
-                :data-cat-idx="String(item._$catIdx ?? '')"
-                :data-category-id="String(item.categoryId ?? '')"
-                data-item-kind="divider"
-              >
-                <view class="group_60 flex-row">
-                  <view class="section_26 flex-col"></view>
-                  <text class="text_27">{{ item.name || '' }}</text>
-                  <view class="section_27 flex-col"></view>
-                </view>
-                <image
-                  v-if="item.bannerPicUrl"
-                  class="divider-banner-img"
-                  :src="sheep.$url.cdn(item.bannerPicUrl)"
-                  mode="widthFix"
-                />
-              </view>
-              <view
-                v-else
-                class="group_49 flex-col"
-                :id="item.__streamKey || 'gi_' + (item.id || idx)"
-                @tap="onItemTap(item)"
-                :data-cat-idx="String(item._$catIdx ?? '')"
-                :data-category-id="String(item.categoryId ?? '')"
-                data-item-kind="goods"
-              >
-                <image
-                  class="box_51 flex-col"
-                  :src="sheep.$url.cdn(item.picUrl)"
-                  mode="aspectFill"
-                />
-                <text class="paragraph_1">{{ item.name }}</text>
-                <text class="paragraph_2">{{ item.introduction }}</text>
-                <view class="section_30 flex-row justify-between">
-                  <view class="price-sold flex-col">
-                    <view class="text-wrapper_8">
-                      <text class="text_28">¥</text>
-                      <text class="text_29">{{ priceText(item) }}</text>
-                      <image
-                        class="vip-price-icon"
-                        :src="sheep.$url.cdn('/mp/static/vipPrice.png')"
-                        mode="aspectFit"
-                      />
-                    </view>
-                    <view class="sold-row ss-flex">
-                      <text class="origin-price" v-if="originPriceText(item)"
-                        >¥{{ originPriceText(item) }}</text
-                      >
-                      <text class="text_30" v-if="soldText(item)">{{ soldText(item) }}</text>
-                    </view>
-                  </view>
-                  <view class="add-cart-btn ss-flex" @tap.stop="onAddCart(item)">
-                    <image
-                      class="add-cart-icon"
-                      :src="sheep.$url.cdn('/mp/static/add.webp')"
-                      mode="aspectFit"
-                    />
-                  </view>
-                </view>
-              </view>
-            </template>
-          </view>
-        </view>
+    <view class="stream-outer" :style="outerBoxStyle">
+      <view :id="topAnchorId" class="scroll-top-anchor"></view>
 
-        <!-- Main Container (Normal flow, goes downwards) -->
-        <view class="goods-item-box">
-          <template
-            v-for="(item, idx) in mainList"
-            :key="item.__streamKey || item.id || 'm_item_' + idx"
+      <!-- 物理流：合并渲染，flex 布局直接作用在卡片上 -->
+      <view class="goods-item-box" :style="containerStyle">
+        <template
+          v-for="(item, idx) in mergedList"
+          :key="item.__streamKey || item.id || 'm_item_' + idx"
+        >
+          <view
+            v-if="item._type === '__CAT_DIVIDER__'"
+            class="cat-divider-marker prepend-marker"
+            :id="item.__streamKey || 'dm_' + (item.id || idx)"
+            :data-stream-id="item.__streamKey || item.id"
+            :data-cat-idx="String(item._$catIdx ?? '')"
+            :data-category-id="String(item.categoryId ?? '')"
+            data-item-kind="divider"
+            data-prepend-marker="1"
           >
-            <view
-              v-if="item._type === '__CAT_DIVIDER__'"
-              class="cat-divider-marker"
-              :id="item.__streamKey || 'dm_' + (item.id || idx)"
-              :data-stream-id="item.__streamKey || item.id"
-              :data-cat-idx="String(item._$catIdx ?? '')"
-              :data-category-id="String(item.categoryId ?? '')"
-              data-item-kind="divider"
-            >
-              <view class="group_60 flex-row">
-                <view class="section_26 flex-col"></view>
-                <text class="text_27">{{ item.name || '' }}</text>
-                <view class="section_27 flex-col"></view>
-              </view>
-              <image
-                v-if="item.bannerPicUrl"
-                class="divider-banner-img"
-                :src="sheep.$url.cdn(item.bannerPicUrl)"
-                mode="widthFix"
-              />
+            <view class="group_60 flex-row">
+              <view class="section_26 flex-col"></view>
+              <text class="text_27">{{ item.name || '' }}</text>
+              <view class="section_27 flex-col"></view>
             </view>
-            <view
-              v-else
-              class="group_49 flex-col"
-              :id="item.__streamKey || 'gi_' + (item.id || idx)"
-              @tap="onItemTap(item)"
-              :data-cat-idx="String(item._$catIdx ?? '')"
-              :data-category-id="String(item.categoryId ?? '')"
-              data-item-kind="goods"
-            >
-              <image class="box_51 flex-col" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
-              <text class="paragraph_1">{{ item.name }}</text>
-              <text class="paragraph_2">{{ item.introduction }}</text>
-              <view class="section_30 flex-row justify-between">
-                <view class="price-sold flex-col">
-                  <view class="text-wrapper_8">
-                    <text class="text_28">¥</text>
-                    <text class="text_29">{{ priceText(item) }}</text>
-                    <image
-                      class="vip-price-icon"
-                      :src="sheep.$url.cdn('/mp/static/vipPrice.png')"
-                      mode="aspectFit"
-                    />
-                  </view>
-                  <view class="sold-row ss-flex">
-                    <text class="origin-price" v-if="originPriceText(item)"
-                      >¥{{ originPriceText(item) }}</text
-                    >
-                    <text class="text_30" v-if="soldText(item)">{{ soldText(item) }}</text>
-                  </view>
-                </view>
-                <view class="add-cart-btn ss-flex" @tap.stop="onAddCart(item)">
+            <image
+              v-if="item.bannerPicUrl"
+              class="divider-banner-img"
+              :src="sheep.$url.cdn(item.bannerPicUrl)"
+              mode="widthFix"
+            />
+          </view>
+          <view
+            v-else
+            class="group_49 flex-col"
+            :id="item.__streamKey || 'gi_' + (item.id || idx)"
+            @tap="onItemTap(item)"
+            :data-cat-idx="String(item._$catIdx ?? '')"
+            :data-category-id="String(item.categoryId ?? '')"
+            data-item-kind="goods"
+            :data-prepend-item="isPrependItem(item) ? '1' : '0'"
+          >
+            <image class="box_51 flex-col" :src="sheep.$url.cdn(item.picUrl)" mode="aspectFill" />
+            <text class="paragraph_1">{{ item.name }}</text>
+            <text class="paragraph_2">{{ item.introduction }}</text>
+            <view class="section_30 flex-row justify-between">
+              <view class="price-sold flex-col">
+                <view class="text-wrapper_8">
+                  <text class="text_28">¥</text>
+                  <text class="text_29">{{ priceText(item) }}</text>
                   <image
-                    class="add-cart-icon"
-                    :src="sheep.$url.cdn('/mp/static/add.webp')"
+                    class="vip-price-icon"
+                    :src="sheep.$url.cdn('/mp/static/vipPrice.png')"
                     mode="aspectFit"
                   />
                 </view>
+                <view class="sold-row ss-flex">
+                  <text class="origin-price" v-if="originPriceText(item)"
+                    >¥{{ originPriceText(item) }}</text
+                  >
+                  <text class="text_30" v-if="soldText(item)">{{ soldText(item) }}</text>
+                </view>
+              </view>
+              <view class="add-cart-btn ss-flex" @tap.stop="onAddCart(item)">
+                <image
+                  class="add-cart-icon"
+                  :src="sheep.$url.cdn('/mp/static/add.webp')"
+                  mode="aspectFit"
+                />
               </view>
             </view>
-          </template>
-        </view>
+          </view>
+        </template>
       </view>
     </view>
     <slot />
@@ -249,7 +163,7 @@
 
 <script setup>
   import sheep from '@/sheep';
-  import { computed, getCurrentInstance } from 'vue';
+  import { computed, getCurrentInstance, onMounted, reactive, ref, watch } from 'vue';
   import { fen2yuan } from '@/sheep/hooks/useGoods';
   import SpuApi from '@/sheep/api/product/spu';
 
@@ -297,6 +211,10 @@
       type: Number,
       default: 0,
     },
+    minContentHeight: {
+      type: Number,
+      default: 0,
+    },
   });
 
   const emit = defineEmits(['scroll', 'scrolltolower', 'touchmove', 'touchend']);
@@ -312,6 +230,105 @@
     const raw = props.data?.[active]?.children;
     return Array.isArray(raw) ? raw : [];
   });
+
+  // 合并的列表（prepend + main）→ 单容器渲染
+  const mergedList = computed(() => {
+    return [...prependList.value, ...mainList.value];
+  });
+
+  // 判断某个 item 是否属于 prependList
+  const isPrependItem = (item) => {
+    if (!item) return false;
+    const key = item.__streamKey || item.id;
+    if (!key) return false;
+    return prependList.value.some((p) => (p.__streamKey || p.id) === key);
+  };
+
+  // 容器动态样式：marginTop 抵消 prepend 高度
+  // prependList 的高度应该等于 paddingTop 中被吃掉的部分，
+  // 通过 dynamicTopPadding 撑开顶部空间（由父组件控制）
+  // 不再用 marginTop 抵消，因为主方案是 paddingTop 动态调整
+  const containerStyle = computed(() => {
+    return {};
+  });
+
+  // 新版外层盒子（God View 预留空间建模
+  //   - paddingTop : 「比当前已加载的最小分类还要小」的那些分类（还没拉过数据）的累加真实高（占位用，用户能向上滑不撞顶
+  //   - minHeight: 本次先取消全局预留（用户反馈不需要"每个类目都预留全部高度"），minContentHeight=0 就不写，让内容自然撑开
+  const outerBoxStyle = computed(() => {
+    const top = Number(props.topPadding || 0);
+    const minH = Number(props.minContentHeight || 0);
+    const s = {};
+    if (top > 0) s.paddingTop = top + 'px';
+    if (minH > 0) s.minHeight = minH + 'px';
+    return s;
+  });
+
+  // ════════════════════════════════════════════════
+  // 真实单元高度测量（mounted 后对当前设备做一次基准测量
+  //   测三个核心单元：
+  //     1) divider(分类分界+banner  --> dividerHeight（含 banner 255）
+  //     2) 商品卡片          --> goodsHeight(≈260）
+  //   失败或取不到就 fallback 到默认安全值
+  // ════════════════════════════════════════════════
+  const unitMetrics = reactive({
+    ready: false,
+    goodsHeight: 260,
+    dividerHeight: 255,
+    measuredAt: 0,
+  });
+
+  const measureUnitMetrics = () => {
+    return new Promise((resolve) => {
+      try {
+        const q = uni.createSelectorQuery().in(instance);
+        if (!q) return resolve({ ...unitMetrics });
+        q.select('.cat-divider-marker').boundingClientRect();
+        q.select('.group_49').boundingClientRect();
+        q.exec((rets) => {
+          try {
+            const dividerRect = rets?.[0];
+            const goodsRect = rets?.[1];
+            const dH = Number(dividerRect?.height || 0);
+            const gH = Number(goodsRect?.height || 0);
+            if (dH > 50 && (unitMetrics.dividerHeight === 255 || Math.abs(dH - 255) > 10)) {
+              unitMetrics.dividerHeight = dH;
+            }
+            if (gH > 50 && (unitMetrics.goodsHeight === 260 || Math.abs(gH - 260) > 10)) {
+              unitMetrics.goodsHeight = gH;
+            }
+            unitMetrics.ready = true;
+            unitMetrics.measuredAt = Date.now();
+            resolve({ ...unitMetrics });
+          } catch (e) {
+            unitMetrics.ready = true;
+            resolve({ ...unitMetrics });
+          }
+        });
+      } catch (e) {
+        resolve({ ...unitMetrics });
+      }
+    });
+  };
+
+  const getUnitMetrics = () => ({ ...unitMetrics });
+
+  onMounted(() => {
+    // 双保险：mounted 后立刻先尝试测一次；若失败则 150ms 后再测一次（等渲染完图片尺寸）
+    setTimeout(() => measureUnitMetrics(), 30);
+    setTimeout(() => measureUnitMetrics(), 180);
+  });
+
+  // 每次 mergedList 非空后再补测（保证一定拿到值
+  watch(
+    () => props.pagination?.mainList?.length || 0,
+    (n, o) => {
+      if (n > 0 && !o && !unitMetrics.ready) {
+        setTimeout(() => measureUnitMetrics(), 80);
+      }
+    },
+    { flush: 'post' },
+  );
 
   const scrollViewStyle = computed(() => {
     if (
@@ -551,10 +568,38 @@
     return new Promise((resolve) => {
       try {
         const q = uni.createSelectorQuery().in(instance);
-        q.select('.prepend-container').boundingClientRect();
+        q.selectAll('[data-prepend-item="1"]').boundingClientRect();
+        q.select('[data-prepend-item="0"]').boundingClientRect();
         q.exec((rets) => {
-          const h = Number(rets?.[0]?.height || 0);
-          resolve(h);
+          try {
+            const preItems = Array.isArray(rets?.[0]) ? rets[0] : [];
+            if (preItems.length === 0) {
+              // 重试：可能因为 timing 问题 prepend 节点还没渲染
+              setTimeout(() => {
+                try {
+                  const q2 = uni.createSelectorQuery().in(instance);
+                  q2.selectAll('[data-prepend-item="1"]').boundingClientRect();
+                  q2.select('[data-prepend-item="0"]').boundingClientRect();
+                  q2.exec((r2) => {
+                    const pre2 = Array.isArray(r2?.[0]) ? r2[0] : [];
+                    let total = 0;
+                    for (const it of pre2) total += Number(it.height || 0);
+                    resolve(total);
+                  });
+                } catch (e) {
+                  resolve(0);
+                }
+              }, 50);
+              return;
+            }
+            let total = 0;
+            for (const it of preItems) {
+              total += Number(it.height || 0);
+            }
+            resolve(total);
+          } catch (e) {
+            resolve(0);
+          }
         });
       } catch (e) {
         resolve(0);
@@ -568,13 +613,15 @@
     queryMarkersOffsetTop,
     measureContentHeight,
     measurePrependHeight,
+    measureUnitMetrics,
+    getUnitMetrics,
   });
 </script>
 
 <style lang="scss" scoped>
   .goods-item-scroll {
     width: 100%;
-    overflow-anchor: auto;
+    overflow-anchor: none;
   }
 
   .scroll-top-anchor {
@@ -586,6 +633,12 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
+    align-content: flex-start;
+  }
+
+  /* 分隔标记必须自占一行 */
+  .cat-divider-marker {
+    flex-basis: 100%;
   }
 
   .group_49 {

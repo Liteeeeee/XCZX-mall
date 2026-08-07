@@ -5,6 +5,7 @@
     navbar="none"
     title="购物车"
     :navbarStyle="navbarStyle"
+    :class="{ 'is-empty': state.list.length === 0 }"
   >
     <view class="cart-header ss-flex ss-col-center ss-row-between ss-p-x-30">
       <view class="header-left ss-flex ss-col-center ss-font-32">
@@ -26,9 +27,13 @@
     <scroll-view
       v-if="state.list.length === 0"
       scroll-y
+      :bounces="false"
+      :enhanced="false"
+      :show-scrollbar="false"
       class="empty-scroll"
       :style="{
         paddingTop: '20rpx',
+        height: 'calc(100vh - 320rpx)',
       }"
     >
       <s-empty
@@ -340,6 +345,30 @@
   const sys_capsule = sheep.$platform.capsule;
   const cart = sheep.$store('cart');
   const userStore = sheep.$store('user');
+
+  // ★ 精确计算空态 scroll-view 高度：避免「s-layout 100vh + scroll-view 100vh」双重滚动
+  // 总高 = 设备可视区 - 头部高度 - 底部 tabbar 高度（cart 是 tabbar 页面）
+  const cartHeaderHeight = computed(() => {
+    return Number(sys_capsule?.bottom || sys_navBar || 44);
+  });
+  const tabbarHeightPx = computed(() => {
+    try {
+      const win = Number(sheep.$platform?.device?.windowWidth) || 375;
+      // 微信原生 tabbar 一般 49px（iOS/Android 大屏 56px），按 devicePx = win / 设计基准
+      // 项目其他页统一用 50px，保留一致
+      void win;
+      return 50;
+    } catch (_) {
+      return 50;
+    }
+  });
+  const emptyScrollHeight = computed(() => {
+    const sysInfo = uni.getSystemInfoSync?.() || {};
+    const safeH = Number(sheep.$platform?.device?.safeArea?.height) || 0;
+    const winH = Number(sysInfo.windowHeight) || 0;
+    const visible = safeH > 0 ? safeH : winH > 0 ? winH : 667;
+    return Math.max(320, visible - cartHeaderHeight.value - tabbarHeightPx.value);
+  });
 
   const navbarStyle = computed(() => {
     const homeTemplate = sheep.$store('app').template?.home;
@@ -786,8 +815,12 @@
     height: 120rpx;
   }
 
+  /* ★ 空态唯一滚动源：scroll-view 高度 = 可视区 - 头部 - tabbar 精确计算（emptyScrollHeight）
+     【关键】绝对不再 :deep 锁 page-app —— 那样会把有数据分支一起锁死导致整个 cart 不能滑 */
   .empty-scroll {
-    height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch;
   }
 
   .cart-header {
