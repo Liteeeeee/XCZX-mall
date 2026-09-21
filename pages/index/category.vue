@@ -392,7 +392,7 @@
         _$catIdx: i,
         categoryId: Number(cat.id || 0),
         name: cat.name || '',
-        bannerPicUrl: state.bannerPicUrl || '',
+        bannerPicUrl: getBannerPicUrlForCategory(cat.id),
       });
       newBp.push({
         catIdx: i,
@@ -537,6 +537,8 @@
     loadStatus: '',
     keyword: '',
     bannerPicUrl: '',
+    bannerDefaultUrl: '',
+    bannerMap: null,
     showBannerPreviewVideo: false,
     bannerPreviewVideoUrl: '',
 
@@ -1409,7 +1411,7 @@
       _$catIdx: catIdx,
       categoryId: Number(cat?.id || 0),
       name: cat?.name || '',
-      bannerPicUrl: state.bannerPicUrl || '',
+      bannerPicUrl: getBannerPicUrlForCategory(cat?.id),
     });
     const viewportH = Number(menuScrollHeight.value || 0);
     const lowerThreshold = 50;
@@ -1559,14 +1561,44 @@
     const { code, data } = await BannerApi.getBannerList();
     if (code !== 0) return;
     const list = Array.isArray(data) ? data : data?.list || [];
-    const banner = list.find((it) => Number(it?.position) === 6);
-    state.bannerPicUrl =
-      banner?.picUrl ||
-      banner?.url ||
-      banner?.imageUrl ||
-      banner?.imgUrl ||
-      banner?.bannerUrl ||
+    const bannerCodeMap = new Map();
+    let defaultBanner = null;
+    for (const it of list) {
+      const picUrl = it?.picUrl || it?.url || it?.imageUrl || it?.imgUrl || it?.bannerUrl || '';
+      if (!defaultBanner && Number(it?.position) === 6) {
+        defaultBanner = it;
+      }
+      const rawCode = it?.bannerCode;
+      if (rawCode === undefined || rawCode === null || rawCode === '') continue;
+      const key = String(Number(rawCode));
+      if (key === 'NaN') continue;
+      if (bannerCodeMap.has(key)) continue;
+      bannerCodeMap.set(key, picUrl);
+    }
+    state.bannerMap = bannerCodeMap;
+    const defaultPicUrl =
+      defaultBanner?.picUrl ||
+      defaultBanner?.url ||
+      defaultBanner?.imageUrl ||
+      defaultBanner?.imgUrl ||
+      defaultBanner?.bannerUrl ||
       '';
+    state.bannerDefaultUrl = defaultPicUrl;
+    state.bannerPicUrl = defaultPicUrl;
+  }
+
+  function getBannerPicUrlForCategory(categoryId) {
+    const id = Number(categoryId);
+    if (!Number.isFinite(id) || id <= 0) {
+      return state.bannerDefaultUrl || state.bannerPicUrl || '';
+    }
+    const key = String(id);
+    const map = state.bannerMap;
+    if (map && map.has(key)) {
+      const pic = map.get(key);
+      if (pic) return pic;
+    }
+    return state.bannerDefaultUrl || state.bannerPicUrl || '';
   }
 
   function isVideoUrl(url) {
