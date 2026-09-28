@@ -401,9 +401,13 @@
       });
       runningOffset += dH;
       if (hasGoods) {
-        const arr = Array.from(catMap.values()).sort(
-          (a, b) => Number(a?.id || 0) - Number(b?.id || 0),
-        );
+        const orderedIds = state.streamGoodsOrderByCat.get(i) || [];
+        const arr = [];
+        for (let oi = 0; oi < orderedIds.length; oi++) {
+          const gid = orderedIds[oi];
+          if (!catMap.has(gid)) continue;
+          arr.push(catMap.get(gid));
+        }
         for (let gi = 0; gi < arr.length; gi++) {
           const g = arr[gi];
           newList.push({
@@ -477,19 +481,33 @@
     });
   }
 
-  // ★ 存入缓存（去重）且刷新 mainList（非破坏性追加）
-  function _streamCacheGoodsForCat(catIdx, goodsArr) {
+  // ★ 存入缓存（去重），并维护每个分类内商品的有序 id 列表
+  //   - mode='append'（默认）：按 goodsArr 原顺序追加到该分类有序列表尾部 → 用于 anchor 首屏、direction=down 正向加载
+  //   - mode='prepend'：按 goodsArr 原顺序插到该分类有序列表头部 → 用于 direction=up 逆向加载上一分类/上一页
+  //   返回本批次真正新增（去重后）的商品数
+  function _streamCacheGoodsForCat(catIdx, goodsArr, mode = 'append') {
     if (!Array.isArray(goodsArr) || !goodsArr.length) return 0;
     if (!state.streamAllGoodsByCat.has(catIdx)) state.streamAllGoodsByCat.set(catIdx, new Map());
-    const m = state.streamAllGoodsByCat.get(catIdx);
-    let added = 0;
+    if (!state.streamGoodsOrderByCat.has(catIdx)) state.streamGoodsOrderByCat.set(catIdx, []);
+    const goodsMap = state.streamAllGoodsByCat.get(catIdx);
+    const orderArr = state.streamGoodsOrderByCat.get(catIdx);
+    // ① 先收集本次 batch 中「去重后新增」的 id（保持 goodsArr 的原索引顺序）
+    const newIds = [];
     for (const g of goodsArr) {
       const id = Number(g?.id || 0);
-      if (!id || m.has(id)) continue;
-      m.set(id, g);
-      added++;
+      if (!id) continue;
+      if (goodsMap.has(id)) continue;
+      goodsMap.set(id, g);
+      newIds.push(id);
     }
-    return added;
+    if (!newIds.length) return 0;
+    // ② 按 mode 写入 orderArr（严格跟随接口返回 list 的原顺序）
+    if (mode === 'prepend') {
+      orderArr.unshift.apply(orderArr, newIds);
+    } else {
+      orderArr.push.apply(orderArr, newIds);
+    }
+    return newIds.length;
   }
 
   // ════════════════════════════════════════════════
@@ -571,6 +589,9 @@
     // ★★ 全量缓存（永不清空！用户从第 3 类滑回第 1 类再切回第 3 类 → 全内存复用）
     //    key = catIdx, value = Map<goodsId, goodsRaw>
     streamAllGoodsByCat: new Map(),
+    // ★ 每个分类内商品的「有序 id 列表」——严格按后端返回 list 的索引顺序（插入顺序）
+    //   append 到尾部、prepend 到头部；flush 时按这张表顺序输出，不再按 spu.id sort
+    streamGoodsOrderByCat: new Map(),
     // 标记该分类是否已完全加载（用于避免重复请求
     streamCatLoaded: new Map(), // catIdx => bool
     // 记录每个 cat 的 cursorId（方便后续 cursor 定位加载
@@ -2049,7 +2070,7 @@
         const catIdx = state.categoryList.findIndex((c) => Number(c.id) === Number(b.categoryId));
         if (catIdx === -1) continue;
         const goodsSlice = list.slice(b.range[0], b.range[1] + 1);
-        _streamCacheGoodsForCat(catIdx, goodsSlice);
+        _streamCacheGoodsForCat(catIdx, goodsSlice, 'prepend');
         const group = Array.isArray(state.streamCategoryGroups)
           ? state.streamCategoryGroups.find((g) => Number(g.categoryId) === Number(b.categoryId))
           : null;
