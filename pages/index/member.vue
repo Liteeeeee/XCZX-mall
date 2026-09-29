@@ -162,6 +162,7 @@
   import sMemberLevelRights from '@/sheep/components/s-member-level-card/s-member-level-rights.vue';
   import MemberLevelApi from '@/sheep/api/member/level';
   import MemberRightsApi from '@/sheep/api/member/rights';
+  import OemApi from '@/sheep/api/member/oem';
   import { SharePageEnum } from '@/sheep/helper/const';
 
   async function loadMemberLevelList() {
@@ -275,6 +276,7 @@
 
   const userInfo = computed(() => sheep.$store('user').userInfo);
   const isLogin = computed(() => sheep.$store('user').isLogin);
+  const launchingHealthConsult = ref(false);
 
   const shareInfo = computed(() => {
     return sheep.$platform.share.getShareInfo(
@@ -653,7 +655,7 @@
     },
   ];
 
-  function onTapAdvantage(item) {
+  async function onTapAdvantage(item) {
     if (!isLogin.value) {
       showAuthModal();
       return;
@@ -667,7 +669,72 @@
       return;
     }
     if (item.title === '线上健康咨询服务') {
-      openWeWorkQr();
+      if (launchingHealthConsult.value) return;
+      launchingHealthConsult.value = true;
+      try {
+        const res = await OemApi.getHealthConsultLaunchUrl();
+        if (!res) {
+          uni.showToast({ title: '服务异常，请稍后再试', icon: 'none', mask: true });
+          return;
+        }
+        if (res.code !== 0) {
+          uni.showToast({
+            title: res.msg || '服务异常，请稍后再试',
+            icon: 'none',
+            mask: true,
+          });
+          return;
+        }
+        // 兼容多种后端返回格式：{code:0, data:{launchUrl:'xxx'}}  /  {code:0, data:'xxx'}
+        let launchUrl = '';
+        const payload = res.data;
+        if (typeof payload === 'string') {
+          launchUrl = payload;
+        } else if (payload && typeof payload === 'object') {
+          launchUrl =
+            payload.launchUrl ||
+            payload.launch_url ||
+            payload.url ||
+            payload.h5Url ||
+            payload.redirectUrl ||
+            '';
+        }
+        if (!launchUrl || typeof launchUrl !== 'string') {
+          uni.showToast({ title: '未获取到跳转地址', icon: 'none', mask: true });
+          return;
+        }
+        if (!/^https?:\/\//i.test(launchUrl)) {
+          uni.showToast({ title: '跳转地址格式错误', icon: 'none', mask: true });
+          return;
+        }
+        const targetPage = `/pages/public/webview?url=${encodeURIComponent(launchUrl)}`;
+        uni.navigateTo({
+          url: targetPage,
+          fail: (err) => {
+            uni.showToast({
+              title: err?.errMsg || '页面跳转失败',
+              icon: 'none',
+              mask: true,
+            });
+          },
+        });
+      } catch (e) {
+        const tag = '[健康咨询跳转]';
+        console.error(tag, e);
+        const raw =
+          e?.errMsg ||
+          e?.message ||
+          e?.msg ||
+          (typeof e === 'string' ? e : JSON.stringify(e || null));
+        uni.showModal({
+          title: '操作失败',
+          content: raw || '未知错误，请查看小程序控制台日志',
+          showCancel: false,
+          confirmText: '我知道了',
+        });
+      } finally {
+        launchingHealthConsult.value = false;
+      }
     }
   }
 </script>
