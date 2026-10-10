@@ -821,6 +821,13 @@
 					"style": {
 						"navigationBarTitleText": ""
 					}
+				},
+				{
+					"path": "browser-launch",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "服务跳转提示"
+					}
 				}
 			]
 		},

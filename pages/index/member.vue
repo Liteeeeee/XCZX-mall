@@ -672,20 +672,13 @@
       if (launchingHealthConsult.value) return;
       launchingHealthConsult.value = true;
       try {
+        // 先做一次连通性校验（鉴权 + 业务错误提前拦截），校验通过后跳空白中转页；
+        // 若拿到合法 launchUrl 则透传给中转页直接展示，否则中转页会在 onLoad 时自行再次拉取
         const res = await OemApi.getHealthConsultLaunchUrl();
-        if (!res) {
-          uni.showToast({ title: '服务异常，请稍后再试', icon: 'none', mask: true });
+        if (!res || res.code !== 0) {
+          uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
           return;
         }
-        if (res.code !== 0) {
-          uni.showToast({
-            title: res.msg || '服务异常，请稍后再试',
-            icon: 'none',
-            mask: true,
-          });
-          return;
-        }
-        // 兼容多种后端返回格式：{code:0, data:{launchUrl:'xxx'}}  /  {code:0, data:'xxx'}
         let launchUrl = '';
         const payload = res.data;
         if (typeof payload === 'string') {
@@ -699,39 +692,19 @@
             payload.redirectUrl ||
             '';
         }
-        if (!launchUrl || typeof launchUrl !== 'string') {
-          uni.showToast({ title: '未获取到跳转地址', icon: 'none', mask: true });
-          return;
-        }
-        if (!/^https?:\/\//i.test(launchUrl)) {
-          uni.showToast({ title: '跳转地址格式错误', icon: 'none', mask: true });
-          return;
-        }
-        const targetPage = `/pages/public/webview?url=${encodeURIComponent(launchUrl)}`;
+        const isValidUrl =
+          !!launchUrl && typeof launchUrl === 'string' && /^https?:\/\//i.test(launchUrl);
+        const target = isValidUrl
+          ? `/pages/public/browser-launch?launchUrl=${encodeURIComponent(launchUrl)}`
+          : '/pages/public/browser-launch';
         uni.navigateTo({
-          url: targetPage,
-          fail: (err) => {
-            uni.showToast({
-              title: err?.errMsg || '页面跳转失败',
-              icon: 'none',
-              mask: true,
-            });
+          url: target,
+          fail: () => {
+            uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
           },
         });
       } catch (e) {
-        const tag = '[健康咨询跳转]';
-        console.error(tag, e);
-        const raw =
-          e?.errMsg ||
-          e?.message ||
-          e?.msg ||
-          (typeof e === 'string' ? e : JSON.stringify(e || null));
-        uni.showModal({
-          title: '操作失败',
-          content: raw || '未知错误，请查看小程序控制台日志',
-          showCancel: false,
-          confirmText: '我知道了',
-        });
+        uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
       } finally {
         launchingHealthConsult.value = false;
       }
