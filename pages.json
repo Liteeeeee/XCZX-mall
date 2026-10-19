@@ -143,6 +143,14 @@
 				"title": "用户协议",
 				"group": "通用"
 			}
+		},
+		{
+			"path": "pages/qcx/index",
+			"style": {
+				"navigationBarTitleText": "视频问诊",
+				"navigationBarBackgroundColor": "#FFFFFF",
+				"navigationBarTextStyle": "black"
+			}
 		}
 	],
 	"subPackages": [{

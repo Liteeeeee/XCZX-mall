@@ -18,9 +18,20 @@
             height="160rpx"
           />
         </view>
-        <view class="hero-title">请在浏览器中打开以享受完整服务</view>
+        <view class="hero-title">请选择访问方式</view>
         <view class="hero-desc">
-          当前环境暂不支持直接内嵌打开该服务页面， 请点击下方按钮复制链接或跳转浏览器打开。
+          该服务页面可在小程序内直接打开；<text class="strong">首次使用需先完成三要素实名认证</text
+          >，认证只能到系统浏览器中完成，请选择第一种方式。
+        </view>
+      </view>
+
+      <view class="notice-card">
+        <view class="notice-title">关于三要素实名认证</view>
+        <view class="notice-text">
+          按国家监管规定，首次使用视频问诊服务需完成三要素（姓名 / 身份证号 /
+          手机号）实名认证，该认证流程无法在小程序内完成。
+          请点击「复制链接，去浏览器打开」，切换到系统浏览器（Safari / Chrome
+          等）粘贴打开并完成认证；已完成认证的用户可直接点击「在小程序内直接打开」进入问诊。
         </view>
       </view>
 
@@ -44,7 +55,7 @@
         <view class="btn primary" @tap="onTapOpenBrowser">
           {{ primaryBtnText }}
         </view>
-        <view class="btn ghost" @tap="onTapCopyOnly"> 仅复制链接 </view>
+        <view class="btn ghost" @tap="onTapOpenWebview"> 在小程序内直接打开 </view>
       </view>
     </view>
   </view>
@@ -60,6 +71,7 @@
   const loading = ref(false);
   const opening = ref(false);
   const copying = ref(false);
+  const openingWebview = ref(false);
   const inputLaunchUrl = ref('');
   const statusBarHeight = sheep?.$platform?.device?.statusBarHeight || 20; // px
   const navBarHeight = 44; // px, 标题栏内容区固定高度
@@ -95,9 +107,9 @@
   const platform = detectPlatform();
 
   const primaryBtnText = computed(() => {
-    if (platform === 'APP') return '用系统浏览器打开';
-    if (platform === 'H5') return '打开新标签页访问';
-    return '复制链接并提示打开方式';
+    if (platform === 'APP') return '复制链接，用系统浏览器打开';
+    if (platform === 'H5') return '在新标签页打开';
+    return '复制链接，去浏览器打开';
   });
 
   const envTips = computed(() => {
@@ -190,6 +202,29 @@
       uni.showToast({ title: '链接已复制', icon: 'none', mask: true });
     } finally {
       copying.value = false;
+    }
+  }
+
+  // 在小程序内直接唤起 web-view 加载该地址（已完成实名认证的用户可直接使用）
+  async function onTapOpenWebview() {
+    if (openingWebview.value) return;
+    if (!launchUrl.value) {
+      showSysErr();
+      return;
+    }
+    openingWebview.value = true;
+    try {
+      await new Promise((resolve, reject) => {
+        uni.navigateTo({
+          url: `/pages/public/webview?url=${encodeURIComponent(launchUrl.value)}`,
+          success: resolve,
+          fail: reject,
+        });
+      });
+    } catch (e) {
+      showSysErr();
+    } finally {
+      openingWebview.value = false;
     }
   }
 
@@ -336,7 +371,7 @@
   }
 
   .wrap {
-    padding: 32rpx 28rpx 120rpx;
+    padding: 32rpx 28rpx 320rpx;
   }
 
   .hero-card {
@@ -373,6 +408,32 @@
     line-height: 1.6;
     color: #6b7280;
     text-align: center;
+  }
+
+  .strong {
+    color: #ff3e00;
+    font-weight: 600;
+  }
+
+  .notice-card {
+    margin-top: 28rpx;
+    background: #fff7e6;
+    border: 1rpx solid #ffe0a3;
+    border-radius: 20rpx;
+    padding: 24rpx 28rpx;
+  }
+
+  .notice-title {
+    font-size: 26rpx;
+    font-weight: 600;
+    color: #b45309;
+    margin-bottom: 12rpx;
+  }
+
+  .notice-text {
+    font-size: 24rpx;
+    line-height: 1.7;
+    color: #92400e;
   }
 
   .panel {

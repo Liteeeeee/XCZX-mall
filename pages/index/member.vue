@@ -672,8 +672,6 @@
       if (launchingHealthConsult.value) return;
       launchingHealthConsult.value = true;
       try {
-        // 先做一次连通性校验（鉴权 + 业务错误提前拦截），校验通过后跳空白中转页；
-        // 若拿到合法 launchUrl 则透传给中转页直接展示，否则中转页会在 onLoad 时自行再次拉取
         const res = await OemApi.getHealthConsultLaunchUrl();
         if (!res || res.code !== 0) {
           uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
@@ -692,13 +690,12 @@
             payload.redirectUrl ||
             '';
         }
-        const isValidUrl =
-          !!launchUrl && typeof launchUrl === 'string' && /^https?:\/\//i.test(launchUrl);
-        const target = isValidUrl
-          ? `/pages/public/browser-launch?launchUrl=${encodeURIComponent(launchUrl)}`
-          : '/pages/public/browser-launch';
+        if (!launchUrl || typeof launchUrl !== 'string' || !/^https?:\/\//i.test(launchUrl)) {
+          uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
+          return;
+        }
         uni.navigateTo({
-          url: target,
+          url: `/pages/public/browser-launch?launchUrl=${encodeURIComponent(launchUrl)}`,
           fail: () => {
             uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
           },
