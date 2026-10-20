@@ -5,74 +5,177 @@
         <view class="back-btn" @tap="onTapBack" aria-label="返回">
           <text class="iconfont sicon-back back-icon"></text>
         </view>
-        <view class="navbar-title-slot"><!-- 故意留空，不显示任何标题或占位 --></view>
+        <view class="navbar-title">视频问诊</view>
       </view>
     </view>
+
     <view class="wrap" :style="{ paddingTop: contentPadTop }">
-      <view class="hero-card">
-        <view class="hero-icon">
-          <su-image
-            :src="sheep.$url.static('/static/public/browser-tip.webp')"
-            mode="aspectFit"
-            width="160rpx"
-            height="160rpx"
-          />
-        </view>
+      <!-- 访问方式介绍 -->
+      <view class="hero">
+        <image
+          class="hero-icon"
+          :src="iconSrc.hero"
+          mode="aspectFit"
+          @error="onIconError('hero')"
+        />
         <view class="hero-title">请选择访问方式</view>
         <view class="hero-desc">
-          该服务页面可在小程序内直接打开；<text class="strong">首次使用需先完成三要素实名认证</text
-          >，认证只能到系统浏览器中完成，请选择第一种方式。
+          <text>该服务页面可在小程序内直接打开；</text>
+          <text class="hero-desc-strong">首次使用需先完成三要素实名认证</text>
+          <text>，认证只能到系统浏览器中完成，请选择第一种方式。</text>
         </view>
       </view>
 
-      <view class="notice-card">
+      <!-- 三要素实名认证说明 -->
+      <view class="notice-card" @tap="onTapNotice">
         <view class="notice-title">关于三要素实名认证</view>
-        <view class="notice-text">
-          按国家监管规定，首次使用视频问诊服务需完成三要素（姓名 / 身份证号 /
-          手机号）实名认证，该认证流程无法在小程序内完成。
-          请点击「复制链接，去浏览器打开」，切换到系统浏览器（Safari / Chrome
-          等）粘贴打开并完成认证；已完成认证的用户可直接点击「在小程序内直接打开」进入问诊。
+        <image
+          class="notice-info"
+          :src="iconSrc.info"
+          mode="aspectFit"
+          @error="onIconError('info')"
+        />
+      </view>
+
+      <!-- 方式一：首次使用 -->
+      <view class="path-card-wrap" :class="{ 'path-card-wrap--lit': guideVisible }">
+        <!-- 首次进入引导浮层：模态图 + 指向按钮的连接线 -->
+        <view v-if="guideVisible" class="guide-popup" @tap.stop="closeGuide">
+          <image class="guide-img" :src="modalImgSrc" mode="widthFix" />
+          <view class="guide-arrow"></view>
+        </view>
+
+        <view class="path-card">
+          <view class="path-head">
+            <image
+              class="path-icon"
+              :src="iconSrc.globe"
+              mode="aspectFit"
+              @error="onIconError('globe')"
+            />
+            <view class="path-info">
+              <view class="path-name">首次使用</view>
+              <view class="path-sub">先在系统浏览器完成实名认证</view>
+            </view>
+            <view class="path-index">01</view>
+          </view>
+
+          <view class="btn btn-primary" @tap="onTapOpenBrowser">
+            <image
+              class="btn-icon"
+              :src="iconSrc.copy"
+              mode="aspectFit"
+              @error="onIconError('copy')"
+            />
+            <text class="btn-text">{{ primaryBtnText }}</text>
+          </view>
+
+          <view class="path-tip">
+            <image
+              class="tip-icon"
+              :src="iconSrc.info16"
+              mode="aspectFit"
+              @error="onIconError('info16')"
+            />
+            <view class="tip-body">
+              <view class="tip-label">温馨提示</view>
+              <view class="tip-text">{{ tipText }}</view>
+            </view>
+          </view>
         </view>
       </view>
 
-      <view class="panel">
-        <view class="panel-title">访问地址</view>
-        <view class="panel-row link-box" v-if="launchUrl">
-          <text class="link-text">{{ launchUrl }}</text>
-          <view class="copy-btn" @tap="onTapCopyOnly">复制链接</view>
+      <!-- 方式二：已完成实名认证 -->
+      <view class="path-card">
+        <view class="path-head">
+          <image
+            class="path-icon"
+            :src="iconSrc.phone"
+            mode="aspectFit"
+            @error="onIconError('phone')"
+          />
+          <view class="path-info">
+            <view class="path-name">已完成实名认证</view>
+            <view class="path-sub">可在小程序内直接打开服务页面</view>
+          </view>
+          <view class="path-index">02</view>
         </view>
-        <view class="panel-row link-box loading" v-else>
-          <text class="loading-text">正在生成访问地址，请稍候…</text>
-        </view>
-      </view>
 
-      <view class="tip-row" v-if="envTips.length">
-        <view class="tip-badge">温馨提示</view>
-        <view class="tip-text">{{ envTips.join('；') }}</view>
-      </view>
-
-      <view class="actions">
-        <view class="btn primary" @tap="onTapOpenBrowser">
-          {{ primaryBtnText }}
+        <view class="btn btn-ghost" @tap="onTapOpenWebview">
+          <image
+            class="btn-icon"
+            :src="iconSrc.arrow"
+            mode="aspectFit"
+            @error="onIconError('arrow')"
+          />
+          <text class="btn-text">在小程序内直接打开</text>
         </view>
-        <view class="btn ghost" @tap="onTapOpenWebview"> 在小程序内直接打开 </view>
       </view>
     </view>
+
+    <!-- 首次进入引导遮罩：点击任意空白处关闭 -->
+    <view v-if="guideVisible" class="guide-mask" @tap="closeGuide"></view>
   </view>
 </template>
 
 <script setup>
-  import { computed, ref } from 'vue';
+  import { computed, reactive, ref } from 'vue';
   import { onLoad } from '@dcloudio/uni-app';
   import sheep from '@/sheep';
   import OemApi from '@/sheep/api/member/oem';
 
+  // 线上切图目录（sheep.$url.static 会拼上 SHOPRO_STATIC_URL 的 OSS 前缀）
+  const REMOTE_ICON_DIR = '/static/bower';
+  // 本地切图目录（线上资源缺失时的兜底）
+  const LOCAL_ICON_DIR = '/static/img/视频问诊 · 请选择访问方式_slices';
+  const ICON_FILES = {
+    hero: '身份访问图标@3x.webp',
+    info: 'info@3x.webp',
+    globe: '路径图标@3x.webp',
+    phone: '路径图标@3x(1).webp',
+    copy: 'copy-18.png',
+    info16: 'info-16@4x.png',
+    arrow: 'arrow-up-right@3x.webp',
+  };
+  const iconSrc = reactive(
+    Object.fromEntries(
+      Object.entries(ICON_FILES).map(([key, file]) => [
+        key,
+        sheep.$url.static(`${REMOTE_ICON_DIR}/${file}`),
+      ]),
+    ),
+  );
+  function onIconError(key) {
+    const local = `${LOCAL_ICON_DIR}/${ICON_FILES[key]}`;
+    if (iconSrc[key] !== local) {
+      iconSrc[key] = local;
+    }
+  }
+
+  // 首次进入引导浮层的模态图（线上资源）
+  const modalImgSrc = sheep.$url.static('/static/vipNeo/modal.png');
+  // 本地存储标记：仅首次进入本页展示一次引导
+  const GUIDE_STORAGE_KEY = 'browser_launch_guide_shown';
+  const guideVisible = ref(false);
+
+  function showGuideOnce() {
+    try {
+      if (uni.getStorageSync(GUIDE_STORAGE_KEY)) return;
+      uni.setStorageSync(GUIDE_STORAGE_KEY, 1);
+    } catch (e) {
+      // 本地存储不可用时按首次处理
+    }
+    guideVisible.value = true;
+  }
+
+  function closeGuide() {
+    guideVisible.value = false;
+  }
+
   const launchUrl = ref('');
   const loading = ref(false);
   const opening = ref(false);
-  const copying = ref(false);
   const openingWebview = ref(false);
-  const inputLaunchUrl = ref('');
   const statusBarHeight = sheep?.$platform?.device?.statusBarHeight || 20; // px
   const navBarHeight = 44; // px, 标题栏内容区固定高度
   const navbarBoxStyle = computed(() => ({
@@ -108,7 +211,7 @@
 
   const primaryBtnText = computed(() => {
     if (platform === 'APP') return '复制链接，用系统浏览器打开';
-    if (platform === 'H5') return '在新标签页打开';
+    if (platform === 'H5') return '复制链接，在新标签页打开';
     return '复制链接，去浏览器打开';
   });
 
@@ -128,9 +231,16 @@
     return tips;
   });
 
+  const tipText = computed(() =>
+    envTips.value.length
+      ? `${envTips.value.join('；')}。`
+      : '微信内不能直接调起外部浏览器；复制链接后可粘贴到系统浏览器或长按识别访问。',
+  );
+
   onLoad((options) => {
+    // 首次进入本页时展示一次访问引导浮层
+    showGuideOnce();
     const raw = options?.launchUrl ? decodeURIComponent(options.launchUrl) : '';
-    inputLaunchUrl.value = raw;
     if (raw && /^https?:\/\//i.test(raw)) {
       launchUrl.value = raw;
     } else {
@@ -176,6 +286,16 @@
     uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
   }
 
+  function onTapNotice() {
+    uni.showModal({
+      title: '关于三要素实名认证',
+      content:
+        '按国家监管规定，首次使用视频问诊服务需完成三要素（姓名 / 身份证号 / 手机号）实名认证，该认证流程无法在小程序内完成。请复制链接后到系统浏览器中完成认证；已完成认证的用户可在小程序内直接打开。',
+      showCancel: false,
+      confirmText: '我知道了',
+    });
+  }
+
   async function copyToClipboard(text) {
     if (!text) {
       showSysErr();
@@ -188,21 +308,6 @@
         fail: () => resolve(false),
       });
     });
-  }
-
-  async function onTapCopyOnly() {
-    if (!launchUrl.value || copying.value) return;
-    copying.value = true;
-    try {
-      const ok = await copyToClipboard(launchUrl.value);
-      if (!ok) {
-        showSysErr();
-        return;
-      }
-      uni.showToast({ title: '链接已复制', icon: 'none', mask: true });
-    } finally {
-      copying.value = false;
-    }
   }
 
   // 在小程序内直接唤起 web-view 加载该地址（已完成实名认证的用户可直接使用）
@@ -234,56 +339,44 @@
       showSysErr();
       return;
     }
+    // 用户已按引导点击按钮，关闭引导浮层
+    closeGuide();
     opening.value = true;
     try {
       const url = launchUrl.value;
-      // APP：直接打开系统浏览器
+      // APP：直接打开系统浏览器，失败则复制并展示引导图
       // #ifdef APP-PLUS
       try {
-        plus.runtime.openURL(url, (err) => {
-          void copyFallback(err);
+        plus.runtime.openURL(url, () => {
+          void copyFallback();
         });
         return;
       } catch (e) {
-        void copyFallback(e);
+        void copyFallback();
         return;
       }
       // #endif
 
-      // H5：新标签打开，被拦截则复制
+      // H5：新标签打开，被拦截则复制并展示引导图
       // #ifdef H5
       try {
         const opened = window.open(url, '_blank', 'noopener,noreferrer');
         if (!opened) {
-          void copyFallback({ reason: 'popup-blocked' });
+          void copyFallback();
           return;
         }
         uni.showToast({ title: '已在新标签页打开', icon: 'none', mask: true });
         return;
       } catch (e) {
-        void copyFallback(e);
+        void copyFallback();
         return;
       }
       // #endif
 
-      // 微信小程序：复制 + Modal 引导
-      // #ifdef MP-WEIXIN
-      void copyFallback(null, {
-        modalTitle: '请在浏览器打开',
-        modalContent: '链接已复制到剪贴板。请切换到系统浏览器（Safari / Chrome 等）粘贴访问。',
-      });
-      return;
-      // #endif
-
-      // 支付宝/其他小程序：复制 + Modal 引导
+      // 小程序：复制链接并展示引导图
       // #ifdef MP
-      // #ifndef MP-WEIXIN
-      void copyFallback(null, {
-        modalTitle: '请在浏览器打开',
-        modalContent: '链接已复制到剪贴板。请切换到系统浏览器粘贴访问以享受完整服务。',
-      });
+      void copyFallback();
       return;
-      // #endif
       // #endif
     } finally {
       // 兜底 200ms 后释放，复制 fallback 里也会解
@@ -293,20 +386,19 @@
     }
   }
 
-  async function copyFallback(err, modalOpts) {
+  // 复制链接，提示用户到浏览器中打开
+  async function copyFallback() {
     try {
       const ok = await copyToClipboard(launchUrl.value);
       if (!ok) {
         showSysErr();
         return;
       }
-      uni.showModal({
-        title: modalOpts?.modalTitle || '请在浏览器打开',
-        content:
-          modalOpts?.modalContent ||
-          '链接已复制，请切换到系统浏览器（Safari / Chrome 等）粘贴访问。',
-        showCancel: false,
-        confirmText: '我知道了',
+      uni.showToast({
+        title: '链接已复制，请到浏览器中打开',
+        icon: 'none',
+        mask: true,
+        duration: 2500,
       });
     } catch (e) {
       showSysErr();
@@ -328,7 +420,7 @@
 <style lang="scss" scoped>
   .browser-launch-page {
     min-height: 100vh;
-    background: linear-gradient(180deg, #fff8f3 0%, #ffffff 60%);
+    background: #f8f9f3;
   }
 
   .custom-navbar {
@@ -337,7 +429,7 @@
     left: 0;
     right: 0;
     z-index: 100;
-    background: transparent;
+    background: #f8f9f3;
     box-sizing: border-box;
   }
 
@@ -346,13 +438,12 @@
     height: 44px;
     display: flex;
     align-items: center;
-    padding-left: 20rpx;
   }
 
   .back-btn {
-    width: 72rpx;
-    height: 72rpx;
-    border-radius: 50%;
+    width: 88rpx;
+    height: 88rpx;
+    margin-left: 4rpx;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -361,187 +452,265 @@
   }
 
   .back-icon {
-    color: #000;
+    color: #222a35;
     font-size: 22px;
     line-height: 1;
   }
 
-  .navbar-title-slot {
-    flex: 1;
+  .navbar-title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 28rpx;
+    font-weight: 400;
+    line-height: 1;
+    color: #222a35;
+    pointer-events: none;
   }
 
   .wrap {
-    padding: 32rpx 28rpx 320rpx;
+    padding: 40rpx 32rpx calc(48rpx + env(safe-area-inset-bottom));
   }
 
-  .hero-card {
-    background: #ffffff;
-    border-radius: 24rpx;
-    padding: 48rpx 36rpx 40rpx;
-    box-shadow: 0 8rpx 24rpx rgba(255, 90, 50, 0.08);
+  /* 访问方式介绍 */
+  .hero {
     display: flex;
     flex-direction: column;
     align-items: center;
   }
 
   .hero-icon {
-    width: 160rpx;
-    height: 160rpx;
-    border-radius: 50%;
-    background: #fff1e8;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-bottom: 24rpx;
+    width: 128rpx;
+    height: 128rpx;
+    display: block;
+  }
+
+  .notice-info {
+    flex-shrink: 0;
+    width: 38rpx;
+    height: 38rpx;
+    display: block;
+  }
+
+  .path-icon {
+    flex-shrink: 0;
+    width: 80rpx;
+    height: 80rpx;
+    display: block;
+  }
+
+  .btn-icon {
+    flex-shrink: 0;
+    width: 36rpx;
+    height: 36rpx;
+    display: block;
+  }
+
+  .tip-icon {
+    flex-shrink: 0;
+    width: 32rpx;
+    height: 32rpx;
+    display: block;
   }
 
   .hero-title {
-    font-size: 34rpx;
-    font-weight: 600;
-    color: #1f2024;
+    margin-top: 24rpx;
+    font-size: 48rpx;
+    font-weight: 700;
+    line-height: 64rpx;
+    color: #222a35;
     text-align: center;
-    margin-bottom: 16rpx;
   }
 
   .hero-desc {
-    font-size: 26rpx;
-    line-height: 1.6;
-    color: #6b7280;
+    margin-top: 24rpx;
+    padding: 0 16rpx;
+    font-size: 28rpx;
+    font-weight: 400;
+    line-height: 44rpx;
+    color: #606b7a;
     text-align: center;
   }
 
-  .strong {
-    color: #ff3e00;
-    font-weight: 600;
+  .hero-desc-strong {
+    color: #237a48;
   }
 
+  /* 三要素实名认证说明 */
   .notice-card {
-    margin-top: 28rpx;
-    background: #fff7e6;
-    border: 1rpx solid #ffe0a3;
-    border-radius: 20rpx;
-    padding: 24rpx 28rpx;
+    margin-top: 48rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 32rpx;
+    background: #e6ffe6;
+    border-radius: 32rpx;
   }
 
   .notice-title {
-    font-size: 26rpx;
-    font-weight: 600;
-    color: #b45309;
-    margin-bottom: 12rpx;
+    font-size: 32rpx;
+    font-weight: 700;
+    line-height: 48rpx;
+    color: #237a48;
   }
 
-  .notice-text {
-    font-size: 24rpx;
-    line-height: 1.7;
-    color: #92400e;
-  }
-
-  .panel {
-    margin-top: 28rpx;
+  /* 访问路径卡片 */
+  .path-card {
+    margin-top: 20rpx;
+    padding: 32rpx;
     background: #ffffff;
-    border-radius: 24rpx;
-    padding: 28rpx 28rpx 24rpx;
-    box-shadow: 0 8rpx 24rpx rgba(17, 24, 39, 0.04);
+    border: 2rpx solid #dee8db;
+    border-radius: 32rpx;
+    box-sizing: border-box;
   }
 
-  .panel-title {
+  .path-head {
+    display: flex;
+    align-items: center;
+  }
+
+  .path-info {
+    flex: 1;
+    min-width: 0;
+    margin-left: 24rpx;
+  }
+
+  .path-name {
+    font-size: 32rpx;
+    font-weight: 700;
+    line-height: 48rpx;
+    color: #222a35;
+  }
+
+  .path-sub {
     font-size: 24rpx;
-    color: #9ca3af;
-    margin-bottom: 16rpx;
+    font-weight: 400;
+    line-height: 36rpx;
+    color: #606b7a;
   }
 
-  .panel-row.link-box {
+  .path-index {
+    flex-shrink: 0;
+    font-size: 36rpx;
+    font-weight: 500;
+    line-height: 1;
+    color: #606b7a;
+  }
+
+  /* 按钮 */
+  .btn {
+    margin-top: 32rpx;
+    height: 96rpx;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 24rpx;
+    box-sizing: border-box;
+  }
+
+  .btn-text {
+    margin-left: 12rpx;
+    font-size: 32rpx;
+    font-weight: 700;
+    line-height: 48rpx;
+  }
+
+  .btn-primary {
+    background: #237a48;
+    border: 2rpx solid #237a48;
+  }
+
+  .btn-primary .btn-text {
+    color: #ffffff;
+  }
+
+  .btn-ghost {
+    background: #ffffff;
+    border: 2rpx solid #dee8db;
+  }
+
+  .btn-ghost .btn-text {
+    color: #237a48;
+  }
+
+  /* 浏览器打开提示 */
+  .path-tip {
+    margin-top: 32rpx;
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
-    gap: 20rpx;
   }
 
-  .link-text {
+  .tip-body {
     flex: 1;
-    font-size: 26rpx;
-    line-height: 1.7;
-    color: #374151;
-    word-break: break-all;
-    background: #f5f6f7;
-    border-radius: 16rpx;
-    padding: 20rpx;
+    min-width: 0;
+    margin-left: 16rpx;
   }
 
-  .copy-btn {
-    flex-shrink: 0;
-    height: 64rpx;
-    padding: 0 24rpx;
-    line-height: 64rpx;
+  .tip-label {
     font-size: 24rpx;
-    color: #ffffff;
-    background: #ff5a32;
-    border-radius: 999rpx;
-    margin-top: 8rpx;
-  }
-
-  .loading-text {
-    font-size: 26rpx;
-    color: #9ca3af;
-  }
-
-  .tip-row {
-    margin-top: 28rpx;
-    background: #fff7e6;
-    border: 1rpx solid #ffe0a3;
-    border-radius: 20rpx;
-    padding: 24rpx;
-    display: flex;
-    gap: 16rpx;
-  }
-
-  .tip-badge {
-    flex-shrink: 0;
-    height: 40rpx;
-    line-height: 40rpx;
-    padding: 0 16rpx;
-    font-size: 22rpx;
-    color: #b45309;
-    background: #ffedd5;
-    border-radius: 999rpx;
-    align-self: flex-start;
+    font-weight: 400;
+    line-height: 36rpx;
+    color: #237a48;
   }
 
   .tip-text {
-    flex: 1;
+    margin-top: 8rpx;
     font-size: 24rpx;
-    color: #92400e;
-    line-height: 1.7;
+    font-weight: 400;
+    line-height: 36rpx;
+    color: #606b7a;
   }
 
-  .actions {
+  /* 首次进入引导浮层 */
+  .guide-mask {
     position: fixed;
-    left: 28rpx;
-    right: 28rpx;
-    bottom: calc(40rpx + env(safe-area-inset-bottom));
-    display: flex;
-    flex-direction: column;
-    gap: 20rpx;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.6);
   }
 
-  .btn {
-    height: 96rpx;
-    line-height: 96rpx;
-    text-align: center;
-    border-radius: 999rpx;
-    font-size: 30rpx;
-    font-weight: 600;
+  /* 首张卡片外层：引导时抬到遮罩之上，形成聚光效果 */
+  .path-card-wrap {
+    position: relative;
+    margin-top: 20rpx;
   }
 
-  .btn.primary {
-    color: #ffffff;
-    background: linear-gradient(135deg, #ff7a3c 0%, #ff3e00 100%);
-    box-shadow: 0 12rpx 24rpx rgba(255, 82, 30, 0.22);
+  .path-card-wrap--lit {
+    z-index: 1001;
   }
 
-  .btn.ghost {
-    color: #ff5a32;
-    background: #ffffff;
-    border: 2rpx solid #ffd3c4;
+  .path-card-wrap .path-card {
+    margin-top: 0;
+  }
+
+  /* 模态图：位于首张卡片正上方，水平居中 */
+  .guide-popup {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    margin-bottom: 62rpx;
+    transform: translateX(-50%);
+    width: 670rpx;
+    z-index: 1002;
+  }
+
+  .guide-img {
+    width: 100%;
+    display: block;
+  }
+
+  /* 模态图与卡片之间的连接线 */
+  .guide-arrow {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -2rpx;
+    width: 4rpx;
+    height: 62rpx;
+    background: #fce5af;
   }
 </style>
