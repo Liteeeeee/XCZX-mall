@@ -20,15 +20,14 @@
         />
         <view class="hero-title">请选择访问方式</view>
         <view class="hero-desc">
-          <text>该服务页面可在小程序内直接打开；</text>
-          <text class="hero-desc-strong">首次使用需先完成三要素实名认证</text>
+          <text class="hero-desc-strong">按照互联网诊疗相关管理要求，线上问诊需进行实名认证</text>
           <text>，认证只能到系统浏览器中完成，请选择第一种方式。</text>
         </view>
       </view>
 
       <!-- 三要素实名认证说明 -->
       <view class="notice-card" @tap="onTapNotice">
-        <view class="notice-title">关于三要素实名认证</view>
+        <view class="notice-title">关于实名认证</view>
         <image
           class="notice-info"
           :src="iconSrc.info"

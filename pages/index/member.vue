@@ -649,7 +649,7 @@
     },
     {
       title: '线上健康咨询服务',
-      desc: ['会员每年免费健康咨询x3次', '专属客服'],
+      desc: ['7x24小时在线问诊', '千种药品免费配送'],
       backgroundImage:
         'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/xianshangjiankang.png',
     },
