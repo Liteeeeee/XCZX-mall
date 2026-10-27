@@ -62,7 +62,12 @@
           "<uses-permission android:name=\"android.permission.WRITE_EXTERNAL_STORAGE\"/>",
           "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\"/>",
           "<uses-permission android:name=\"android.permission.WRITE_SMS\"/>",
-          "<uses-permission android:name=\"android.permission.RECEIVE_USER_PRESENT\"/>"
+          "<uses-permission android:name=\"android.permission.RECEIVE_USER_PRESENT\"/>",
+          "<uses-feature android:name=\"android.hardware.bluetooth_le\" android:required=\"false\"/>",
+          "<uses-permission android:name=\"android.permission.BLUETOOTH\"/>",
+          "<uses-permission android:name=\"android.permission.BLUETOOTH_ADMIN\"/>",
+          "<uses-permission android:name=\"android.permission.BLUETOOTH_SCAN\"/>",
+          "<uses-permission android:name=\"android.permission.BLUETOOTH_CONNECT\"/>"
         ],
         "minSdkVersion": 21,
         "schemes": "shopro"
@@ -77,6 +82,8 @@
           "NSPhotoLibraryUsageDescription": "需要同意访问您的相册选取图片才能完善该条目",
           "NSPhotoLibraryAddUsageDescription": "需要同意访问您的相册才能保存该图片",
           "NSCameraUsageDescription": "需要同意访问您的摄像头拍摄照片才能完善该条目",
+          "NSBluetoothAlwaysUsageDescription": "需要开启蓝牙权限才能连接智能戒指并同步健康数据",
+          "NSBluetoothPeripheralUsageDescription": "需要开启蓝牙权限才能连接智能戒指并同步健康数据",
           "NSUserTrackingUsageDescription": "开启追踪并不会获取您在其它站点的隐私信息,该行为仅用于标识设备,保障服务安全和提升浏览体验"
         },
         "urltypes": "shopro",
@@ -195,7 +202,11 @@
     "plugins": {},
     "lazyCodeLoading": "requiredComponents",
     "usingComponents": {},
-    "permission": {},
+    "permission": {
+      "scope.userLocation": {
+        "desc": "部分手机系统需要定位权限才能扫描附近的蓝牙设备"
+      }
+    },
     "requiredPrivateInfos": [
       "chooseAddress"
     ]

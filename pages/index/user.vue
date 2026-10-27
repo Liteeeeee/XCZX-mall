@@ -84,6 +84,14 @@
             </view>
             <view class="partner-title">平台合伙人</view>
           </view>
+          <!-- #ifdef APP-PLUS || MP-WEIXIN -->
+          <view class="partner-service-item" @tap.stop="onRingTap">
+            <view class="partner-icon-box ss-flex ss-row-center ss-col-center">
+              <text class="partner-icon-name _icon-scan"></text>
+            </view>
+            <view class="partner-title">智能戒指</view>
+          </view>
+          <!-- #endif -->
         </view>
       </view>
     </view>
@@ -180,6 +188,10 @@
   function onPartnerTap() {
     sheep.$router.go('/pages/commission/apply');
   }
+
+  function onRingTap() {
+    sheep.$router.go('/pages/ring/index');
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -233,6 +245,11 @@
   .partner-icon {
     width: 56rpx;
     height: 56rpx;
+  }
+
+  .partner-icon-name {
+    font-size: 44rpx;
+    color: #1e3f1c;
   }
 
   .partner-title {

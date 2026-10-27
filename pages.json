@@ -1013,6 +1013,33 @@
                   }
                 }
 			]
+		},
+		{
+			"root": "pages/ring",
+			"pages": [
+				{
+					"path": "index",
+					"style": {
+						"navigationBarTitleText": "智能戒指"
+					},
+					"meta": {
+						"auth": false,
+						"title": "智能戒指",
+						"group": "智能穿戴"
+					}
+				},
+				{
+					"path": "device",
+					"style": {
+						"navigationBarTitleText": "设备管理"
+					},
+					"meta": {
+						"auth": false,
+						"title": "设备管理",
+						"group": "智能穿戴"
+					}
+				}
+			]
 		}
 	],
 	"globalStyle": {
