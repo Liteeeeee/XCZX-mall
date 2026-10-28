@@ -648,8 +648,8 @@
       backgroundImage: 'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/shengriBg.png',
     },
     {
-      title: '线上健康咨询服务',
-      desc: ['7x24小时在线问诊', '千种药品免费配送'],
+      title: '仙草健康卡',
+      desc: ['7*24小时专属问诊不限次', '千种药品免费使用'],
       backgroundImage:
         'https://xiancao.oss-cn-beijing.aliyuncs.com/mp/static/vipNeo/xianshangjiankang.png',
     },
