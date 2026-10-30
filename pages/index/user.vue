@@ -75,7 +75,7 @@
       <view class="partner-service" @tap="onPartnerTap">
         <view class="partner-service-grid">
           <view class="partner-service-item">
-            <view class="partner-icon-box ss-flex ss-row-center ss-col-center">
+            <view class="partner-icon-box ss-flex ss-row-center sss-col-center">
               <image
                 class="partner-icon"
                 :src="sheep.$url.cdn('/mp/static/myPageIcon/平台合伙人@2x.png')"
@@ -85,12 +85,12 @@
             <view class="partner-title">平台合伙人</view>
           </view>
           <!-- #ifdef APP-PLUS || MP-WEIXIN -->
-          <!-- <view class="partner-service-item" @tap.stop="onRingTap">
+          <view class="partner-service-item" @tap.stop="onRingTap">
             <view class="partner-icon-box ss-flex ss-row-center ss-col-center">
               <text class="partner-icon-name _icon-scan"></text>
             </view>
             <view class="partner-title">智能戒指</view>
-          </view> -->
+          </view>
           <!-- #endif -->
         </view>
       </view>

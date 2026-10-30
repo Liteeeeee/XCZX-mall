@@ -836,6 +836,13 @@
 						"navigationStyle": "custom",
 						"navigationBarTitleText": "服务跳转提示"
 					}
+				},
+				{
+					"path": "health-card",
+					"style": {
+						"navigationStyle": "custom",
+						"navigationBarTitleText": "仙草健康卡"
+					}
 				}
 			]
 		},

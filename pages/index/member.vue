@@ -162,7 +162,6 @@
   import sMemberLevelRights from '@/sheep/components/s-member-level-card/s-member-level-rights.vue';
   import MemberLevelApi from '@/sheep/api/member/level';
   import MemberRightsApi from '@/sheep/api/member/rights';
-  import OemApi from '@/sheep/api/member/oem';
   import { SharePageEnum } from '@/sheep/helper/const';
 
   async function loadMemberLevelList() {
@@ -655,7 +654,7 @@
     },
   ];
 
-  async function onTapAdvantage(item) {
+  function onTapAdvantage(item) {
     if (!isLogin.value) {
       showAuthModal();
       return;
@@ -668,43 +667,22 @@
       sheep.$router.go('/pages/index/category');
       return;
     }
-    if (item.title === '线上健康咨询服务') {
+    if (item.title === '仙草健康卡') {
+      if (!isVipOpened.value) {
+        uni.showToast({ title: '开通会员后可使用仙草健康卡', icon: 'none', mask: true });
+        return;
+      }
       if (launchingHealthConsult.value) return;
       launchingHealthConsult.value = true;
-      try {
-        const res = await OemApi.getHealthConsultLaunchUrl();
-        if (!res || res.code !== 0) {
+      uni.navigateTo({
+        url: '/pages/public/health-card',
+        fail: () => {
           uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
-          return;
-        }
-        let launchUrl = '';
-        const payload = res.data;
-        if (typeof payload === 'string') {
-          launchUrl = payload;
-        } else if (payload && typeof payload === 'object') {
-          launchUrl =
-            payload.launchUrl ||
-            payload.launch_url ||
-            payload.url ||
-            payload.h5Url ||
-            payload.redirectUrl ||
-            '';
-        }
-        if (!launchUrl || typeof launchUrl !== 'string' || !/^https?:\/\//i.test(launchUrl)) {
-          uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
-          return;
-        }
-        uni.navigateTo({
-          url: `/pages/public/browser-launch?launchUrl=${encodeURIComponent(launchUrl)}`,
-          fail: () => {
-            uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
-          },
-        });
-      } catch (e) {
-        uni.showToast({ title: '系统异常，请稍后再试', icon: 'none', mask: true });
-      } finally {
-        launchingHealthConsult.value = false;
-      }
+        },
+        complete: () => {
+          launchingHealthConsult.value = false;
+        },
+      });
     }
   }
 </script>

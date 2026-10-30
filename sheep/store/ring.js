@@ -74,45 +74,47 @@ const REALTIME_TYPE_MAP = Object.fromEntries(
   RING_REALTIME_METRICS.map((item) => [item.dataType, item.metric]),
 );
 
-/** 健康记录中的时间/元信息字段，提取数值时跳过 */
-const META_KEYS = [
-  'date',
-  'time',
-  'timestamp',
-  'timestampSec',
-  'utc',
-  'timezone',
-  'type',
-  'id',
-  'index',
-  'dataType',
-];
-
-const VALUE_KEYS = {
-  step: ['step', 'steps', 'totalStep', 'count'],
-  hr: ['hr', 'heartRate', 'avgHr', 'averageHeartRate'],
-  sleep: ['totalDuration', 'sleepTime', 'totalSleepTime', 'duration'],
-  bo: ['bo', 'bloodOxy', 'bloodOxygen', 'spo2'],
-  hrv: ['hrv', 'hrvValue'],
-  pressure: ['pressure', 'stress'],
-  bp: ['systolic', 'sbp', 'high', 'sys'],
-  bloodSugar: ['bloodSugar', 'sugar', 'glucose'],
-  temp: ['temp', 'temperature', 'bodyTemp'],
-  muslimCount: ['muslimCount', 'totalCount', 'count'],
+/**
+ * 数值字段位置：插件四端把同一天的记录归一化成
+ * { time, date, items: [{ time, <数值字段> }] }，
+ * 只有计步 / 睡眠 / 赞念计数把汇总值放在顶层。
+ */
+const TOP_VALUE_KEYS = {
+  step: ['totalSteps'],
+  sleep: ['duration'],
+  muslimCount: ['totalCount'],
 };
 
-/** 取一条健康记录的主数值，先按类型约定的字段名匹配，再兜底取首个数值字段 */
-function extractValue(record, type) {
-  if (!record) return null;
-  const keys = VALUE_KEYS[type] || [];
+/** 其余类型的数值字段，位于 items[] 的每一条记录内 */
+const ITEM_VALUE_KEYS = {
+  hr: ['hr'],
+  bo: ['bloodOxy'],
+  hrv: ['hrv'],
+  pressure: ['pressure'],
+  bp: ['systolic'],
+  bloodSugar: ['bloodSugar'],
+  temp: ['temp'],
+  muslimCount: ['count'],
+};
+
+function pickNumber(source, keys) {
+  if (!source || !keys) return null;
   for (const key of keys) {
-    const value = Number(record[key]);
+    const value = Number(source[key]);
     if (Number.isFinite(value)) return value;
   }
-  for (const key of Object.keys(record)) {
-    if (META_KEYS.includes(key)) continue;
-    const value = Number(record[key]);
-    if (Number.isFinite(value)) return value;
+  return null;
+}
+
+/** 取一条健康记录的主数值：顶层汇总值优先，其余类型取 items 里最后一条（当天最新一次测量） */
+function extractValue(record, type) {
+  if (!record) return null;
+  const topValue = pickNumber(record, TOP_VALUE_KEYS[type]);
+  if (topValue !== null) return topValue;
+  const items = Array.isArray(record.items) ? record.items : [];
+  for (let index = items.length - 1; index >= 0; index -= 1) {
+    const value = pickNumber(items[index], ITEM_VALUE_KEYS[type]);
+    if (value !== null) return value;
   }
   return null;
 }
